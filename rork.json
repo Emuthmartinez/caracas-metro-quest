@@ -1,0 +1,10 @@
+{
+  "apps": [
+    {
+      "name": "Metro Amarillo Caracas",
+      "path": "ios-metro-amarillo-caracas",
+      "framework": "swift"
+    }
+  ],
+  "$schema": "https://rork.com/schema/rork.json"
+}
