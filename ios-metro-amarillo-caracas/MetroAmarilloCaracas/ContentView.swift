@@ -39,6 +39,10 @@ struct ContentView: View {
         .safeAreaInset(edge: .bottom) {
             ControlDockView(game: game)
         }
+        .onAppear {
+            AudioManager.shared.start()
+            AudioManager.shared.enterStation()
+        }
     }
 }
 

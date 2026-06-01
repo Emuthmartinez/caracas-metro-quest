@@ -1,0 +1,1095 @@
+[
+  {
+    "id": "dona-perpetua-cano-amarillo",
+    "name": "Doña Perpetua Salcedo",
+    "role": "Vendedora de lotería",
+    "stationName": "Caño Amarillo",
+    "lineID": "L1",
+    "paletteHex": "0xFFB347",
+    "area": "centro",
+    "magicalRealism": "Lleva décadas vendiendo números, y los que compra ella jamás ganan — porque los guarda pa' que la suerte no se le escape del barrio.",
+    "dialoguePool": [
+      "Llevo cuarenta años aquí, mijo, y el caño ya no huele a caño — huele a promesas que nadie cumplió.",
+      "¿Comprás un número? No pa' ganar, vale, sino pa' tener algo en lo que creer esta semana.",
+      "Una vez llegó un señor a comprarme to' los números. Se los vendí. Nunca lo volví a ver. Na' guará."
+    ],
+    "visual": {
+      "build": "heavy",
+      "skin": "brown",
+      "hair": "gray",
+      "headwear": "panuelo",
+      "prop": "tickets"
+    },
+    "visualNote": "Elder lottery vendor with decades on the street; pañuelo and gray hair mark her age and working-class Afro-Venezuelan Centro roots; tickets are her trade and her magical hoard."
+  },
+  {
+    "id": "licenciado-eleazar-capitolio",
+    "name": "Licenciado Eleazar Marcano",
+    "role": "Burócrata difunto en cola eterna",
+    "stationName": "Capitolio",
+    "lineID": "L1",
+    "paletteHex": "0xD4A574",
+    "area": "centro",
+    "magicalRealism": "Murió en 1987 esperando que le sellaran un formulario en el Capitolio, y todavía hace la cola — el formulario ya no existe pero él no sabe.",
+    "dialoguePool": [
+      "Permiso, chamo, ¿tú sabes si la ventanilla cuatro sigue abierta? Llevo desde las siete de la mañana.",
+      "Dicen que cambiaron el trámite a en línea. ¿Eso qué es? ¿Cómo se hace una cola en línea, vale?",
+      "No te preocupes por mí. Yo tengo paciencia. La gente me pasa por el lado hace años y yo aquí, fino."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "medium",
+      "hair": "short",
+      "headwear": "none",
+      "prop": "briefcase"
+    },
+    "visualNote": "A 1987 government bureaucrat frozen mid-errand near the Capitolio; office-casual medium complexion and a briefcase signal his clerical world, while the dated stillness makes him ghost-like among today's buhoneros."
+  },
+  {
+    "id": "nena-hoyada",
+    "name": "Nena Castrillo",
+    "role": "Señora del mercado que vende guarapo",
+    "stationName": "La Hoyada",
+    "lineID": "L1",
+    "paletteHex": "0xFF8C42",
+    "area": "centro",
+    "magicalRealism": "Su guarapo de papelón cura exactamente lo que uno necesita ese día, aunque uno no sepa lo que necesita.",
+    "dialoguePool": [
+      "Épale, muchacho, te veo la cara de hambre. No es hambre de comida, es hambre de casa, ¿verdad?",
+      "Este guarapo lo hago con papelón de Barlovento y una piedra del Ávila. Así le entra el cerro en el cuerpo, pana.",
+      "Tómatelo despacio. La prisa es pa' los que no tienen dónde llegar, mijo."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "dark",
+      "hair": "bun",
+      "headwear": "none",
+      "prop": "basket"
+    },
+    "visualNote": "Food vendor at La Hoyada market node; dark skin and hair in a bun reflect the Afro-Venezuelan presence common in the popular classes of the center; basket holds the guarapo and papelón she sells."
+  },
+  {
+    "id": "profesor-remigio-parque-carabobo",
+    "name": "Profesor Remigio Urdaneta",
+    "role": "Maestro jubilado que descansa en el parque",
+    "stationName": "Parque Carabobo",
+    "lineID": "L1",
+    "paletteHex": "0xD4B896",
+    "area": "centro",
+    "magicalRealism": "Todas las mañanas le lee el periódico en voz alta a la estatua de Carabobo, y la estatua le responde moviendo ligerísimamente la mano — cosa que el profesor considera perfectamente normal.",
+    "dialoguePool": [
+      "Carabobo gana siempre la batalla, chamo, pero los otros días es que están duros.",
+      "La estatua hoy no está de humor. Ayer le leí lo del presupuesto y como que se ofendió.",
+      "¿Estudiaste, mijo? No importa. Lo que importa es que sigas aprendiendo. El estudio no se acaba con el bachillerato."
+    ],
+    "visual": {
+      "build": "elder",
+      "skin": "medium",
+      "hair": "gray",
+      "headwear": "none",
+      "prop": "newspaper"
+    },
+    "visualNote": "Retired teacher reading aloud to a statue in Parque Carabobo; gray hair, elder frame, and newspaper are the exact uniform of the pensioners who occupy the park benches of Centro every morning."
+  },
+  {
+    "id": "flautista-bellas-artes",
+    "name": "Xiomara Pietrantoni",
+    "role": "Flautista de la Orquesta Simón Bolívar, retirada",
+    "stationName": "Bellas Artes",
+    "lineID": "L1",
+    "paletteHex": "0xC9A0DC",
+    "area": "centro",
+    "magicalRealism": "Cuando toca la flauta en el andén, los muertos del Museo de Arte Contemporáneo al lado se asoman a escuchar, y a veces aplauden desde las paredes.",
+    "dialoguePool": [
+      "Yo toqué treinta años con la Simón Bolívar. Ahora toco aquí, pa' los que no pueden pagar boleto.",
+      "¿Oíste ese eco raro? No es el túnel, vale. Es el público de siempre. Na' guará, qué fieles.",
+      "La música no se va del cuerpo aunque los años se vayan. Eso me lo enseñó el maestro Abreu y él tenía razón."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "light",
+      "hair": "long",
+      "headwear": "none",
+      "prop": "flute"
+    },
+    "visualNote": "Retired Orquesta Simón Bolívar flautist outside Bellas Artes station; lighter skin and long hair echo the lighter-complexioned stratum found in the cultural institutions along Avenida Bolívar; flute is her instrument and her spectral summons."
+  },
+  {
+    "id": "ingeniero-felix-colegio-ingenieros",
+    "name": "Félix Rodríguez Amaral",
+    "role": "Ingeniero civil que nunca terminó su obra",
+    "stationName": "Colegio de Ingenieros",
+    "lineID": "L1",
+    "paletteHex": "0xB8860B",
+    "area": "sabanagrande",
+    "magicalRealism": "Diseñó el puente Línea 5 hace cuarenta años; los planos siguen sobre su escritorio esperando presupuesto, y él lleva décadas en la misma estación, convencido de que el proyecto va a arrancar mañana.",
+    "dialoguePool": [
+      "La Línea 5 va a estar lista, chamo. Es cuestión de voluntad política. Eso lo dijeron en el noventa y dos también, pero igual.",
+      "Coño, yo calculé esas vigas con una regla de cálculo, ¿y me van a decir que no hay plata? Qué molleja.",
+      "El problema de este país no es que le falte ingenio, mijo. Es que le sobran reuniones y le faltan clavos."
+    ],
+    "visual": {
+      "build": "elder",
+      "skin": "medium",
+      "hair": "gray",
+      "headwear": "hardhat",
+      "prop": "briefcase"
+    },
+    "visualNote": "Decades-old civil engineer frozen in professional habit: the hardhat he never took off when the project stalled, the briefcase carrying yellowed 1980s plans — a lighter mestizo elder typical of the technical class around the Colegio de Ingenieros corridor."
+  },
+  {
+    "id": "marisol-plaza-venezuela",
+    "name": "Marisol Torrealba",
+    "role": "Vendedora de lotería y números",
+    "stationName": "Plaza Venezuela",
+    "lineID": "L1",
+    "paletteHex": "0xFFB84D",
+    "area": "sabanagrande",
+    "magicalRealism": "Lleva décadas vendiendo la misma combinación ganadora que nadie ha cobrado — los números solo aparecen en sueños, no en la realidad.",
+    "dialoguePool": [
+      "Épale, mijo. El 04-17-33. Te lo digo yo, esos números salen esta noche. Los vi en el chorro de la fuente.",
+      "Na' guará, la fuente de Plaza Venezuela no para de hablar. A veces en arameo, a veces en criollo. Esta mañana dijo tu nombre.",
+      "Cómprame aunque sea uno, vale. Pa' la suerte no importa si lo cobrás — importa que lo cargues encima."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "brown",
+      "hair": "bun",
+      "headwear": "none",
+      "prop": "tickets"
+    },
+    "visualNote": "Lottery vendor at a high-traffic metro exit: brown-skinned adult woman, hair pulled back in a practical bun, lottery tickets as her defining prop — mirrors the buhonera demographic (Afro-Venezuelan mestiza, working-class) that dominates informal commerce along Plaza Venezuela."
+  },
+  {
+    "id": "yuneixi-chacaito",
+    "name": "Yuneixi Marcano",
+    "role": "Estudiante de medicina con una mochila que pesa más que ella",
+    "stationName": "Chacaíto",
+    "lineID": "L1",
+    "paletteHex": "0xFF8C69",
+    "area": "sabanagrande",
+    "magicalRealism": "Su mochila contiene libros de anatomía de estudiantes que emigraron; cada libro susurra el nombre del dueño cuando hay lluvia.",
+    "dialoguePool": [
+      "Llevo seis libros que no son míos. Gleimar se fue a Madrid, Adri a Santiago... me los dejaron 'porque tú vas a terminar'. Así que termino por to'.",
+      "¿Tú sientes ese olor a harina? Me recuerda a mi abuela en Maracaibo. ¿De dónde viene eso?",
+      "Chacaíto siempre lleno. Como si nadie llegara a ningún lado — to' el mundo solo está aquí, esperando."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "dark",
+      "hair": "curly",
+      "headwear": "none",
+      "prop": "book"
+    },
+    "visualNote": "Young dark-skinned medical student with natural curls carrying inherited anatomy texts — reflects the strong Afro-Venezuelan presence in the popular classes of Caracas and the student population flooding Chacaito from UCV on Line 1."
+  },
+  {
+    "id": "guacamaya-chacao",
+    "name": "La Guacamaya de Chacao",
+    "role": "Agorera de plumas azules y oro que lee palmas en el andén",
+    "stationName": "Chacao",
+    "lineID": "L1",
+    "paletteHex": "0x4FC3F7",
+    "area": "este",
+    "magicalRealism": "Una guacamaya que escapó del Ávila hace treinta años lee las líneas de la mano de quien se detenga; sus predicciones solo fallan cuando uno las repite en voz alta.",
+    "dialoguePool": [
+      "GRAAK. Pana, no corras. La línea de tu vida dobla aquí. Dobla, no termina. Hay diferencia.",
+      "El Ávila me mandó. Me dijo: 'baja, que hay uno que huele a pan y necesita saber que va bien'. Tú eres ese, ¿verdad?",
+      "GRAAK. No le digas a nadie lo que te dije. Si lo repites en voz alta, se desaparece. Así es como funciona esto."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "brown",
+      "hair": "curly",
+      "headwear": "feathers",
+      "prop": "bird"
+    },
+    "visualNote": "A macaw spirit in human form: feathers as headwear signal her avian nature and the escaped-from-Avila premise, the bird prop in hand marks her as a reader of creatures, and brown skin with curly hair grounds her in the Afro-Venezuelan popular tradition of eastern Caracas."
+  },
+  {
+    "id": "reinaldo-altamira",
+    "name": "Reinaldo Blanco",
+    "role": "Vigilante nocturno jubilado que escucha hablar a la montaña",
+    "stationName": "Altamira",
+    "lineID": "L1",
+    "paletteHex": "0xE8A87C",
+    "area": "este",
+    "magicalRealism": "El Ávila le habla directamente desde que perdió el oído derecho en 1994; dice que la montaña tiene voz de mujer vieja y huele a lluvia cuando miente.",
+    "dialoguePool": [
+      "El Ávila habló anoche. Dijo que alguien va a irse lejos muy pronto. No sé si eres tú. No sé si soy yo. Pero alguien.",
+      "Veintitrés años de vigilante y nunca entendí por qué robaban. La montaña me explicó: 'porque tienen hambre de algo que no saben nombrar'. Coño 'e madre, qué verdad.",
+      "¿Ves esa luz allá arriba, entre los árboles? Son los ojos de la montaña. A veces te guiñan."
+    ],
+    "visual": {
+      "build": "elder",
+      "skin": "medium",
+      "hair": "gray",
+      "headwear": "cap",
+      "prop": "newspaper"
+    },
+    "visualNote": "Retired night-watchman in his sixties: gray hair and elder build mark his age, a worn cap is standard for working-class caraqueno men of his generation, and the newspaper suits a sedentary sentinel who passes quiet hours reading while waiting for the mountain to speak."
+  },
+  {
+    "id": "donatella-miranda",
+    "name": "Donatella Figueroa de Rossi",
+    "role": "Abuela italiana-venezolana que regresa sola del mercado",
+    "stationName": "Miranda",
+    "lineID": "L1",
+    "paletteHex": "0xFFCC80",
+    "area": "este",
+    "magicalRealism": "Su esposo Enzo lleva doce años muerto pero sigue ocupando el asiento a su derecha en el metro; ella le guarda el tiquete.",
+    "dialoguePool": [
+      "Enzo, mira ese chamo con la harina. ¡Mira! — Ay perdona, mijo, le hablo a mi esposo. Está aquí al lado, pero ya tú sabes cómo son los viejos.",
+      "¿Tú eres de Los Jardines? Nosotros vivimos en Bello Monte cuarenta años. Enzo dice que ese pan tuyo huele igualito al de su mamá en Génova.",
+      "No llores en el metro — me decía Enzo. Pero qué va, uno llora donde puede. El metro es nuestro, ¿verdad?"
+    ],
+    "visual": {
+      "build": "elder",
+      "skin": "light",
+      "hair": "bun",
+      "headwear": "none",
+      "prop": "basket"
+    },
+    "visualNote": "Italian-Venezuelan grandmother: lighter skin reflects her Italian immigrant lineage honest to Venezuela's mid-20th-century Southern European wave, hair in a practical bun for market errands, and a basket confirms she is returning from the market exactly as her role states."
+  },
+  {
+    "id": "luisito-dos-caminos",
+    "name": "Luisito el de Los Dos Caminos",
+    "role": "Mototaxista en pausa que conoce to'os los atajos del este",
+    "stationName": "Los Dos Caminos",
+    "lineID": "L1",
+    "paletteHex": "0xA5D6A7",
+    "area": "este",
+    "magicalRealism": "Conoce un camino en el este que no aparece en ningún mapa y que lleva siempre al lugar donde uno realmente necesita estar, no al que pide.",
+    "dialoguePool": [
+      "Épale, compa. Los Dos Caminos tiene dos caminos, pero el bueno es el que uno no escoge — ese te escoge a ti.",
+      "Una vez llevé un pasajero al aeropuerto y terminamos en Petare. Él llegó tarde al vuelo, pero encontró a su hermano que tenía diez años sin ver. ¿Quién soy yo pa' discutir eso?",
+      "Na' guará ese olor a harina, hermano. Aquí la gente siempre está llegando con hambre de algo."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "brown",
+      "hair": "short",
+      "headwear": "cap",
+      "prop": "none"
+    },
+    "visualNote": "Young-adult mototaxista on a break: brown skin and short fade are typical of the working-class mestizo men who run mototaxi routes in the Los Dos Caminos corridor, a cap is near-universal rider headwear, and no prop signals he is at rest between fares — the magical shortcut lives in his knowledge, not an object."
+  },
+  {
+    "id": "dona-esperanza-los-cortijos",
+    "name": "Doña Esperanza",
+    "role": "Abuela vendedora de cambur",
+    "stationName": "Los Cortijos",
+    "lineID": "L1",
+    "paletteHex": "0xFFB84D",
+    "area": "petare",
+    "magicalRealism": "Lleva 40 años vendiendo cambures en el mismo andén, y cada persona que recibe uno sueña esa noche con el mar.",
+    "dialoguePool": [
+      "Toma, mijo, un camburito pa' el viaje. Hoy el Ávila amaneció con niebla en la cintura — eso significa que alguien necesita que lo cuiden.",
+      "¿Ese olor es harina de trigo? Na' guará, chamo, me recordaste a mi difunto que hacía cachitos los domingos. Dios lo tenga.",
+      "Llévate el cambur. Los de aquí saben diferente — tienen el sabor del río Guaire antes de que lo ensuciaran, cuando todavía cantaba."
+    ],
+    "visual": {
+      "build": "elder",
+      "skin": "brown",
+      "hair": "bun",
+      "headwear": "panuelo",
+      "prop": "basket"
+    },
+    "visualNote": "Afro-Venezuelan abuela archetype common in Petare market culture — gray hair wrapped in a pañuelo, basket of cambures, elder build; the pañuelo is practical sun and sweat protection for a woman who has stood on the same platform for 40 years."
+  },
+  {
+    "id": "marisol-la-california",
+    "name": "Marisol",
+    "role": "Profesora jubilada que espera un tren que pasó en 1998",
+    "stationName": "La California",
+    "lineID": "L1",
+    "paletteHex": "0xFF8C69",
+    "area": "petare",
+    "magicalRealism": "Espera en el andén un tren que pasó en 1998 llevándose a su hijo a Maiquetía; a veces el tren regresa vacío y ella le deja una arepa en el banco.",
+    "dialoguePool": [
+      "¿Tú viste pasar un tren sin pasajeros ahorita? Era el de las 3:47. A veces pasa, a veces no. Uno aprende a esperar.",
+      "Mi muchacho se fue por ese tren pa' Madrid. Me dijo que volvía en diciembre. Eso fue varios diciembres atrás, chama.",
+      "Tú cargas mucho peso, mijo. Hay pesos que no se ven y esos son los que doblan la espalda de verdad."
+    ],
+    "visual": {
+      "build": "elder",
+      "skin": "medium",
+      "hair": "gray",
+      "headwear": "none",
+      "prop": "book"
+    },
+    "visualNote": "Retired teacher from the lower-middle-class stratum of east Caracas — medium mestiza skin, gray hair worn loose signaling age and a certain dignified stillness, book prop anchors her professor identity and the patient, scholarly quality of someone who waits and remembers."
+  },
+  {
+    "id": "luisito-petare",
+    "name": "Luisito",
+    "role": "Niño cromos-trader del barrio",
+    "stationName": "Petare",
+    "lineID": "L1",
+    "paletteHex": "0xFFD700",
+    "area": "petare",
+    "magicalRealism": "Tiene un cromo del álbum del Mundial 86 que nadie le ha podido pagar — cuando lo saca, huele a lluvia y a pólvora de volcador, y los adultos lloran sin saber por qué.",
+    "dialoguePool": [
+      "¡Épale, señor! ¿Tienes cromos repetidos? Yo tengo to' el álbum menos el cromo de Maradona — bueno, lo tengo, pero ese no lo cambio ni por na'.",
+      "Mira este cromo, chamo. Mi abuelo dice que tiene un espíritu adentro. Cuando lo enseño, la gente se pone rara. ¿Tú lo ves?",
+      "¿Eres el que vende pan en Los Jardines? Mi mamá dice que tu focaccia sabe a Italia pero huele a Venezuela. Eso es lo más fino que he escuchado."
+    ],
+    "visual": {
+      "build": "child",
+      "skin": "brown",
+      "hair": "short",
+      "headwear": "cap",
+      "prop": "newspaper"
+    },
+    "visualNote": "Barrio kid from Petare's cerro streets — brown skin reflects the mestizo-Afrovenezolano majority of the zone, close-cropped fade, baseball cap worn low like every teenage boy on the metro; newspaper stands in for the dog-eared paper cromo album he guards like a relic."
+  },
+  {
+    "id": "remigio-palo-verde",
+    "name": "Remigio",
+    "role": "Hombre que lleva 12 años esperando que terminen el Metrocable",
+    "stationName": "Palo Verde",
+    "lineID": "L1",
+    "paletteHex": "0xFF6B35",
+    "area": "petare",
+    "magicalRealism": "Ha esperado 12 años en el andén de Palo Verde a que terminen el Metrocable Mariche; en las noches de tormenta, las góndolas inconclusas se balancean solas y desde arriba se escucha silbar al Silbón.",
+    "dialoguePool": [
+      "La línea la prometieron cuando nació mi hija. Ella ya tiene quince años. Pero yo tengo fe — la fe es lo único que no está en construcción aquí.",
+      "¿Ves esas góndolas arriba? Ayer en la madrugada se movieron solas. No había viento. Aquí en Petare uno aprende que to' tiene su ánima, hasta las obras sin terminar.",
+      "Cuidado con la escalera del callejón Miramar — anoche cambió de lugar otra vez y nadie sabe pa' dónde queda ahora."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "dark",
+      "hair": "short",
+      "headwear": "cap",
+      "prop": "wrench"
+    },
+    "visualNote": "Working-class Afro-Venezuelan man at the Metrocable terminal — dark skin honest to the significant Afro-Venezuelan presence in Petare's popular classes, cap for the exposed hilltop station, wrench signals the unfinished infrastructure he has haunted for 12 years and the mechanical limbo of the stalled gondolas."
+  },
+  {
+    "id": "propatria-dona-mireya",
+    "name": "Doña Mireya",
+    "role": "Vendedora de empanadas",
+    "stationName": "Propatria",
+    "lineID": "L1",
+    "paletteHex": "0xFFA040",
+    "area": "oeste",
+    "magicalRealism": "Amasa sus empanadas con harina mezclada con una pizca de tierra del Ávila — dice que eso les da sabor y protege al que las come en el camino.",
+    "dialoguePool": [
+      "Llevo cuarenta años aquí, chama. Propatria huele a aceite caliente y a promesas. Cómprate una empanada.",
+      "Ese hombre con la harina… na' guará, me recuerda a mi papá. Él también cargaba peso to' el día y llegaba a casa silbando.",
+      "Yo le echo tierra del Ávila a la masa. No me preguntes por qué. La gente llega sana a donde va. Eso es to'."
+    ],
+    "visual": {
+      "build": "heavy",
+      "skin": "brown",
+      "hair": "bun",
+      "headwear": "panuelo",
+      "prop": "basket"
+    },
+    "visualNote": "A heavy-set middle-aged empanada vendor with hair tied back under a pañuelo and a basket of goods — the classic western-barrio food seller silhouette, brown-skinned mestiza, apron implied by the trade."
+  },
+  {
+    "id": "perez-bonalde-nino-edgar",
+    "name": "Edgarcito",
+    "role": "Niño que espera a su abuela",
+    "stationName": "Pérez Bonalde",
+    "lineID": "L1",
+    "paletteHex": "0xFFD580",
+    "area": "oeste",
+    "magicalRealism": "Ve a los muertos que viajan en el metro, pero no los llama muertos — dice que son \"los que se quedaron sin bajarse\".",
+    "dialoguePool": [
+      "¿Tú ves al señor con el sombrero de cogollo? Ese no se baja nunca. Ya lleva como tres vueltas.",
+      "Mi abuela dice que son ánimas. Yo les digo los pasajeros fijos. No hacen nada malo, ¿ve?"
+    ],
+    "visual": {
+      "build": "child",
+      "skin": "medium",
+      "hair": "short",
+      "headwear": "none",
+      "prop": "none"
+    },
+    "visualNote": "A waiting schoolboy in plain clothes — medium-skinned, short-haired, no prop because he is simply sitting still watching the dead ride past; his stillness is the tell."
+  },
+  {
+    "id": "plaza-sucre-don-temistocles",
+    "name": "Don Temístocles",
+    "role": "Lustrador de zapatos",
+    "stationName": "Plaza Sucre",
+    "lineID": "L1",
+    "paletteHex": "0xC8843A",
+    "area": "oeste",
+    "magicalRealism": "Pule zapatos con un trapo heredado de su abuelo que, según él, borra no solo el polvo sino la mala suerte pegada a los pies.",
+    "dialoguePool": [
+      "Épale, vale. Un lustrado y llegas a donde vayas con el pie derecho. Literalmente, chamo.",
+      "Este trapo es del año de Bolívar. Mi abuelo lo usó en La Victoria. Yo no sé si creerle, pero los zapatos quedan finos."
+    ],
+    "visual": {
+      "build": "elder",
+      "skin": "dark",
+      "hair": "gray",
+      "headwear": "cap",
+      "prop": "shoeBrush"
+    },
+    "visualNote": "An elderly dark-skinned lustrabotas with a worn cap and his inherited brush — Afro-Venezuelan heritage common in the traditional popular classes of Caracas centro, gray hair marking his age."
+  },
+  {
+    "id": "gato-negro-consuelo",
+    "name": "Consuelo",
+    "role": "Mujer que lee el periódico viejo",
+    "stationName": "Gato Negro",
+    "lineID": "L1",
+    "paletteHex": "0xE8A87C",
+    "area": "oeste",
+    "magicalRealism": "Lee el mismo periódico de 1983 todos los días; cada vez encuentra noticias distintas — dice que los periódicos viejos siguen creciendo.",
+    "dialoguePool": [
+      "Mira esto… dice que van a construir el metro hasta Guarenas. Eso lo leí en el '83 y aquí sigo leyéndolo, chamo.",
+      "Los periódicos viejos no mienten. Cambian, pero no mienten. Es diferente, ¿entiendes, pana?"
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "light",
+      "hair": "long",
+      "headwear": "none",
+      "prop": "newspaper"
+    },
+    "visualNote": "A lighter-skinned woman of indeterminate era holding a newspaper from 1983 — long loose hair and no headwear give her a slightly out-of-time quality that matches the magical-realism premise."
+  },
+  {
+    "id": "agua-salud-profesor-gilberto",
+    "name": "Profesor Gilberto",
+    "role": "Maestro jubilado",
+    "stationName": "Agua Salud",
+    "lineID": "L1",
+    "paletteHex": "0xFFB86A",
+    "area": "centro",
+    "magicalRealism": "Carga un borrador de pizarrón que, al frotarlo en el aire, hace desaparecer por unos segundos el ruido del metro y se oye solo la brisa del Ávila.",
+    "dialoguePool": [
+      "Treinta y dos años enseñando matemáticas aquí en el oeste. Lo que más recuerdan los chamos no es la tabla del nueve, sino que yo les decía: esto también pasará.",
+      "¿Oíste eso? Frotas el borrador y el metro se calla. Solo dura un momento, pero vale la pena, mijo.",
+      "La educación y el metro tienen lo mismo: to' el mundo entra igual. Eso nunca me dejó de parecer hermoso."
+    ],
+    "visual": {
+      "build": "elder",
+      "skin": "brown",
+      "hair": "gray",
+      "headwear": "none",
+      "prop": "book"
+    },
+    "visualNote": "Retired teacher carrying the tools of his trade; brown skin and gray hair match the older mestizo male demographic who sit on benches and move slowly through the metro corridors of L1; book stands in for his chalk-eraser magic."
+  },
+  {
+    "id": "sonero-silencio",
+    "name": "Gastón 'El Gato' Montilla",
+    "role": "Músico callejero de salsa brava",
+    "stationName": "El Silencio",
+    "lineID": "L2",
+    "paletteHex": "0xE8A020",
+    "area": "centro",
+    "magicalRealism": "Cuando toca en la estación, el silencio que da nombre al lugar desaparece completamente por exactamente tres minutos — los mismos tres minutos de 'Llorarás' de Oscar D'León.",
+    "dialoguePool": [
+      "Épale, este sitio se llama El Silencio pero conmigo aquí no hay silencio que aguante, vale.",
+      "¿Ves esa señora que baila sola en el andén? Lleva viniendo desde los ochenta. Dice que es el mismo cantante. Yo no pregunto más.",
+      "La salsa no cura, pana, pero hace que el dolor se mueva. Y eso es bastante."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "dark",
+      "hair": "curly",
+      "headwear": "cap",
+      "prop": "guitar"
+    },
+    "visualNote": "Street salsa musician at El Silencio station; dark skin, curly hair, and a cap fit the young Afro-Venezuelan popular-music performer; guitar substitutes for percussion-forward salsa instrumentation visible on any El Silencio andén."
+  },
+  {
+    "id": "hermana-capuchina-capuchinos",
+    "name": "Hermana Dolores de la Providencia",
+    "role": "Monja que vigila el andén como si fuera la nave de su convento",
+    "stationName": "Capuchinos",
+    "lineID": "L2",
+    "paletteHex": "0xC8A882",
+    "area": "centro",
+    "magicalRealism": "Reza en el andén por los viajeros que pasaron y no volvieron, y de vez en cuando uno de ellos le toca el hombro levemente para darle las gracias — ella simplemente asiente.",
+    "dialoguePool": [
+      "Dios te guarde, mijo. Esta estación tiene muchas almas de paso. Yo las cuento pa' que no se pierdan.",
+      "¿Vas lejos? Lleva cuidado en La Hoyada que está feo el asunto hoy. Eso me lo dijeron esta mañana. No preguntes quién.",
+      "El capuchino es un fraile que viaja liviano. Por algo esta estación lleva ese nombre, ¿no te parece?"
+    ],
+    "visual": {
+      "build": "elder",
+      "skin": "medium",
+      "hair": "bun",
+      "headwear": "veil",
+      "prop": "candle"
+    },
+    "visualNote": "Capuchin nun keeping vigil on the Capuchinos platform; veil is the correct habit marker; candle captures her devotional role and the ghost-touching magic; elder build and medium skin reflect older mestizo religious women."
+  },
+  {
+    "id": "partera-maternidad",
+    "name": "Eloísa Troconis",
+    "role": "Partera retirada de la Maternidad Concepción Palacios",
+    "stationName": "Maternidad",
+    "lineID": "L2",
+    "paletteHex": "0xFFD0A0",
+    "area": "oeste",
+    "magicalRealism": "Ayudó a nacer a más de dos mil venezolanos; puede oler cuándo alguien que pasa nació en esa maternidad, y siempre acierta.",
+    "dialoguePool": [
+      "Tú naciste acá arriba, ¿verdad? Hueles a talco de la Maternidad. Uno nunca pierde ese olor, chamo.",
+      "Yo traje al mundo a los hijos de esta ciudad cuarenta años. Ahora la ciudad se va pero los hijos quedan.",
+      "Na' guará, parí un bebé en 1973 que hoy debe tener cincuenta y tantos. A veces pienso que me lo cruzo en el metro y no lo sé."
+    ],
+    "visual": {
+      "build": "elder",
+      "skin": "medium",
+      "hair": "bun",
+      "headwear": "none",
+      "prop": "none"
+    },
+    "visualNote": "A retired midwife — elder build, medium mestiza skin, tidy bun, no prop because her power is entirely in her nose; the quiet dignity of a woman who helped birth two thousand Venezuelans."
+  },
+  {
+    "id": "artigas-gladys",
+    "name": "Gladys",
+    "role": "Señora con paloma en el hombro",
+    "stationName": "Artigas",
+    "lineID": "L2",
+    "paletteHex": "0xF0C8A0",
+    "area": "oeste",
+    "magicalRealism": "Su paloma susurra al oído de Gladys los destinos de los pasajeros; ella nunca los dice en voz alta, solo sonríe.",
+    "dialoguePool": [
+      "No te asustes del pájaro, chama. Él sabe a dónde vas mejor que tú. Yo no te digo, pero él sí sabe.",
+      "Épale. ¿Ese olor es a pan? Ay, mijo, eso me llena el alma. Igual que a mi Celestino que ya no está."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "brown",
+      "hair": "curly",
+      "headwear": "none",
+      "prop": "bird"
+    },
+    "visualNote": "A brown-skinned adult woman with natural curly hair and a dove on her shoulder — the bird prop is the literal premise; curly hair reflects Afro-Venezuelan mestiza phenotype common in these western barrios."
+  },
+  {
+    "id": "la-paz-roberto",
+    "name": "Roberto",
+    "role": "Técnico de aire acondicionado fuera de servicio",
+    "stationName": "La Paz",
+    "lineID": "L2",
+    "paletteHex": "0xD4A870",
+    "area": "oeste",
+    "magicalRealism": "Repara equipos sin herramientas — pone la mano sobre el motor y lo escucha hasta que el aparato mismo le dice qué tiene.",
+    "dialoguePool": [
+      "Na' guará, el metro de aquí arriba vibra distinto. En el viaducto el tren le habla a las lomas. Yo lo escucho.",
+      "Yo arreglo neveras con la mano nomás. La gente cree que es mecánica. Yo sé que es otra cosa. Pero bueno."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "medium",
+      "hair": "short",
+      "headwear": "cap",
+      "prop": "wrench"
+    },
+    "visualNote": "A medium-skinned adult AC technician in a cap carrying a wrench — working-class western Caracas male dress, the wrench the symbol of a trade practiced by feel rather than instrument."
+  },
+  {
+    "id": "la-yaguara-yaguara-medium",
+    "name": "Belkis la Correa",
+    "role": "Médium de la corte de María Lionza",
+    "stationName": "La Yaguara",
+    "lineID": "L2",
+    "paletteHex": "0xB87FD4",
+    "area": "oeste",
+    "magicalRealism": "Entra en trance entre La Yaguara y Carapita; en esos cinco minutos habla con la voz de Negro Felipe y con los ojos cerrados ve Sorte completo.",
+    "dialoguePool": [
+      "La Yaguara… ¿sabes que yaguara es jaguar en caribe? Aquí el jaguar camina debajo del viaducto to'as las noches. Yo lo he visto.",
+      "Cuando el tren arranca pa' Carapita, cierra los ojos. Las Tres Potencias pasan. No hablo yo en ese momento — habla Negro Felipe. Tranquilo, que no muerde.",
+      "María Lionza no está en Sorte solamente, chamo. Está donde el río se mete bajo el cemento. Aquí mismo."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "dark",
+      "hair": "long",
+      "headwear": "scarf",
+      "prop": "candle"
+    },
+    "visualNote": "A dark-skinned médium of the María Lionza court with long hair and a ritual scarf, holding a candle — the Afro-Venezuelan-Indigenous syncretic cult has deep roots in western Caracas; the candle signals her spiritual commerce."
+  },
+  {
+    "id": "carapita-abuelo-nestorino",
+    "name": "Néstorino",
+    "role": "Viejo pescador sin mar",
+    "stationName": "Carapita",
+    "lineID": "L2",
+    "paletteHex": "0x5BA88A",
+    "area": "oeste",
+    "magicalRealism": "Pesca desde el borde del andén con un cordel sin anzuelo; a veces saca recuerdos: fotos, cartas, un zapato de niño.",
+    "dialoguePool": [
+      "Vine del Litoral en el '72 y el mar se quedó allá. Pero algo queda debajo de to' esta ciudad. Lo jalo con el cordel y aparece.",
+      "Hoy saqué una foto de una quinceañera que no conozco. Arrugada, pero ella sale sonriendo. Eso me alegró el día, pana."
+    ],
+    "visual": {
+      "build": "elder",
+      "skin": "brown",
+      "hair": "gray",
+      "headwear": "sombrero",
+      "prop": "none"
+    },
+    "visualNote": "An old brown-skinned fisherman from the interior or coast, now landlocked in Carapita, wearing a worn sombrero — the cordel is invisible by design; the sombrero marks a man whose working life was outdoors, not in the city."
+  },
+  {
+    "id": "antimano-senora-petra",
+    "name": "Petra Villamizar",
+    "role": "Rezandera y vendedora de velas",
+    "stationName": "Antímano",
+    "lineID": "L2",
+    "paletteHex": "0xF5A623",
+    "area": "oeste",
+    "magicalRealism": "Sus velas nunca se apagan aunque no tengan cera — arden hasta que quien las encargó llega sano a su destino.",
+    "dialoguePool": [
+      "Una velita pa' la Ánima Sola, mija. No te cuesta nada y ella te acompaña hasta Zoológico sin que te pase nada.",
+      "Antímano tiene mucho santo y mucho ánima. Uno convive, ¿qué más va a hacer? Na' guará.",
+      "¿Ese es pan lo que huelo? Ay, llévame una marraqueta pa' casa que tengo tres muchachos con hambre."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "brown",
+      "hair": "bun",
+      "headwear": "none",
+      "prop": "candle"
+    },
+    "visualNote": "A brown-skinned rezandera and candle vendor with her hair in a practical bun, candle in hand — the votive-candle trade is deeply associated with popular Catholicism and folk-religious practice in Antímano."
+  },
+  {
+    "id": "mamera-chico-karate",
+    "name": "Franklyn \"Mamera\"",
+    "role": "Entrenador de karate informal",
+    "stationName": "Mamera",
+    "lineID": "L2",
+    "paletteHex": "0xFF8C42",
+    "area": "oeste",
+    "magicalRealism": "Enseña patadas en el andén; sus alumnos no lo golpean a él — sus golpes atraviesan el aire y se oye un eco que viene de las lomas como respuesta.",
+    "dialoguePool": [
+      "Épale, chamo. ¿Ves ese eco? Es el cerro contestando. Mamera siempre contestó. Por eso le pusieron así al barrio.",
+      "Yo sé que no es el sitio pa' karate. Pero, ¿tú sabes cuántos chamos se metieron en vainas porque no tenían dónde ir? Aquí tienen."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "dark",
+      "hair": "short",
+      "headwear": "none",
+      "prop": "none"
+    },
+    "visualNote": "A dark-skinned adult man with a close-cropped fade, no prop and no headwear — his body is the instrument; the informal karate instructor in a barrio andén needs nothing but space and presence."
+  },
+  {
+    "id": "caricuao-dona-xuxa",
+    "name": "Xuxa Marcano",
+    "role": "Ama de casa de los superbloques",
+    "stationName": "Caricuao",
+    "lineID": "L2",
+    "paletteHex": "0xE87070",
+    "area": "oeste",
+    "magicalRealism": "Cose ropa en el andén mientras espera; cada prenda que cose tiene el tamaño exacto que el destinatario necesitará en el futuro, aunque aún no lo sepa.",
+    "dialoguePool": [
+      "Este pantalón no es pa' mi hijo ahora. Es pa' cuando crezca. Yo sé cuánto va a medir. ¿Cómo lo sé? Coño, ni idea, pero siempre le queda.",
+      "Los superbloques se ven feos de lejos pero por dentro hay de to'. Bodas, velorios, cumpleaños de quince, to' en el mismo edificio. Eso es Caracas, mijo."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "medium",
+      "hair": "long",
+      "headwear": "none",
+      "prop": "basket"
+    },
+    "visualNote": "A medium-skinned adult woman from the Caricuao superbloques with long hair, using a basket to hold her sewing supplies and fabric — the basket doubles as the seamstress's work-kit in the absence of a sewing-machine prop."
+  },
+  {
+    "id": "zoologico-yara",
+    "name": "Yara",
+    "role": "Cuidadora del zoológico",
+    "stationName": "Zoológico",
+    "lineID": "L2",
+    "paletteHex": "0x6DBF67",
+    "area": "oeste",
+    "magicalRealism": "Yara — nombre indígena de María Lionza — cuida animales que actúan como oráculos: el loro sabe los horarios, el caimán predice la lluvia, los monos lloran la noche antes de una muerte lejana.",
+    "dialoguePool": [
+      "El loro dice que el próximo tren llega en cuatro minutos. Y lleva razón, chamo. Lleva razón desde el '92.",
+      "Los monos lloraron anoche. Alguien en otro país perdió a alguien. Eso pasa. Uno lo siente acá y no sabe por qué.",
+      "Yara me llamo. Mi abuela me dijo que ese nombre carga agua y montaña. Aquí entre los árboles y los animales, le creo."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "brown",
+      "hair": "long",
+      "headwear": "feathers",
+      "prop": "bird"
+    },
+    "visualNote": "A brown-skinned adult zookeeper whose name echoes María Lionza; feathers as headwear signal her Indigenous-mythic resonance, and the bird prop ties her to the oracular parrot that knows the metro timetable."
+  },
+  {
+    "id": "ruiz-pineda-lucho",
+    "name": "Lucho el Flaco",
+    "role": "Mecánico de bicicletas sin bicicleta",
+    "stationName": "Ruiz Pineda",
+    "lineID": "L2",
+    "paletteHex": "0xFFA558",
+    "area": "oeste",
+    "magicalRealism": "Arregla bicicletas imaginarias con herramientas reales; los ciclistas que pasan por el barrio después notan que sus llantas están perfectas sin haberlas llevado a taller.",
+    "dialoguePool": [
+      "Yo reparo la bicicleta tuya aunque no la traigas. Tú no entiendes cómo, pero funciona. Yo tampoco entiendo bien, la verdad.",
+      "Ruiz Pineda. El comandante. Por acá caminó gente brava. Uno lo siente en el piso, chamo."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "medium",
+      "hair": "short",
+      "headwear": "cap",
+      "prop": "wrench"
+    },
+    "visualNote": "A lean medium-skinned young mechanic with a cap and wrench — the wrench he uses on invisible bicycles; his casual western-barrio look (cap, short hair) is straight from the street research."
+  },
+  {
+    "id": "las-adjuntas-senor-transbordo",
+    "name": "Señor Transbordo",
+    "role": "Hombre que lleva cuarenta años esperando el Metro Los Teques",
+    "stationName": "Las Adjuntas",
+    "lineID": "L2",
+    "paletteHex": "0xC0A0D8",
+    "area": "oeste",
+    "magicalRealism": "Lleva décadas en el andén de transbordo esperando un tren que, según él, ya viene — y cada tanto se oye un silbido desde el túnel, aunque el tren no llega nunca.",
+    "dialoguePool": [
+      "El Metro Los Teques llega, chamo. Siempre llega. Solo que toma su tiempo. Venezuela es así — en construcción, pero llega.",
+      "¿Oíste ese silbido? Es el tren avisando. Aquí en Las Adjuntas aprendemos a esperar con dignidad.",
+      "Cuarenta años esperando y no me aburro. La gente que pasa me cuenta to'a la vida. Eso es mejor que cualquier destino, vale."
+    ],
+    "visual": {
+      "build": "elder",
+      "skin": "light",
+      "hair": "gray",
+      "headwear": "none",
+      "prop": "sack"
+    },
+    "visualNote": "An elder lighter-skinned man with gray hair who has been at the transbordo platform for forty years, carrying a worn sack of belongings — his patient, haunted stillness reads through the aged build and the sack that never gets unpacked."
+  },
+  {
+    "id": "don-candilejas-teatros",
+    "name": "Celestino Arriechi",
+    "role": "Ujier fantasma del Teatro Municipal",
+    "stationName": "Teatros",
+    "lineID": "L4",
+    "paletteHex": "0xFFE066",
+    "area": "centro",
+    "magicalRealism": "Murió en el entreacto de una ópera de 1958 y sigue acomodando a los espectadores en su función eterna — aunque el teatro lleva años cerrado.",
+    "dialoguePool": [
+      "Bienvenido, señor. Su butaca es la doce, fila C. La función empieza en cinco minutos. Siempre empieza en cinco minutos.",
+      "Perdone el desorden, vale. El incendio fue hace años pero yo todavía estoy buscando los programas de mano.",
+      "¿Usted conoce La Traviata? Esta noche la cantan bien. Esta noche siempre la cantan bien."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "brown",
+      "hair": "short",
+      "headwear": "none",
+      "prop": "tickets"
+    },
+    "visualNote": "Ghost usher of the 1958 Teatro Municipal still handing out tickets in the Teatros station; brown skin matches the working-class theater staff of mid-century Caracas; tickets are the emblem of his eternal function."
+  },
+  {
+    "id": "domador-nuevo-circo",
+    "name": "Ernesto 'Tigre' Bracho",
+    "role": "Ex domador del Nuevo Circo de Caracas",
+    "stationName": "Nuevo Circo",
+    "lineID": "L4",
+    "paletteHex": "0xFF6B35",
+    "area": "centro",
+    "magicalRealism": "El circo cerró en 1977 pero a él todavía le siguen los leones — invisibles, inofensivos, perfectamente domésticos — a donde va.",
+    "dialoguePool": [
+      "No te asustes si sientes algo tibio al lado tuyo. Son los leones. Son viejitos ya, no muerden, pana.",
+      "El circo fue lo más grande que tuvo Caracas. Ahí cabía to'a la ciudad y cabía contenta. Qué molleja.",
+      "El último tigre murió en el setenta y ocho. Pero no se fue. Eso te lo digo yo que lo sé."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "medium",
+      "hair": "short",
+      "headwear": "sombrero",
+      "prop": "none"
+    },
+    "visualNote": "Retired circus lion-tamer haunting the Nuevo Circo ruins; sombrero gives him the showman authority of a ring performer from the 1970s Venezuelan circus; empty hands suggest the invisible big cats that trail him."
+  },
+  {
+    "id": "vigilante-parque-central",
+    "name": "Wilmer Ochoa",
+    "role": "Vigilante nocturno de las Torres de Parque Central",
+    "stationName": "Parque Central",
+    "lineID": "L4",
+    "paletteHex": "0xFFB870",
+    "area": "centro",
+    "magicalRealism": "Vigila las Torres desde antes del incendio del 2004; en las noches ve los pisos quemados tal como eran antes — con gente adentro, reuniones, niños corriendo — y anota todo en una libreta para no olvidar lo que el fuego borró.",
+    "dialoguePool": [
+      "¿Ves el piso treinta y cuatro? El incendio lo dejó negro. Pero de noche, a veces, prende la luz. Arrecho, ¿no?",
+      "Estas torres iban a ser el futuro, chamo. Las más altas de América Latina. El futuro se quemó un poco pero sigue parado.",
+      "Llevo la libreta pa' que alguien recuerde. Si no escribo yo, ¿quién escribe?"
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "brown",
+      "hair": "short",
+      "headwear": "none",
+      "prop": "book"
+    },
+    "visualNote": "Night watchman of the fire-scarred Parque Central towers who chronicles the vanished tenants; brown skin and plain adult build fit the security-guard stratum of working-class Caracas; book is the ledger in which he records what the blaze erased."
+  },
+  {
+    "id": "professora-remedios-ucv",
+    "name": "Profesora Remedios Altamirano",
+    "role": "Profesora jubilada de arquitectura, UCV",
+    "stationName": "Ciudad Universitaria",
+    "lineID": "L3",
+    "paletteHex": "0xFFB84D",
+    "area": "sur",
+    "magicalRealism": "Los murales de Cruz-Diez cambian sus colores cuando la profesora pasa, reconociéndola después de cuarenta años de clases.",
+    "dialoguePool": [
+      "Ese Calder allá arriba — ¿ves cómo se mueve sin viento? Todavía está buscando estudiantes pa' su clase de las tres.",
+      "Villanueva diseñó to' esto pa' que la luz cambiara to' el día. Lo que no sabía es que la luz también lo iba a extrañar a él.",
+      "Mis alumnos se fueron, mijo. Pero los colores del corredor se acuerdan de sus nombres. Yo los oigo a veces."
+    ],
+    "visual": {
+      "build": "elder",
+      "skin": "medium",
+      "hair": "gray",
+      "headwear": "none",
+      "prop": "book"
+    },
+    "visualNote": "Retired UCV architecture professor: elder build, medium mestiza skin, gray hair worn loose — fitting a woman in her 60s–70s who spent decades in academia; she carries a book because her life is blueprints and theory, not tools."
+  },
+  {
+    "id": "chico-patineta-simbolos",
+    "name": "Kendry 'El Símbolo'",
+    "role": "Patinero, 17 años, mensajero informal",
+    "stationName": "Los Símbolos",
+    "lineID": "L3",
+    "paletteHex": "0xFF7043",
+    "area": "sur",
+    "magicalRealism": "Su patineta siempre lo lleva de regreso a Los Símbolos sin importar hacia dónde él empuje — el barrio no lo deja irse del todo.",
+    "dialoguePool": [
+      "Bro, llevo dos años tratando de llegar a Chacaíto en patineta. Siempre termino aquí. Ya ni peleo con eso.",
+      "Mi abuela dice que la estación se llama así por los espíritus que cuidan cada esquina del valle. Yo digo que es marketing del metro. Pero... na' guará, quién sabe."
+    ],
+    "visual": {
+      "build": "child",
+      "skin": "brown",
+      "hair": "short",
+      "headwear": "cap",
+      "prop": "none"
+    },
+    "visualNote": "17-year-old informal messenger skater: child build for a wiry teen, brown skin reflecting the Afro-mestizo majority of working-class Caracas youth, a backwards cap marks his street culture, no prop because the skateboard is his whole identity — the cap and build read instantly as barrio teen."
+  },
+  {
+    "id": "vieja-vendedora-bandera",
+    "name": "Doña Esperanza Briceño",
+    "role": "Vendedora de empanadas y lotería, La Bandera",
+    "stationName": "La Bandera",
+    "lineID": "L3",
+    "paletteHex": "0xFFCC80",
+    "area": "sur",
+    "magicalRealism": "Siempre le vende a cada pasajero exactamente el número de lotería que ese día más necesitaban, sin preguntarles nada.",
+    "dialoguePool": [
+      "¿Empanada de queso o de pabellón, mi amor? No, no me digas — yo ya sé. Tú hoy necesitas la de pabellón. Pa' el alma.",
+      "Este número, mijo: cuatro-siete-uno. No te voy a decir pa' qué. Tú ya lo sabes en el fondo.",
+      "Aquí to' el mundo pasa con prisa. Nadie llega a ningún lao' más rápido por eso, pero bueno — cada quien con su ladilla."
+    ],
+    "visual": {
+      "build": "heavy",
+      "skin": "dark",
+      "hair": "bun",
+      "headwear": "panuelo",
+      "prop": "basket"
+    },
+    "visualNote": "Empanada and lottery vendor at La Bandera: heavy build is common among middle-aged market women who stand all day; dark Afro-Venezuelan skin with hair in a tight bun under a headscarf (pañuelo) is authentic dress for female buhoneras in Caracas's popular markets; basket holds both empanadas and lottery tickets."
+  },
+  {
+    "id": "musico-el-valle",
+    "name": "Tío Ramoncito",
+    "role": "Músico de joropo, cuatro en mano",
+    "stationName": "El Valle",
+    "lineID": "L3",
+    "paletteHex": "0xFFA726",
+    "area": "sur",
+    "magicalRealism": "Su cuatro lleva veinte años desafinado, pero el joropo que toca suena perfecto — y a veces los muertos del metro se detienen a escuchar.",
+    "dialoguePool": [
+      "Este cuatro no afina desde el noventa y ocho. Le digo a la gente que es el instrumento. Pero entre tú y yo, soy yo el que afina raro.",
+      "¿Ese olor es focaccia, vale? Na' guará. En este metro yo he olido hallacas, pernil, hasta un sancocho completo una vez. To' el sur de Caracas viaja con hambre."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "brown",
+      "hair": "short",
+      "headwear": "none",
+      "prop": "cuatro"
+    },
+    "visualNote": "Joropo musician playing a cuatro: adult build, brown mestizo skin, short hair — the classic look of a llanero-heritage street musician in Caracas; the cuatro is the defining prop, directly matching his role and Venezuela's national musical identity."
+  },
+  {
+    "id": "abuela-jardines",
+    "name": "Abuela Teresita Pugliese-Montoya",
+    "role": "Abuela del barrio, Los Jardines del Valle",
+    "stationName": "Los Jardines",
+    "lineID": "L3",
+    "paletteHex": "0xFFD54F",
+    "area": "sur",
+    "magicalRealism": "Huele la focaccia de Salvo desde tres estaciones de distancia y ya lo está esperando en el andén con una taza de café negro.",
+    "dialoguePool": [
+      "Chamo, ya sabía que venías. Ese pan tuyo huele hasta El Valle, te lo juro. Siéntate, tengo café.",
+      "Tu abuelo italiano también olía así — a harina y a mantequilla y a algo que no tiene nombre. Bienvenido a casa, mijo.",
+      "Los Jardines son los Jardines. Uno se va, pero esto te jala de vuelta. Como el cuatro de Ramoncito, pero con más olor a comida."
+    ],
+    "visual": {
+      "build": "elder",
+      "skin": "light",
+      "hair": "gray",
+      "headwear": "none",
+      "prop": "candle"
+    },
+    "visualNote": "Barrio grandmother of Italian-Venezuelan descent (surname Pugliese): elder build, light skin reflecting her European immigrant lineage common in working-class Caracas families, gray hair; she waits on the platform with warmth — a candle suits her vigil-like magical quality of sensing arrivals from afar."
+  },
+  {
+    "id": "fantasma-obrero-coche",
+    "name": "El Obrero Heliodoro",
+    "role": "Fantasma de obrero de la construcción del metro",
+    "stationName": "Coche",
+    "lineID": "L3",
+    "paletteHex": "0xC8B08A",
+    "area": "sur",
+    "magicalRealism": "Murió en 1983 construyendo el metro y sigue esperando en el andén a que llegue la Línea 5, que todavía — cuarenta años después — está 'en construcción'.",
+    "dialoguePool": [
+      "Épale. ¿Ya llegó la Línea 5? ... No, vale, ya sé. Pregunto to' los días igual.",
+      "Empezamos a construirla cuando Caracas era otra cosa. Aquí sigo yo, y aquí sigue ella — en construcción los dos.",
+      "Qué molleja de espera, chamo. Pero bueno. Pa' un muerto, el tiempo es pa' otro lado."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "dark",
+      "hair": "short",
+      "headwear": "hardhat",
+      "prop": "wrench"
+    },
+    "visualNote": "Ghost of a 1983 metro construction worker: adult build, dark Afro-Venezuelan skin (construction labor in Caracas drew heavily from Afro-Venezuelan and popular-class workers), hardhat and wrench are the literal trade markers that he died wearing and still wears forty years later on the platform."
+  },
+  {
+    "id": "yara-mercado",
+    "name": "Yara Sequera",
+    "role": "Vendedora de hierbas y santería, el Mercado",
+    "stationName": "Mercado",
+    "lineID": "L3",
+    "paletteHex": "0xA5D6A7",
+    "area": "sur",
+    "magicalRealism": "Las hierbas que vende Yara se reorganizan solas durante la noche para que al día siguiente cada cliente encuentre primero lo que más necesita.",
+    "dialoguePool": [
+      "No, no — agarra esa ruda, no la albahaca. La ruda es pa' lo que traes encima, aunque tú no sepas todavía qué es.",
+      "María Lionza manda saludos, mija. Las guacamayas pasaron esta mañana por encima del mercado — eso me basta.",
+      "¿Ese es olor a pan? Mijo, aquí huele a ajo, a pollo vivo y a copal. Tú sí que chocas bien en este mercado, chamo."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "brown",
+      "hair": "curly",
+      "headwear": "panuelo",
+      "prop": "basket"
+    },
+    "visualNote": "Herb and santería vendor at the Mercado: adult build, brown skin with curly hair — typical of Afro-mestiza women who dominate popular-market spirituality trades in Caracas; the pañuelo on her head signals ritual knowledge and protection; the basket holds her reorganizing herbs."
+  },
+  {
+    "id": "apostador-rinconada",
+    "name": "Lisandro Pimentel",
+    "role": "Apostador fantasma del Hipódromo La Rinconada",
+    "stationName": "La Rinconada",
+    "lineID": "L3",
+    "paletteHex": "0xCE93D8",
+    "area": "sur",
+    "magicalRealism": "Murió apostando en 1971 y sigue dando tips ganadores en el andén — pero solo a personas que ya no necesitan el dinero.",
+    "dialoguePool": [
+      "Oye, anota esto: en la quinta carrera, el número siete. No me preguntes de dónde lo sé. Llevo muerto cincuenta años y to'avía no me han fallado los caballos.",
+      "La Rinconada es lo más hermoso que tiene Caracas y nadie habla de eso. Mármol, curvas, luz. Una lástima que yo me la pasara mirando pa' la pista y no pa' arriba.",
+      "Tú no apuestas, ¿verdad, chamo? Se te nota. Está bien. Los que no apuestan son los únicos que salen de aquí con algo."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "medium",
+      "hair": "bald",
+      "headwear": "sombrero",
+      "prop": "newspaper"
+    },
+    "visualNote": "Ghost gambler from La Rinconada's 1971 heyday: adult build, medium mestizo skin, bald with a sombrero — the hat anchors him visually in an older era when racetrack men dressed up; the newspaper doubles as a racing form, the classic prop of a tipster who reads results no one else can see."
+  },
+  {
+    "id": "poeta-sabana-grande",
+    "name": "Ernesto Oquendo",
+    "role": "Poeta de café y residente eterno del bulevar",
+    "stationName": "Sabana Grande",
+    "lineID": "L1",
+    "paletteHex": "0xD4A574",
+    "area": "sabanagrande",
+    "magicalRealism": "Murió en 1987 en el Gran Café pero sigue apareciendo en el bulevar a recitar a Ramos Sucre; los domingos acepta café que no toca.",
+    "dialoguePool": [
+      "¿Ves ese banco allá? Ahí me senté con Caupolicán Ovalles a hablar hasta el amanecer. Eso fue... bueno, no sé cuándo fue. Hace mucho.",
+      "El bulevar huele a pan, chamo. Hasta los muertos se les hace agua la boca.",
+      "Caracas no se escribe, se respira. 'La ciudad que te parte siempre te vuelve a pegar.' Escribe eso en algún lado."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "light",
+      "hair": "long",
+      "headwear": "beret",
+      "prop": "newspaper"
+    },
+    "visualNote": "Ghost-poet of the Gran Cafe era: the beret marks him as an intellectual of 1970s-80s bulevar bohemia, long hair and a newspaper echo the cafe-tertulia culture of Sabana Grande; lighter skin places him in the mixed educated stratum that dominated that literary scene."
+  },
+  {
+    "id": "reinaldo-el-guardavias",
+    "name": "Reinaldo",
+    "role": "Guardavías jubilado (a medias)",
+    "stationName": "Zona Rental",
+    "lineID": "L5",
+    "paletteHex": "0xFFB84D",
+    "area": "sabanagrande",
+    "magicalRealism": "Ha estado esperando que llegue el tren de Las Mercedes desde 2006; su reloj se detuvo ese día y nunca lo mandó a arreglar.",
+    "dialoguePool": [
+      "Llevan dieciocho años diciéndome que el tren llega en seis meses. Pa' mí que 'seis meses' es un número mágico, como los de la lotería que nunca pegan.",
+      "Mi reloj paró el día que inauguraron esto. Lo llevo así de recuerdo — ¿pa' qué arreglarlo si la línea tampoco avanzó?",
+      "¿Ese olor es harina? Na' guará… hace tiempo no huelo algo que sí llegó a donde tenía que llegar."
+    ],
+    "visual": {
+      "build": "elder",
+      "skin": "brown",
+      "hair": "gray",
+      "headwear": "cap",
+      "prop": "none"
+    },
+    "visualNote": "Retired trackman frozen in 2006: brown-skinned elder in a worker's cap, no prop because his hands are empty — the train he waits for never came; the cap is the only remaining badge of a metro-infrastructure trade common among older working-class caraquenos."
+  },
+  {
+    "id": "yaritza-pasajera-fantasma",
+    "name": "Yaritza",
+    "role": "Pasajera que espera el tren a Chuao",
+    "stationName": "Bello Monte",
+    "lineID": "L5",
+    "paletteHex": "0xE8956D",
+    "area": "phantom",
+    "magicalRealism": "Cada mañana espera el tren que va a Chuao, una estación que todavía no existe, y nadie le ha dicho nunca que está en el lugar equivocado.",
+    "dialoguePool": [
+      "Chamo, ¿tú sabes a qué hora pasa el de Chuao? Tengo una entrevista a las nueve y no quiero llegar tarde con este calor.",
+      "To' el mundo me mira raro aquí. Yo sé que la estación no 'stá lista, pero el tren igual va a pasar — las cosas llegan aunque uno no las vea venir.",
+      "Qué molleja, huele a pan recién hecho. Si hubieran terminao la línea, habría una panadería en cada estación. Así era el plan, vale."
+    ],
+    "visual": {
+      "build": "adult",
+      "skin": "brown",
+      "hair": "bun",
+      "headwear": "none",
+      "prop": "tickets"
+    },
+    "visualNote": "A mestiza caraqueña in her twenties, hair pulled back for the commute like any working woman rushing through Centro — she holds transit tickets for a train that does not exist, her look indistinguishable from every other morning commuter on Line 1, which is exactly why no one has ever stopped to correct her."
+  }
+]
