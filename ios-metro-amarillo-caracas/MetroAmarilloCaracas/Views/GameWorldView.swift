@@ -12,6 +12,48 @@ struct GameWorldView: View {
 
     var body: some View {
         ZStack {
+            if phase == .ride {
+                ridingView
+            } else {
+                stationDiorama
+            }
+        }
+        .padding(8)
+        .background(Color(hex: 0x06101D))
+        .overlay {
+            Rectangle().stroke(Color.white.opacity(0.35), lineWidth: 4)
+        }
+        .shadow(color: Color.black.opacity(0.45), radius: 0, x: 7, y: 7)
+        .animation(.spring(response: 0.35, dampingFraction: 0.75), value: station.id)
+        .animation(.spring(response: 0.38, dampingFraction: 0.72), value: phase)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            phase == .ride
+            ? "Riding Línea \(line.number), the city passing the window, heading to \(station.name)"
+            : "Retro station view for \(station.name) on Línea \(line.number)"
+        )
+    }
+
+    // MARK: - Riding (first-person POV window)
+
+    private var ridingView: some View {
+        RidingTunnelView(resource: MetroArea.videoResource(forStationID: station.id))
+            .aspectRatio(9.0 / 16.0, contentMode: .fit)
+            .frame(maxWidth: .infinity)
+            .clipped()
+            .overlay(alignment: .top) {
+                stationSign
+            }
+            .overlay(alignment: .bottom) {
+                PlatformTickerView(line: line, station: station)
+                    .padding(.bottom, 8)
+            }
+    }
+
+    // MARK: - Station (third-person diorama)
+
+    private var stationDiorama: some View {
+        ZStack {
             LazyVGrid(columns: columns, spacing: 0) {
                 ForEach(tiles) { tile in
                     PixelTileView(coordinate: tile, station: station, line: line, phase: phase)
@@ -36,18 +78,8 @@ struct GameWorldView: View {
             }
 
             PixelPlayerView(direction: direction, accent: line.accent)
-                .offset(x: phase == .ride ? -6 : 18, y: phase == .ride ? -4 : 56)
+                .offset(x: 18, y: 56)
         }
-        .padding(8)
-        .background(Color(hex: 0x06101D))
-        .overlay {
-            Rectangle().stroke(Color.white.opacity(0.35), lineWidth: 4)
-        }
-        .shadow(color: Color.black.opacity(0.45), radius: 0, x: 7, y: 7)
-        .animation(.spring(response: 0.35, dampingFraction: 0.75), value: station.id)
-        .animation(.spring(response: 0.38, dampingFraction: 0.72), value: phase)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Retro station view for \(station.name) on Línea \(line.number)")
     }
 
     private var stationSign: some View {
@@ -85,7 +117,7 @@ private struct PlatformTickerView: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            ForEach(0..<min(line.stations.count, 14), id: \.self) { index in
+            ForEach(0..<line.stations.count, id: \.self) { index in
                 Rectangle()
                     .fill(index <= station.index ? line.accent : Color.white.opacity(0.22))
                     .frame(width: index == station.index ? 16 : 7, height: 5)

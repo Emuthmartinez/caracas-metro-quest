@@ -3,12 +3,13 @@ import Observation
 
 @Observable
 final class MetroGameViewModel {
-    var selectedLineID: String = "L1"
-    var stationIndexByLineID: [String: Int] = ["L1": 11, "L2": 0, "L3": 0, "L4": 0, "L5": 0]
+    var selectedLineID: String = Protagonist.homeLineID
+    var stationIndexByLineID: [String: Int] = ["L1": 0, "L2": 0, "L3": Protagonist.homeStationIndex, "L4": 0, "L5": 0]
     var phase: GamePhase = .station
     var playerDirection: PlayerDirection = .south
-    var dialogueOverride: String?
-    var visitedStationIDs: Set<String> = ["L1-Plaza Venezuela"]
+    var dialogueOverride: String? = Protagonist.intro
+    var visitedStationIDs: Set<String> = [Protagonist.homeStationID]
+    var npcLineIndex: [String: Int] = [:]
 
     var currentLine: MetroLine {
         MetroData.line(for: selectedLineID)
@@ -45,20 +46,26 @@ final class MetroGameViewModel {
         if let currentNPC {
             return "\(currentNPC.name): \"\(currentNPC.dialogue)\""
         }
+        if currentStation.id == Protagonist.homeStationID {
+            return Protagonist.homePlatformLine
+        }
         if currentStation.isTransfer {
             return "Transfer hub detected. Pick a color line and continue your route."
         }
-        return "You are at \(currentStation.name). Check the platform, talk to locals, or board the train."
+        return "Estás en \(currentStation.name). Revisa el andén, habla con la gente, o móntate en el tren."
     }
 
     func boardOrExitTrain() {
         dialogueOverride = nil
+        AudioManager.shared.playDoorChime()
         switch phase {
         case .station:
             phase = .ride
+            AudioManager.shared.enterRide(area: MetroArea.area(forStationID: currentStation.id).rawValue)
         case .ride:
             phase = .station
             visitedStationIDs.insert(currentStation.id)
+            AudioManager.shared.enterStation()
         }
     }
 
@@ -79,15 +86,20 @@ final class MetroGameViewModel {
         stationIndexByLineID[targetLine.id] = stationIndex
         phase = .station
         visitedStationIDs.insert(targetLine.stations[stationIndex].id)
-        dialogueOverride = "Switched to \(targetLine.displayName). The platform signs flicker in \(targetLine.number)-bit color."
+        AudioManager.shared.playLineBlip(line: Int(targetLine.number) ?? 1)
+        AudioManager.shared.enterStation()
+        dialogueOverride = "Cambiaste a \(targetLine.displayName). Los carteles del andén titilan en su color."
     }
 
     func talk() {
-        if let currentNPC {
-            dialogueOverride = "\(currentNPC.name): \"\(currentNPC.dialogue)\""
-        } else {
-            dialogueOverride = "A quiet rider points at the line map and nods toward the next train."
+        AudioManager.shared.playTalkBlip()
+        guard let npc = currentNPC, !npc.dialoguePool.isEmpty else {
+            dialogueOverride = "Un pasajero callado señala el mapa y mira hacia el próximo tren."
+            return
         }
+        let nextIndex = ((npcLineIndex[npc.id] ?? 0) + 1) % npc.dialoguePool.count
+        npcLineIndex[npc.id] = nextIndex
+        dialogueOverride = "\(npc.name): \"\(npc.dialoguePool[nextIndex])\""
     }
 
     func clearDialogue() {
@@ -104,7 +116,7 @@ final class MetroGameViewModel {
 
     private func travel(step: Int) {
         guard phase == .ride else {
-            dialogueOverride = "Board the train first. The doors blink yellow beside the platform."
+            dialogueOverride = "Móntate primero, chamo. Las puertas parpadean en amarillo al lado del andén."
             return
         }
 
@@ -112,7 +124,7 @@ final class MetroGameViewModel {
         let currentIndex: Int = stationIndexByLineID[line.id] ?? 0
         let nextIndex: Int = min(max(currentIndex + step, 0), line.stations.count - 1)
         guard nextIndex != currentIndex else {
-            dialogueOverride = step > 0 ? "End of the line. The driver waits for the return signal." : "This is the first stop on this route."
+            dialogueOverride = step > 0 ? "Fin de la línea. El conductor espera la señal de regreso." : "Esta es la primera parada de la ruta."
             return
         }
 
@@ -120,7 +132,10 @@ final class MetroGameViewModel {
         playerDirection = step > 0 ? .east : .west
         let station: MetroStation = line.stations[nextIndex]
         visitedStationIDs.insert(station.id)
-        dialogueOverride = "Next stop: \(station.name). The carriage rattles through a cobalt tunnel."
+        AudioManager.shared.playArrival()
+        AudioManager.shared.maybeGuacamaya()
+        AudioManager.shared.enterRide(area: MetroArea.area(forStationID: station.id).rawValue) // rumble follows the zone
+        dialogueOverride = "Próxima estación: \(station.name). El vagón traquetea por el túnel."
     }
 
     private func bestTransferIndex(on targetLine: MetroLine) -> Int? {
