@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<!-- Página de prueba visual: carga el juego en un estado concreto según el hash.
+     Uso: npx playwright screenshot "tests/shot.html#battle" out.png -->
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Metro Quest — shot harness</title>
+<style>body{background:#0b0b14;margin:0}canvas{image-rendering:pixelated;width:640px;height:576px}</style>
+</head>
+<body>
+<canvas id="game" width="320" height="288"></canvas>
+<script src="../js/core.js"></script>
+<script src="../js/audio.js"></script>
+<script src="../js/dex.js"></script>
+<script src="../js/sprites.js"></script>
+<script src="../js/world.js"></script>
+<script src="../js/battle.js"></script>
+<script src="../js/overworld.js"></script>
+<script src="../js/main.js"></script>
+<script>
+addEventListener('load', () => {
+  const mode = (location.hash || '#casa').slice(1);
+  const P = (MQ.player = MQ.newPlayer('Chamo', 'player'));
+  P.party = [MQ.makeMon('arepito', 12), MQ.makeMon('chigui', 10)];
+  P.bag = { ficha: 5, malta: 3 };
+  const world = () => { MQ.scenes.length = 0; MQ.pushScene(new MQ.WorldScene()); return MQ.scenes[0]; };
+  const presses = (n, k = 'a', dt = 250) => {
+    for (let i = 1; i <= n; i++) setTimeout(() => MQ.scenes[MQ.scenes.length - 1].press(k), i * dt);
+  };
+  if (mode === 'casa') {
+    P.map = 'casa'; P.x = 5; P.y = 5; P.party = [];
+    world();
+  } else if (mode === 'station') {
+    P.flags.starter = true;
+    P.map = 'propatria'; P.x = 12; P.y = 6;
+    world();
+  } else if (mode === 'tunnel') {
+    P.flags.starter = true;
+    P.map = 'tunel2'; P.x = 12; P.y = 4; P.dir = 'right';
+    world();
+  } else if (mode === 'battle') {
+    world();
+    MQ.pushScene(new MQ.BattleScene({ wild: { id: 'guacamayo', lvl: 9 } }, () => {}));
+    presses(2);
+  } else if (mode === 'boss') {
+    P.party = [MQ.makeMon('cantaclaro', 18)];
+    world();
+    const tr = MQ.MAPS.capitolio.npcs.find((n) => n.boss).trainer;
+    MQ.pushScene(new MQ.BattleScene({ trainer: { ...tr, name: 'Doña Bárbara' } }, () => {}));
+    presses(3);
+  } else if (mode === 'dex') {
+    P.flags.starter = true;
+    MQ.DEX_ORDER.forEach((id) => { P.dexSeen[id] = true; P.dexCaught[id] = true; });
+    const w = world();
+    w.dexView = 'silbon';
+  } else if (mode === 'ghost') {
+    P.flags.starter = true;
+    P.map = 'lineafantasma'; P.x = 21; P.y = 3; P.dir = 'up';
+    world();
+  } else if (mode === 'ending') {
+    MQ.scenes.length = 0;
+    MQ.startEnding();
+    presses(4, 'a', 200);
+  }
+});
+</script>
+</body>
+</html>
