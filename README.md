@@ -1,5 +1,7 @@
 # 🚇 METRO QUEST — Leyendas del Subterráneo de Caracas
 
+![Metro Quest — key art](assets/keyart.jpg)
+
 Un RPG de bolsillo estilo Pokémon ambientado en el Metro de Caracas, hecho con puro
 HTML5 + Canvas + JavaScript — **cero dependencias, cero instalación**. Abre el enlace
 y juega, en el teléfono o en la computadora.
@@ -42,8 +44,12 @@ python3 -m http.server 8000
   de cinco años afuera) y baja a la **Línea Fantasma** a enfrentar al **Tren Fantasma**,
   el que se lleva los recuerdos de la ciudad.
 - 29 criaturas para fichar, 8 tipos criollos (Sabroso, Rumba, Espanto, Catatumbo,
-  Caribe, Monte, Tepuy, Criollo), combate por turnos, evoluciones, tienda de buhonero,
-  el Doctorcito que cura, tren rápido entre estaciones y guardado automático en el navegador.
+  Caribe, Monte, Tepuy, Criollo), combate por turnos con **golpes críticos, PP por
+  movimiento y estados alterados** (veneno, parálisis, sueño — el agua de coco lo cura
+  todo), evoluciones, tienda de buhonero, el Doctorcito que cura, tren rápido entre
+  estaciones y guardado automático en el navegador.
+- Apertura cinematográfica al estilo de los clásicos (saltable con B; A activa el
+  sonido) y un mapa de mecánicas + guía para extender el mundo en [DESIGN.md](DESIGN.md).
 
 Toda la mitología del juego — de dónde sale cada criatura, cada estación y cada chiste —
 está en **[LORE.md](LORE.md)**.

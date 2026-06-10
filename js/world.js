@@ -284,7 +284,7 @@
       { x: 17, to: 'zonarental', tx: 9, ty: 2, requires: 'fichas4',
         denied: 'GUARDIA DE LA LÍNEA FANTASMA: ¿Pa\' la Línea 5, chamo? Esa línea no existe... oficialmente. Tráeme las CUATRO Fichas Doradas y hablamos de lo que no existe.' },
     ],
-    shopStock: ['ficha', 'fichaplus', 'malta', 'cafe', 'cocada'],
+    shopStock: ['ficha', 'fichaplus', 'malta', 'cafe', 'aguacoco', 'cocada'],
     npcs: [
       { x: 13, y: 5, look: 'rumbero', dir: 'down', name: 'El Rumbero Mayor', boss: true,
         trainer: { id: 'boss2', cls: 'Jefe de Estación', boss: true, money: 800, reward: 'ficha2',
@@ -347,7 +347,7 @@
     id: 'sabanagrande', name: 'Estación Sabana Grande', shop: true,
     west: { to: 'tunel5', tx: 28, ty: 4 },
     east: { to: 'tunel6', tx: 1, ty: 4 },
-    shopStock: ['ficha', 'fichaplus', 'malta', 'cafe', 'golfeado'],
+    shopStock: ['ficha', 'fichaplus', 'malta', 'cafe', 'aguacoco', 'golfeado'],
     npcs: [
       { x: 8, y: 5, look: 'vieja', dir: 'down', name: 'Ajedrecista Margot',
         text: ['En el bulevar jugamos ajedrez desde antes de que tú nacieras. Una vez La Sayona se sentó a jugar. Le gané. No volvió... creo que por eso penan más por aquí.',
@@ -379,7 +379,7 @@
     id: 'chacaito', name: 'Estación Chacaíto', shop: true,
     west: { to: 'tunel6', tx: 28, ty: 4 },
     east: { to: 'tunel7', tx: 1, ty: 4 },
-    shopStock: ['ficha', 'fichaplus', 'malta', 'cafe', 'golfeado', 'cocada'],
+    shopStock: ['ficha', 'fichaplus', 'malta', 'cafe', 'aguacoco', 'golfeado', 'cocada'],
     npcs: [
       { x: 13, y: 7, look: 'sifrina', dir: 'down', name: 'Valentina', boss: true,
         trainer: { id: 'boss3', cls: 'Jefa de Estación', boss: true, money: 1000, reward: 'ficha3',
@@ -450,7 +450,7 @@
     id: 'petare', name: 'Estación Petare', shop: true,
     west: { to: 'tunel8', tx: 32, ty: 4 },
     streets: [{ x: 13, to: 'mercado', tx: 8, ty: 9 }],
-    shopStock: ['ficha', 'fichaplus', 'malta', 'cafe', 'golfeado', 'cocada'],
+    shopStock: ['ficha', 'fichaplus', 'malta', 'cafe', 'aguacoco', 'golfeado', 'cocada'],
     npcs: [
       { x: 8, y: 5, look: 'senora', dir: 'down', name: 'Vendedora Maigualida',
         text: ['¡Empanada, empanada, café con leche, teléfono, recargaaa! Petare madruga antes que el sol, mi amor, y se acuesta después que los espantos.',
@@ -479,7 +479,7 @@
       '########D#######',
     ],
     warps: [{ x: 8, y: 10, to: 'petare', tx: 13, ty: 9 }],
-    shopStock: ['ficha', 'fichaplus', 'malta', 'cafe', 'golfeado', 'cocada'],
+    shopStock: ['ficha', 'fichaplus', 'malta', 'cafe', 'aguacoco', 'golfeado', 'cocada'],
     enc: null,
     npcs: [
       { x: 7, y: 5, look: 'senora', dir: 'down', name: 'Doña Petra del Mercado', boss: true,

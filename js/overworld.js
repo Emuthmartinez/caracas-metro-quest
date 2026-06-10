@@ -67,7 +67,7 @@
       else if (op.give) { MQ.player.bag[op.give.item] = (MQ.player.bag[op.give.item] || 0) + op.give.n; MQ.audio.sfx('ficha'); this.stepScript(); }
       else if (op.money) { MQ.player.money += op.money; this.stepScript(); }
       else if (op.mon) { MQ.addMon(MQ.makeMon(op.mon[0], op.mon[1])); this.stepScript(); }
-      else if (op.healParty) { MQ.player.party.forEach((m) => { m.hp = m.maxhp; }); MQ.audio.sfx('heal'); this.stepScript(); }
+      else if (op.healParty) { MQ.player.party.forEach(MQ.fullHeal); MQ.audio.sfx('heal'); this.stepScript(); }
       else if (op.choice) {
         this.menu = new MQ.Menu(op.choice.options.map((o) => ({ label: o.label, value: o })), {
           x: 40, y: 80, w: 200, title: op.choice.title, rows: 4,
@@ -205,7 +205,7 @@
       const p = MQ.player;
       if (!p.party.length) { this.menu = null; this.tb.open(MQ.ctx, 'No tienes espantos todavía.'); return; }
       this.menu = new MQ.Menu(
-        p.party.map((m, i) => ({ label: `${MQ.SPECIES[m.id].name} N${m.lvl}`, sub: m.hp <= 0 ? 'K.O.' : `${m.hp}/${m.maxhp}`, value: i })),
+        p.party.map((m, i) => ({ label: `${MQ.SPECIES[m.id].name} N${m.lvl}`, sub: m.hp <= 0 ? 'K.O.' : `${m.hp}/${m.maxhp}${m.status ? ' ' + MQ.STATUS[m.status].name : ''}`, value: i })),
         { x: 8, y: 8, w: 200, rows: 6, title: 'EQUIPO',
           onPick: (it) => {
             const i = it.value;
@@ -242,6 +242,10 @@
                     m.hp = Math.min(m.maxhp, m.hp + item.heal); p.bag[it.value]--;
                     MQ.audio.sfx('heal'); this.menu = null;
                     this.tb.open(MQ.ctx, `${MQ.SPECIES[m.id].name} se siente como nuevo. ¡Gracias a la maltica de la patria!`);
+                  } else if (item.cure && m.status && m.hp > 0) {
+                    m.status = null; p.bag[it.value]--;
+                    MQ.audio.sfx('heal'); this.menu = null;
+                    this.tb.open(MQ.ctx, `El agua de coco obra el milagro: ¡${MQ.SPECIES[m.id].name} quedó como nuevo!`);
                   } else if (item.revive && m.hp <= 0) {
                     m.hp = Math.floor(m.maxhp * item.revive); p.bag[it.value]--;
                     MQ.audio.sfx('heal'); this.menu = null;
@@ -468,17 +472,20 @@
       ctx.font = MQ.FONT_B; ctx.textBaseline = 'top'; ctx.fillStyle = '#f5a623';
       ctx.fillText(`${sp.name}  N${m.lvl}`, 110, 26);
       ctx.font = MQ.FONT; ctx.fillStyle = '#e8dfc8';
-      ctx.fillText(`PS  ${m.hp}/${m.maxhp}`, 110, 42);
+      ctx.fillText(`PS  ${m.hp}/${m.maxhp}${m.status ? '  · ' + MQ.STATUS[m.status].name : ''}`, 110, 42);
       ctx.fillText(`ATQ ${m.atk}  DEF ${m.def}  VEL ${m.spd}`, 110, 54);
       const nxt = MQ.xpForLevel(m.lvl + 1) - m.xp;
       ctx.fillStyle = '#8a8aa0';
       ctx.fillText(`Faltan ${Math.max(0, nxt)} EXP para nivel ${m.lvl + 1}`, 110, 66);
       ctx.fillStyle = '#f5a623';
-      ctx.fillText('MOVIMIENTOS', 24, 108);
+      ctx.fillText('MOVIMIENTOS · PP', 24, 108);
       ctx.fillStyle = '#e8dfc8';
+      MQ.ensurePP(m);
       m.moves.forEach((mv, i) => {
         const M = MQ.MOVES[mv];
         ctx.fillText(`${M.name}`, 24, 122 + i * 12);
+        ctx.fillStyle = '#8a8aa0';
+        ctx.fillText(`${m.pp[mv] ?? M.pp}/${M.pp}`, 160, 122 + i * 12);
         ctx.fillStyle = MQ.TYPES[M.type].color;
         ctx.fillText(M.pow ? `${M.pow}` : '—', 200, 122 + i * 12);
         ctx.fillStyle = '#e8dfc8';
