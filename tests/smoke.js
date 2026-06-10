@@ -52,6 +52,10 @@ for (const id of MQ.DEX_ORDER) {
   if (sp.evolve) ok(MQ.SPECIES[sp.evolve.to], `${id}: evolución ${sp.evolve.to} existe`);
   ok(sp.dex && sp.dex.length > 20, `${id}: tiene entrada de dex`);
   ok(sp.catch > 0 && sp.catch <= 255, `${id}: catch rate válido`);
+  const cry = MQ.CRIES[id];
+  ok(Array.isArray(cry) && cry.length > 0, `${id}: tiene grito`);
+  for (const s of cry || [])
+    ok(s[0] === 'n' ? s.length === 4 : s.length === 7 && s[1] > 0 && s[2] > 0, `${id}: paso de grito válido (${s[0]})`);
   // arte: todos los caracteres en paleta
   for (const row of sp.art) {
     ok(row.length <= 17, `${id}: fila de arte <= 17 chars (${row.length})`);
@@ -139,13 +143,17 @@ for (const s of MQ.TRAIN_STOPS) ok(MQ.MAPS[s] && MQ.MAPS[s].station, `parada de 
 
 // ---- 3. lógica: stats, xp, daño ----
 section('Lógica');
-const mon = MQ.makeMon('arepito', 5);
+const mon = MQ.makeMon('frontinito', 5);
 ok(mon.hp === mon.maxhp && mon.hp > 10, 'makeMon: PS positivos');
 ok(mon.moves.length >= 1 && mon.moves.length <= 4, 'makeMon: 1-4 movimientos');
-ok(MQ.movesAtLevel('arepito', 50).length === 4, 'movesAtLevel recorta a 4');
+ok(MQ.movesAtLevel('frontinito', 50).length === 4, 'movesAtLevel recorta a 4');
 ok(MQ.effect('Rumba', ['Espanto']) === 2, 'tabla: Rumba > Espanto');
 ok(MQ.effect('Caribe', ['Monte', 'Tepuy']) === 1, 'tabla: multiplicadores compuestos');
 ok(MQ.xpForLevel(10) === 1000, 'curva de XP');
+// triángulo de iniciales: oso > cocuyo > turpial > oso
+ok(MQ.effect('Tepuy', MQ.SPECIES.cocuyin.types) === 2, 'triángulo: Frontinito (Tepuy) > Cocuyín');
+ok(MQ.effect('Catatumbo', MQ.SPECIES.turpialin.types) === 2, 'triángulo: Cocuyín (Catatumbo) > Turpialín');
+ok(MQ.effect('Monte', MQ.SPECIES.frontinito.types) === 2, 'triángulo: Turpialín (Monte) > Frontinito');
 
 // ---- 4. simulación de combate completo ----
 section('Combate');
@@ -194,7 +202,7 @@ ok(MQ.player.money === 300, `dinero del entrenador pagado (${MQ.player.money})`)
 // captura forzada (ficha de oro = garantizada)
 {
   MQ.player = MQ.newPlayer('Tester', 'player');
-  MQ.player.party = [MQ.makeMon('pepiada', 30)];
+  MQ.player.party = [MQ.makeMon('ucumari', 30)];
   MQ.player.bag = { fichaoro: 1 };
   let result = null;
   const b = new MQ.BattleScene({ wild: { id: 'vagonima', lvl: 10 } }, (r) => { result = r; });
@@ -212,7 +220,7 @@ ok(MQ.player.money === 300, `dinero del entrenador pagado (${MQ.player.money})`)
 // evolución
 {
   MQ.player = MQ.newPlayer('T', 'player');
-  const m = MQ.makeMon('arepito', 15);
+  const m = MQ.makeMon('frontinito', 15);
   m.xp = MQ.xpForLevel(16) - 1;
   MQ.player.party = [m];
   let result = null;
@@ -225,14 +233,14 @@ ok(MQ.player.money === 300, `dinero del entrenador pagado (${MQ.player.money})`)
   }
   ok(result === 'win', `combate de evolución gana (=${result})`);
   ok(m.lvl >= 16, `subió de nivel (${m.lvl})`);
-  ok(m.id === 'pepiada', `evolucionó a pepiada (=${m.id})`);
+  ok(m.id === 'ucumari', `evolucionó a ucumari (=${m.id})`);
 }
 
 // ---- 5. mundo: caminar, warp, scripts ----
 section('Overworld');
 {
   MQ.player = MQ.newPlayer('Tester', 'player');
-  MQ.player.party = [MQ.makeMon('arepito', 5)];
+  MQ.player.party = [MQ.makeMon('frontinito', 5)];
   MQ.player.flags.starter = true;
   MQ.scenes.length = 0;
   const w = new MQ.WorldScene();
@@ -268,7 +276,7 @@ section('Overworld');
 // reja con requisito: sin ficha1 no se pasa de Capitolio
 {
   MQ.player = MQ.newPlayer('Tester', 'player');
-  MQ.player.party = [MQ.makeMon('arepito', 10)];
+  MQ.player.party = [MQ.makeMon('frontinito', 10)];
   MQ.player.flags.starter = true;
   MQ.player.map = 'capitolio'; MQ.player.x = 24; MQ.player.y = 5; MQ.player.dir = 'right';
   MQ.scenes.length = 0;
@@ -324,14 +332,14 @@ section('Overworld');
   const w = new MQ.WorldScene();
   MQ.pushScene(w);
   MQ.player.x = 4; MQ.player.y = 4; MQ.player.dir = 'up';
-  w.interact(); // arepito en (4,3)
+  w.interact(); // frontinito en (4,3)
   for (let i = 0; i < 80 && (w.tb.active || w.script || w.menu); i++) {
     w.update();
     if (w.tb.active) { w.press('a'); continue; }
     if (w.menu) { w.press('a'); continue; } // "¡Sí, de una!"
   }
   ok(MQ.player.flags.starter, 'elegir inicial marca la bandera');
-  ok(MQ.player.party.length === 1 && MQ.player.party[0].id === 'arepito', 'arepito en el equipo');
+  ok(MQ.player.party.length === 1 && MQ.player.party[0].id === 'frontinito', 'frontinito en el equipo');
   ok(MQ.player.bag.ficha === 5 && MQ.player.bag.malta === 3, 'la abuela da fichas y maltas');
 
   // intentar agarrar un segundo inicial: la abuela no lo permite
@@ -348,7 +356,7 @@ section('Overworld');
 // scripts de historia existen y devuelven listas
 for (const k of ['intro', 'abuela', 'heal', 'rival1', 'rival2', 'rival3', 'altar', 'trenfantasma']) {
   MQ.player = MQ.newPlayer('T', 'player');
-  MQ.player.party = [MQ.makeMon('arepito', 5)];
+  MQ.player.party = [MQ.makeMon('frontinito', 5)];
   const s = MQ.SCRIPTS[k]();
   ok(Array.isArray(s) && s.length > 0, `script ${k} devuelve pasos`);
 }

@@ -101,6 +101,14 @@
       if (ctx.state === 'suspended') ctx.resume();
     },
     sfx(name) { if (ctx && SFX[name]) SFX[name](); },
+    cry(id) {
+      const c = MQ.CRIES && MQ.CRIES[id];
+      if (!ctx || !c) return;
+      for (const s of c) {
+        if (s[0] === 'n') noise(s[1], s[2], s[3]);
+        else beep(s[1], s[2], s[3], s[4], s[5], s[6] || 0);
+      }
+    },
     music(name) {
       this._wanted = name;
       if (!ctx) return;

@@ -289,7 +289,7 @@
           return { label: `${String(i + 1).padStart(2, '0')} ${caught ? '●' : seen ? '○' : '—'} ${seen ? MQ.SPECIES[id].name : '???'}`, value: id };
         }),
         { x: 8, y: 8, w: 200, rows: 12, title: 'CUADERNO DE ESPANTOS',
-          onPick: (it) => { if (p.dexSeen[it.value]) { this.dexView = it.value; this.menu = null; } else MQ.audio.sfx('bump'); },
+          onPick: (it) => { if (p.dexSeen[it.value]) { this.dexView = it.value; this.menu = null; MQ.audio.cry(it.value); } else MQ.audio.sfx('bump'); },
           onCancel: () => { this.menu = null; } });
     }
 

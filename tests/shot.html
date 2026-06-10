@@ -21,7 +21,7 @@
 addEventListener('load', () => {
   const mode = (location.hash || '#casa').slice(1);
   const P = (MQ.player = MQ.newPlayer('Chamo', 'player'));
-  P.party = [MQ.makeMon('arepito', 12), MQ.makeMon('chigui', 10)];
+  P.party = [MQ.makeMon('frontinito', 12), MQ.makeMon('chigui', 10)];
   P.bag = { ficha: 5, malta: 3 };
   const world = () => { MQ.scenes.length = 0; MQ.pushScene(new MQ.WorldScene()); return MQ.scenes[0]; };
   const presses = (n, k = 'a', dt = 250) => {

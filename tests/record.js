@@ -23,8 +23,10 @@ const path = require('path');
     const MQ = window.MQ;
     const om = MQ.audio.music.bind(MQ.audio);
     const os = MQ.audio.sfx.bind(MQ.audio);
+    const oc = MQ.audio.cry.bind(MQ.audio);
     MQ.audio.music = (n) => { window.__aud.push([Date.now(), 'music', n]); om(n); };
     MQ.audio.sfx = (n) => { window.__aud.push([Date.now(), 'sfx', n]); os(n); };
+    MQ.audio.cry = (n) => { window.__aud.push([Date.now(), 'cry', n]); oc(n); };
     if (MQ.audio._wanted) window.__aud.push([Date.now(), 'music', MQ.audio._wanted]); // título ya sonando
   });
 
@@ -89,7 +91,7 @@ const path = require('path');
   if (st.menu) await z(800); // «¡Sí, de una!»
   await drainText(900);
   st = await state();
-  console.log('tras inicial:', st.party === 1 ? 'arepito fichado ✓' : 'OJO: sin inicial', JSON.stringify(st));
+  console.log('tras inicial:', st.party === 1 ? 'inicial fichado ✓' : 'OJO: sin inicial', JSON.stringify(st));
 
   // — salir de casa: puerta (5,7) —
   await moveTo(5, 6);

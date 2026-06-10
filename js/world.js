@@ -71,9 +71,9 @@
 
   // ---- Diálogo del primo (depende de tu inicial) -------------------------------
   MQ.cheoCounter = (starter) =>
-    ({ arepito: 'caribito', turpialin: 'cocuyin', cocuyin: 'cachicamo' }[starter] || 'caribito');
+    ({ frontinito: 'caribito', turpialin: 'cocuyin', cocuyin: 'cachicamo' }[starter] || 'caribito');
   MQ.cheoCounterEvo = (starter) =>
-    ({ arepito: 'caribazo', turpialin: 'centella', cocuyin: 'chiguiron' }[starter] || 'caribazo');
+    ({ frontinito: 'caribazo', turpialin: 'centella', cocuyin: 'chiguiron' }[starter] || 'caribazo');
 
   // ---- Mapas --------------------------------------------------------------------
   const MAPS = {};
@@ -94,7 +94,7 @@
     warps: [{ x: 5, y: 7, to: 'propatria', tx: 13, ty: 3, requires: 'starter',
       denied: 'ABUELA: ¿Vas a salir solo a la hora fantasma? ¡Ni de vaina! Escoge primero un compañero de la mesa.' }],
     npcs: [
-      { x: 4, y: 3, mon: 'arepito', script: 'starter:arepito' },
+      { x: 4, y: 3, mon: 'frontinito', script: 'starter:frontinito' },
       { x: 6, y: 3, mon: 'turpialin', script: 'starter:turpialin' },
       { x: 8, y: 3, mon: 'cocuyin', script: 'starter:cocuyin' },
       { x: 2, y: 5, look: 'abuela', dir: 'right', name: 'Abuela', script: 'abuela' },
@@ -117,7 +117,8 @@
                'Mi hijo está en Chile y mi hija en Madrid. Yo les cuido los espantos hasta que vuelvan. Todos los días les hablo.'] },
       { x: 11, y: 9, look: 'chamo', dir: 'up', name: 'Yorbi',
         text: ['¿Viste? Cuando las luces parpadean dos veces, algo viene por el túnel. ¡El último que llegue al torniquete apaga la luz!',
-               'En la zona oscura del túnel salen espantos. Lánzales una ficha del 83: si te aceptan, te acompañan. Eso es FICHAR.'] },
+               'En la zona oscura del túnel sale la fauna de la hora fantasma. Lánzale una ficha del 83: si te acepta, te acompaña. Eso es FICHAR.',
+               'Hay un rabipelado que se hace el muerto en plena vía. El tren lo esquiva por respeto: ya lo veló una familia entera y eso impone.'] },
       { x: 20, y: 3, look: 'obrero', dir: 'down', name: 'Maestro Argenis',
         text: ['Yo ayudé a excavar esto en el 79. Pasamos la tuneladora por debajo de la memoria de la ciudad. Por eso es que pasan cosas.'] },
     ],
@@ -128,7 +129,7 @@
     id: 'tunel1', name: 'Túnel: Propatria — Caño Amarillo', seed: 1,
     west: { to: 'propatria', tx: 24, ty: 5 },
     east: { to: 'canoamarillo', tx: 1, ty: 5 },
-    enc: { rate: 0.16, mons: [['bachaquito', 30, 2, 4], ['caribito', 30, 2, 4], ['duendecito', 22, 3, 5], ['pavoso', 18, 3, 5]] },
+    enc: { rate: 0.16, mons: [['rabipelado', 28, 2, 4], ['bachaquito', 25, 2, 4], ['caribito', 25, 2, 4], ['duendecito', 12, 3, 5], ['pavoso', 10, 3, 5]] },
     npcs: [
       { x: 14, y: 2, look: 'obrero', dir: 'down', name: 'Obrero Ramón',
         trainer: { id: 'ramon', cls: 'Obrero del Metro', team: [['cachicamo', 5]], money: 80,
@@ -170,7 +171,7 @@
       '########D#######',
     ],
     warps: [{ x: 8, y: 10, to: 'canoamarillo', tx: 7, ty: 9 }],
-    enc: { rate: 0.18, mons: [['chigui', 35, 3, 5], ['bachaquito', 25, 3, 5], ['guacamayo', 15, 4, 6], ['morrocoy', 10, 4, 6], ['caribito', 15, 3, 5]] },
+    enc: { rate: 0.18, mons: [['chigui', 28, 3, 5], ['bachaquito', 20, 3, 5], ['pereza', 14, 4, 6], ['guacamayo', 12, 4, 6], ['caribito', 12, 3, 5], ['morrocoy', 8, 4, 6], ['cunaguaro', 6, 4, 6]] },
     npcs: [
       { x: 12, y: 4, look: 'chamo', dir: 'left', name: 'Liceísta Andrés',
         trainer: { id: 'andres', cls: 'Liceísta', team: [['bachaquito', 4], ['caribito', 4]], money: 60,
@@ -178,7 +179,9 @@
           win: 'Naguará... Bueno, peor fue el examen de física.',
           lose: '¡Chévere cambur! Mañana sí voy a clase. Quizás.' } },
       { x: 3, y: 9, look: 'vieja', dir: 'right', name: 'Jardinera Eulalia',
-        text: ['Este parque lo abrieron en 1883. Los chigüires de la fuente son más viejos que mi abuela, y mi abuela conoció a Gómez.'] },
+        text: ['Este parque lo abrieron en 1883. Los chigüires de la fuente son más viejos que mi abuela, y mi abuela conoció a Gómez.',
+               'La pereza del árbol grande llegó en el 87 por un cable de luz y no se ha bajado. Yo le riego el árbol; ella me cuida las horas. Buen trato.',
+               'De noche baja un cunaguaro a contar las palomas. No se come ninguna: dice que contar también es cazar, pero más elegante.'] },
     ],
     triggers: [],
   };
@@ -188,7 +191,7 @@
     id: 'tunel2', name: 'Túnel: Caño Amarillo — Capitolio', seed: 7,
     west: { to: 'canoamarillo', tx: 24, ty: 5 },
     east: { to: 'capitolio', tx: 1, ty: 5 },
-    enc: { rate: 0.16, mons: [['duendecito', 30, 4, 7], ['pavoso', 25, 4, 7], ['bachaquito', 25, 4, 6], ['mapanare', 12, 5, 7], ['cocuyin', 8, 5, 7]] },
+    enc: { rate: 0.16, mons: [['duendecito', 25, 4, 7], ['rabipelado', 20, 4, 7], ['pavoso', 18, 4, 7], ['bachaquito', 17, 4, 6], ['mapanare', 12, 5, 7], ['cocuyin', 8, 5, 7]] },
     npcs: [
       { x: 18, y: 5, look: 'musico', dir: 'left', name: 'Coplero Florentino',
         trainer: { id: 'florentino', cls: 'Coplero', team: [['araguako', 7]], money: 100,
@@ -251,7 +254,8 @@
       { x: 17, y: 7, look: 'sifrina', dir: 'left', name: 'Galerista Mirtha',
         text: ['Le monté una exposición a un Duendecito: "Chancletas izquierdas de la Gran Caracas, 1958-2025". Un éxito. Robó media sala.'] },
       { x: 20, y: 5, look: 'chamo', dir: 'down', name: 'Estudiante Keiber',
-        text: ['Un reventón de agua en el túnel 4 trajo caribitos del Guaire. Sobrevivieron AL GUAIRE, hermano. Respeta.'] },
+        text: ['Un reventón de agua en el túnel 4 trajo caribitos del Guaire. Sobrevivieron AL GUAIRE, hermano. Respeta.',
+               'Con el reventón también llegó una TONINA del Orinoco. Nada por el aire del túnel como si el río siguiera ahí. Nadie le ha avisado que no, y mejor así.'] },
     ],
   });
 
@@ -260,7 +264,7 @@
     id: 'tunel4', name: 'Túnel: Bellas Artes — Plaza Venezuela', seed: 21,
     west: { to: 'bellasartes', tx: 24, ty: 5 },
     east: { to: 'plazavenezuela', tx: 1, ty: 5 },
-    enc: { rate: 0.16, mons: [['cachicamo', 25, 9, 12], ['mapanare', 25, 9, 12], ['caribito', 25, 9, 12], ['duendecito', 15, 10, 12], ['vagonima', 10, 10, 12]] },
+    enc: { rate: 0.16, mons: [['cachicamo', 22, 9, 12], ['mapanare', 22, 9, 12], ['caribito', 22, 9, 12], ['duendecito', 14, 10, 12], ['tonina', 10, 10, 12], ['vagonima', 10, 10, 12]] },
     npcs: [
       { x: 17, y: 3, look: 'senora', dir: 'down', name: 'Señora Carmen',
         trainer: { id: 'carmen', cls: 'Señora del Mercado', team: [['chigui', 10], ['morrocoy', 10]], money: 130,
@@ -360,7 +364,7 @@
     id: 'tunel6', name: 'Túnel: Sabana Grande — Chacaíto', seed: 41,
     west: { to: 'sabanagrande', tx: 24, ty: 5 },
     east: { to: 'chacaito', tx: 1, ty: 5 },
-    enc: { rate: 0.17, mons: [['araguako', 25, 14, 17], ['mapanare', 22, 14, 17], ['cachicamo', 22, 14, 17], ['guacamayo', 18, 14, 17], ['vagonima', 13, 15, 17]] },
+    enc: { rate: 0.17, mons: [['araguako', 22, 14, 17], ['mapanare', 20, 14, 17], ['cachicamo', 18, 14, 17], ['guacamayo', 15, 14, 17], ['cunaguaro', 13, 14, 17], ['vagonima', 12, 15, 17]] },
     npcs: [
       { x: 16, y: 4, look: 'chamo', dir: 'down', name: 'Motorizado Jeison',
         trainer: { id: 'jeison', cls: 'Motorizado', team: [['centella', 16]], money: 170,
@@ -399,11 +403,11 @@
     id: 'tunel7', name: 'Túnel: Chacaíto — Altamira', seed: 55,
     west: { to: 'chacaito', tx: 24, ty: 5 },
     east: { to: 'altamira', tx: 1, ty: 5 },
-    enc: { rate: 0.17, mons: [['guacamayo', 25, 16, 20], ['araguako', 22, 16, 20], ['cachicamo', 20, 16, 19], ['morrocoy', 18, 16, 20], ['vagonima', 15, 17, 20]] },
+    enc: { rate: 0.17, mons: [['guacamayo', 20, 16, 20], ['araguako', 18, 16, 20], ['cachicamo', 16, 16, 19], ['cunaguaro', 14, 16, 20], ['morrocoy', 12, 16, 20], ['pereza', 10, 16, 20], ['vagonima', 10, 17, 20]] },
     npcs: [
       { x: 14, y: 5, look: 'sifrina', dir: 'right', name: 'Sifrino Juan Andrés',
-        trainer: { id: 'juanandres', cls: 'Sifrino', team: [['chiguiron', 18], ['guacamayo', 18]], money: 200,
-          intro: 'Bro, literal este túnel es mi cardio. Mi chigüirón pesa 80 kilos de puro pilates.',
+        trainer: { id: 'juanandres', cls: 'Sifrino', team: [['chiguiron', 18], ['cunaguaro', 18]], money: 200,
+          intro: 'Bro, literal este túnel es mi cardio. Mi chigüirón pesa 80 kilos de puro pilates y el cunaguaro tiene nutricionista.',
           win: 'Bro... me dejaste en visto. Bien jugado, full respeto.',
           lose: 'Es que el coach de mi chigüirón es buenísimo, bro. Te paso el contacto.' } },
     ],
@@ -419,7 +423,8 @@
         text: ['Mi esposo, que en paz descanse, decía que el obelisco de arriba es el palito de altura que Dios le puso a Caracas pa\' medirla. 105 metros de pura elegancia.',
                'Yo vine de Italia en el 52 con una maleta. Caracas me dio todo lo demás. Por eso le cuido sus espantos: son de la familia.'] },
       { x: 16, y: 8, look: 'chamo', dir: 'left', name: 'Corredor Samuel',
-        text: ['Subo el Ávila los domingos. Desde Sabas Nieves se ve TODO: la ciudad, el mar atrás... y se entiende por qué nadie la olvida, ni yéndose.'] },
+        text: ['Subo el Ávila los domingos. Desde Sabas Nieves se ve TODO: la ciudad, el mar atrás... y se entiende por qué nadie la olvida, ni yéndose.',
+               'Una vez me crucé con el oso frontino subiendo a Sabas Nieves. Me preguntó la hora con los ojos, asentí, y cada quien siguió su camino. Así es el Ávila.'] },
       { x: 21, y: 4, look: 'guardia', dir: 'down', name: 'PoliChacao Maikel',
         text: ['Anoche una Llorona pidió la hora en el andén 2. Le dije "las tres". Lloró más. Creo que era por otra cosa.'] },
     ],
@@ -430,7 +435,7 @@
     id: 'tunel8', name: 'Túnel: Altamira — Petare', seed: 61, w: 34,
     west: { to: 'altamira', tx: 24, ty: 5 },
     east: { to: 'petare', tx: 1, ty: 5 },
-    enc: { rate: 0.18, mons: [['morrocoy', 22, 18, 22], ['cachicamo', 20, 18, 22], ['mapanare', 20, 18, 22], ['araguako', 18, 18, 22], ['bachacon', 12, 19, 22], ['llorona', 8, 20, 23]] },
+    enc: { rate: 0.18, mons: [['morrocoy', 20, 18, 22], ['cachicamo', 18, 18, 22], ['mapanare', 18, 18, 22], ['araguako', 16, 18, 22], ['bachacon', 12, 19, 22], ['cunaguaro', 8, 19, 22], ['llorona', 8, 20, 23]] },
     npcs: [
       { x: 17, y: 3, look: 'vieja', dir: 'down', name: 'Abuelita Petra del Carmen',
         trainer: { id: 'abuelita', cls: 'Abuelita', team: [['morrocoy', 20], ['llorona', 20]], money: 220,
