@@ -12,8 +12,21 @@ const path = require('path');
     recordVideo: { dir: '/tmp/video', size: { width: 660, height: 600 } },
   });
   const page = await ctx.newPage();
+  const tVideo = Date.now(); // el video por página arranca aquí (aprox)
   page.on('dialog', (d) => d.accept('Primo'));
   await page.goto('file://' + path.resolve(__dirname, '..', 'index.html'));
+
+  // registra cada llamada de música/sfx con su tiempo absoluto para
+  // re-sintetizar el soundtrack exacto (tests/render-audio.js) y muxearlo
+  await page.evaluate(() => {
+    window.__aud = [];
+    const MQ = window.MQ;
+    const om = MQ.audio.music.bind(MQ.audio);
+    const os = MQ.audio.sfx.bind(MQ.audio);
+    MQ.audio.music = (n) => { window.__aud.push([Date.now(), 'music', n]); om(n); };
+    MQ.audio.sfx = (n) => { window.__aud.push([Date.now(), 'sfx', n]); os(n); };
+    if (MQ.audio._wanted) window.__aud.push([Date.now(), 'music', MQ.audio._wanted]); // título ya sonando
+  });
 
   const wait = (ms) => page.waitForTimeout(ms);
   const z = async (ms = 500) => { await page.keyboard.press('z'); await wait(ms); };
@@ -127,6 +140,13 @@ const path = require('path');
   st = await state();
   console.log('final:', st, 'batallas:', battles);
   await wait(2500);
+
+  // vuelca el registro de audio (tiempos relativos al inicio del video)
+  const aud = await page.evaluate(() => window.__aud);
+  fs.writeFileSync('/tmp/audlog.json', JSON.stringify({
+    events: aud.map(([t, kind, name]) => [Math.max(0, (t - tVideo) / 1000), kind, name]),
+  }));
+  console.log('eventos de audio:', aud.length);
 
   await ctx.close();
   await browser.close();
