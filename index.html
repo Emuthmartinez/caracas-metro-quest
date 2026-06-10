@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0b0b14">
+<title>Metro Quest — Leyendas del Subterráneo de Caracas</title>
+<meta name="description" content="Un RPG de bolsillo en el Metro de Caracas. Ficha espantos, gana las Fichas Doradas y enfréntate al Tren Fantasma. Un regalo para la diáspora.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="frame">
+  <div id="marquee">METRO DE CARACAS &nbsp;·&nbsp; LA GRAN SOLUCIÓN &nbsp;·&nbsp; HORA FANTASMA</div>
+  <canvas id="game" width="320" height="288"></canvas>
+  <div id="pad">
+    <div id="dpad">
+      <button class="pb" data-k="up">▲</button>
+      <div class="dmid">
+        <button class="pb" data-k="left">◀</button>
+        <button class="pb dctr" data-k="none">·</button>
+        <button class="pb" data-k="right">▶</button>
+      </div>
+      <button class="pb" data-k="down">▼</button>
+    </div>
+    <div id="btns">
+      <button class="pb round" data-k="b">B</button>
+      <button class="pb round a" data-k="a">A</button>
+      <button class="pb start" data-k="start">MENÚ</button>
+    </div>
+  </div>
+  <div id="hint">Flechas/WASD mover · Z/Espacio = A · X = B · Enter = MENÚ</div>
+</div>
+<script src="js/core.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/dex.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/world.js"></script>
+<script src="js/battle.js"></script>
+<script src="js/overworld.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
