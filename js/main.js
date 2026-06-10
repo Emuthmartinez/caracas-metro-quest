@@ -92,6 +92,7 @@
       if (f.fichas4) return [
         { say: ['Abuela', 'Cuatro fichas doradas... igualito a tu abuelo, que se ganó esta ciudad a punta de constancia. La Línea 5 te espera en Plaza Venezuela.'] },
         { say: ['Abuela', 'Llévate suéter, que allá abajo hace un frío de páramo. Y dale mis saludos a la Reina, si te la encuentras. Ella sabe quién soy.'] },
+        { say: ['Abuela', 'Un consejo de vieja: si el Tren te parece mucho tren, acuérdate que la piedra del tepuy es más vieja que el olvido. Lo viejo respeta a lo más viejo.'] },
         { healParty: true },
         { say: ['', 'La abuela te sanó el equipo con caldo de gallina y bendiciones.'] },
       ];
@@ -196,7 +197,7 @@
         { say: ['', 'Un silbido de tren llena la Línea Fantasma... Las luces de emergencia parpadean dos veces. El aire huele a 1983.'] },
         { say: ['', 'Del fondo del túnel emergen dos faros amarillos. Es ÉL: el primer tren, el que nunca llegó a Palo Verde, el que la ciudad olvidó sin querer.'] },
         { say: ['', 'Sus vagones van llenos hasta el techo: cumpleaños con bala fría, despedidas en Maiquetía, tardes de Ávila, goles gritados en cocinas ajenas.'] },
-        { battle: { wild: { id: 'trenfantasma', lvl: 40 }, noFlee: true },
+        { battle: { wild: { id: 'trenfantasma', lvl: 38 }, noFlee: true },
           winScript: [
             { flag: 'tren' },
             { fn: () => MQ.save(true) },

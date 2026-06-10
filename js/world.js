@@ -73,7 +73,7 @@
   MQ.cheoCounter = (starter) =>
     ({ arepito: 'caribito', turpialin: 'cocuyin', cocuyin: 'cachicamo' }[starter] || 'caribito');
   MQ.cheoCounterEvo = (starter) =>
-    ({ arepito: 'caribazo', turpialin: 'centella', cocuyin: 'cachicamo' }[starter] || 'caribazo');
+    ({ arepito: 'caribazo', turpialin: 'centella', cocuyin: 'chiguiron' }[starter] || 'caribazo');
 
   // ---- Mapas --------------------------------------------------------------------
   const MAPS = {};
@@ -208,7 +208,7 @@
     npcs: [
       { x: 13, y: 7, look: 'barbara', dir: 'down', name: 'Doña Bárbara', boss: true,
         trainer: { id: 'boss1', cls: 'Jefa de Estación', boss: true, money: 600, reward: 'ficha1',
-          team: [['pavoso', 11], ['mapanare', 12], ['sayona', 14]],
+          team: [['pavoso', 10], ['mapanare', 11], ['sayona', 12]],
           intro: 'Yo soy la Doña. El llano me quedó chiquito, así que ahora administro el centro de Caracas y todo lo que pena debajo. ¿Quieres mi Ficha del Centro? Demuéstrame que no eres un espanto más.',
           win: 'Vaya... Tienes el ojo turbio de los que no se rinden. Toma la FICHA DEL CENTRO. La devoradora de hombres sabe reconocer a una criatura indomable.',
           lose: 'Las cosas, niño, se hacen bien o no se hacen. Vuelve cuando se te quite lo manso.' } },
@@ -379,7 +379,7 @@
     npcs: [
       { x: 13, y: 7, look: 'sifrina', dir: 'down', name: 'Valentina', boss: true,
         trainer: { id: 'boss3', cls: 'Jefa de Estación', boss: true, money: 1000, reward: 'ficha3',
-          team: [['chiguiron', 22], ['guacamayo', 22], ['pepiada', 23]],
+          team: [['chiguiron', 22], ['guacamayo', 22], ['morrocoy', 23]],
           intro: 'O sea, ¿TÚ quieres MI Ficha del Este? Qué ladilla contigo... Mira, mi equipo está importado, asesorado y con personal trainer. Te va a doler, te lo juro por mi visa.',
           win: 'O SEA. Okay. Wow. ¿Sabes qué? Te la ganaste, naguará de combate. Toma la FICHA DEL ESTE... pero esto no sale de aquí.',
           lose: 'Te lo dije, mi amor. Esto es nivel Altamira. Vuelve cuando madures, ¿sí?' } },
@@ -479,7 +479,7 @@
     npcs: [
       { x: 7, y: 5, look: 'senora', dir: 'down', name: 'Doña Petra del Mercado', boss: true,
         trainer: { id: 'boss4', cls: 'Jefa de Estación', boss: true, money: 1200, reward: 'ficha4',
-          team: [['cachicamo', 25], ['bachacon', 26], ['chiguiron', 27], ['morrocoy', 28]],
+          team: [['cachicamo', 24], ['bachacon', 23], ['morrocoy', 26]],
           intro: 'Cuarenta años despachando en este mercado, muchacho. Mis criaturas cargan bultos, aguantan sol y no le deben nada a nadie. La Ficha del Pueblo no se regala: se suda.',
           win: 'Así mismo es. Sudaste, peleaste y no te quejaste: eso vale más que cualquier apellido. Toma la FICHA DEL PUEBLO, que de aquí eres.',
           lose: 'Vuelve mañana, mijo. El mercado abre a las cinco y la vida también.' } },
