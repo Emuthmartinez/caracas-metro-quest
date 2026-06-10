@@ -16,12 +16,12 @@
 
   // atacante -> { defensor: multiplicador } (lo no listado es x1)
   MQ.CHART = {
-    Criollo:   { Tepuy: 0.5, Espanto: 0.5 },
+    Criollo:   { Tepuy: 0.5 },
     Sabroso:   { Criollo: 2, Espanto: 0.5, Caribe: 0.5 },
     Rumba:     { Espanto: 2, Tepuy: 0.5, Rumba: 0.5 },
-    Espanto:   { Criollo: 2, Sabroso: 2, Rumba: 0.5, Tepuy: 0.5 },
+    Espanto:   { Criollo: 2, Rumba: 0.5, Tepuy: 0.5 },
     Catatumbo: { Caribe: 2, Rumba: 2, Tepuy: 0.5, Monte: 0.5 },
-    Caribe:    { Tepuy: 2, Sabroso: 2, Monte: 0.5, Catatumbo: 0.5, Caribe: 0.5 },
+    Caribe:    { Tepuy: 2, Monte: 0.5, Catatumbo: 0.5, Caribe: 0.5 },
     Monte:     { Caribe: 2, Tepuy: 2, Sabroso: 0.5, Espanto: 0.5, Monte: 0.5 },
     Tepuy:     { Catatumbo: 2, Espanto: 2, Caribe: 0.5, Monte: 0.5 },
   };
@@ -81,7 +81,7 @@
   MQ.SPECIES = {
     arepito: {
       name: 'Arepito', types: ['Sabroso'],
-      base: { hp: 46, atk: 50, def: 50, spd: 45 }, catch: 60,
+      base: { hp: 52, atk: 60, def: 60, spd: 53 }, catch: 60,
       learn: [[1, 'arepazo'], [1, 'trancazo'], [7, 'abuela'], [12, 'empanada'], [19, 'asadonegro'], [27, 'horapico'], [34, 'hallacazo']],
       evolve: { lvl: 16, to: 'pepiada' },
       dex: 'Nació en un budare a las 6 de la mañana. Calientico por dentro, tostadito por fuera. Si lo abrazas, te perdona todo.',
@@ -104,7 +104,7 @@
     },
     pepiada: {
       name: 'Reina Pepiada', types: ['Sabroso', 'Criollo'],
-      base: { hp: 64, atk: 70, def: 68, spd: 62 }, catch: 40,
+      base: { hp: 72, atk: 82, def: 80, spd: 70 }, catch: 40,
       learn: [[1, 'arepazo'], [1, 'trancazo'], [7, 'abuela'], [12, 'empanada'], [19, 'asadonegro'], [27, 'horapico'], [34, 'hallacazo']],
       dex: 'Coronada en 1955 en honor a una reina de belleza. Lleva el aguacate como cetro. No se discute con ella: se le hace fila.',
       pal: { k: '#3a2d1e', w: '#f2ead8', g: '#7bb05a', y: '#f5d76e', e: '#222222' },
@@ -127,7 +127,7 @@
     },
     turpialin: {
       name: 'Turpialín', types: ['Rumba'],
-      base: { hp: 44, atk: 50, def: 42, spd: 62 }, catch: 60,
+      base: { hp: 50, atk: 58, def: 50, spd: 68 }, catch: 60,
       learn: [[1, 'cornetazo'], [1, 'trancazo'], [7, 'serenata'], [12, 'tambor'], [19, 'gaita'], [26, 'joropo'], [36, 'almallanera']],
       evolve: { lvl: 16, to: 'cantaclaro' },
       dex: 'El pájaro nacional, pero chiquito y arrecho. Canta a las 5 a.m. sin pedir permiso, como las licuadoras de toda Venezuela.',
@@ -149,7 +149,7 @@
     },
     cantaclaro: {
       name: 'Cantaclaro', types: ['Rumba', 'Monte'],
-      base: { hp: 62, atk: 72, def: 56, spd: 82 }, catch: 40,
+      base: { hp: 70, atk: 82, def: 64, spd: 90 }, catch: 40,
       learn: [[1, 'cornetazo'], [1, 'trancazo'], [7, 'serenata'], [12, 'tambor'], [19, 'gaita'], [26, 'joropo'], [30, 'monteadentro'], [36, 'almallanera']],
       dex: 'Turpial coplero con sombrero pelo e\' guama. Ganó un contrapunteo contra el mismísimo Diablo y desde entonces no hay quien lo calle.',
       pal: { k: '#1c1c1c', o: '#f5a623', w: '#ffffff', h: '#c9a36a', b: '#d98a2b', e: '#f2ead8', n: '#ffffff' },
@@ -170,7 +170,7 @@
     },
     cocuyin: {
       name: 'Cocuyín', types: ['Catatumbo'],
-      base: { hp: 42, atk: 52, def: 42, spd: 66 }, catch: 60,
+      base: { hp: 48, atk: 60, def: 48, spd: 72 }, catch: 60,
       learn: [[1, 'chispazo'], [1, 'trancazo'], [7, 'bajon'], [13, 'corrientazo'], [20, 'tercerriel'], [34, 'catatumbazo']],
       evolve: { lvl: 16, to: 'centella' },
       dex: 'Cocuyo de monte que se tragó un cable de alta tensión. Cuando se va la luz, todo el barrio lo busca. Él cobra en seriedad y cariño.',
@@ -192,7 +192,7 @@
     },
     centella: {
       name: 'La Centella', types: ['Catatumbo', 'Espanto'],
-      base: { hp: 58, atk: 78, def: 52, spd: 88 }, catch: 40,
+      base: { hp: 66, atk: 88, def: 60, spd: 96 }, catch: 40,
       learn: [[1, 'chispazo'], [1, 'susto'], [7, 'bajon'], [13, 'corrientazo'], [20, 'tercerriel'], [24, 'nocturno'], [34, 'catatumbazo']],
       dex: 'La bola de fuego que persigue caminantes en la sabana. Dicen que si le rezas al revés se aleja. Nadie se acuerda del rezo al derecho.',
       pal: { k: '#1a1a2e', y: '#ffe66e', o: '#f5a623', w: '#ffffff', e: '#1a1a2e' },
@@ -276,7 +276,7 @@
     },
     caribito: {
       name: 'Caribito', types: ['Caribe'],
-      base: { hp: 38, atk: 64, def: 38, spd: 70 }, catch: 190,
+      base: { hp: 38, atk: 52, def: 38, spd: 62 }, catch: 190,
       learn: [[1, 'mordida'], [6, 'aguacerito'], [14, 'paloagua'], [24, 'crecida']],
       evolve: { lvl: 20, to: 'caribazo' },
       dex: 'Pirañita del río. Cayó al Guaire por accidente y salió más fuerte, más rápida y con menos paciencia.',
@@ -434,7 +434,7 @@
     },
     duendecito: {
       name: 'Duendecito', types: ['Espanto', 'Monte'],
-      base: { hp: 48, atk: 56, def: 56, spd: 72 }, catch: 150,
+      base: { hp: 48, atk: 56, def: 56, spd: 50 }, catch: 150,
       learn: [[1, 'susto'], [1, 'bejucazo'], [8, 'pava'], [13, 'llanto'], [19, 'hoja'], [26, 'nocturno']],
       dex: 'Esconde las chancletas izquierdas. Solo las izquierdas. Los científicos no se explican. Las abuelas sí: es él.',
       pal: { k: '#1e1810', h: '#b5300a', f: '#d9a36a', c: '#4a6741', w: '#f2ead8', e: '#222222' },
@@ -585,7 +585,7 @@
     },
     trenfantasma: {
       name: 'Tren Fantasma', types: ['Espanto', 'Catatumbo'],
-      base: { hp: 100, atk: 100, def: 90, spd: 90 }, catch: 5,
+      base: { hp: 100, atk: 88, def: 82, spd: 78 }, catch: 5,
       learn: [[1, 'nocturno'], [1, 'tercerriel'], [30, 'ultimoviaje'], [40, 'catatumbazo']],
       dex: 'El primer tren del 83 nunca fue desincorporado: fue olvidado. Y lo olvidado, en Caracas, no muere — hace estación propia.',
       pal: { k: '#0e0e16', s: '#3a3a4a', o: '#e85a1a', w: '#ffe66e', g: '#7affc9', e: '#222222' },
