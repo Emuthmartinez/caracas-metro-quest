@@ -29,51 +29,62 @@
     defTypes.reduce((m, t) => m * ((MQ.CHART[atk] || {})[t] ?? 1), 1);
 
   // ---- Movimientos ----------------------------------------------------------
-  // fx: {heal:frac} cura al usuario; {stage:[stat,delta,'self'|'foe']} sube/baja.
+  // fx: {heal:frac} cura al usuario; {stage:[stat,delta,'self'|'foe']} sube/baja;
+  // {status:'psn'|'par'|'slp', chance:0-1} aflige (chance 1 si es puro estado).
+  // pp: usos por movimiento (se restauran al curar). recoil: fracción del daño.
   MQ.MOVES = {
-    trancazo:    { name: 'Trancazo',              type: 'Criollo',   pow: 40,  acc: 100 },
-    cachetada:   { name: 'Cachetada Criolla',     type: 'Criollo',   pow: 55,  acc: 95 },
-    horapico:    { name: 'Empujón de Hora Pico',  type: 'Criollo',   pow: 75,  acc: 95 },
-    abrazotia:   { name: 'Abrazo de Tía',         type: 'Criollo',   pow: 0,   acc: 100, fx: { heal: 0.5 } },
-    gritomama:   { name: 'Regaño de Mamá',        type: 'Criollo',   pow: 0,   acc: 100, fx: { stage: ['atk', -1, 'foe'] } },
-    arepazo:     { name: 'Arepazo',               type: 'Sabroso',   pow: 45,  acc: 100 },
-    empanada:    { name: 'Empanada de Cazón',     type: 'Sabroso',   pow: 60,  acc: 100 },
-    asadonegro:  { name: 'Asado Negro',           type: 'Sabroso',   pow: 80,  acc: 95 },
-    hallacazo:   { name: 'Hallacazo Decembrino',  type: 'Sabroso',   pow: 95,  acc: 85 },
-    abuela:      { name: 'Comida de Abuela',      type: 'Sabroso',   pow: 0,   acc: 100, fx: { heal: 0.5 } },
-    cornetazo:   { name: 'Cornetazo',             type: 'Rumba',     pow: 40,  acc: 100 },
-    tambor:      { name: 'Tambor de San Juan',    type: 'Rumba',     pow: 55,  acc: 100 },
-    gaita:       { name: 'Gaita Furruquera',      type: 'Rumba',     pow: 70,  acc: 95 },
-    joropo:      { name: 'Joropo Recio',          type: 'Rumba',     pow: 85,  acc: 90 },
-    almallanera: { name: 'Alma Llanera',          type: 'Rumba',     pow: 105, acc: 80 },
-    serenata:    { name: 'Serenata Caraqueña',    type: 'Rumba',     pow: 0,   acc: 100, fx: { stage: ['atk', -1, 'foe'] } },
-    susto:       { name: 'Susto',                 type: 'Espanto',   pow: 40,  acc: 100 },
-    maldeojo:    { name: 'Mal de Ojo',            type: 'Espanto',   pow: 0,   acc: 100, fx: { stage: ['atk', -1, 'foe'] } },
-    pava:        { name: 'Pavita Negra',          type: 'Espanto',   pow: 0,   acc: 100, fx: { stage: ['def', -1, 'foe'] } },
-    llanto:      { name: 'Llanto Eterno',         type: 'Espanto',   pow: 60,  acc: 100 },
-    nocturno:    { name: 'Espanto Nocturno',      type: 'Espanto',   pow: 80,  acc: 95 },
-    silbido:     { name: 'Silbido Lejano',        type: 'Espanto',   pow: 85,  acc: 1000 },
-    ultimoviaje: { name: 'Último Viaje',          type: 'Espanto',   pow: 100, acc: 80 },
-    chispazo:    { name: 'Chispazo',              type: 'Catatumbo', pow: 40,  acc: 100 },
-    corrientazo: { name: 'Corrientazo',           type: 'Catatumbo', pow: 65,  acc: 100 },
-    bajon:       { name: 'Bajón de Luz',          type: 'Catatumbo', pow: 0,   acc: 100, fx: { stage: ['spd', -1, 'foe'] } },
-    tercerriel:  { name: 'Tercer Riel',           type: 'Catatumbo', pow: 80,  acc: 95 },
-    catatumbazo: { name: 'Relámpago Catatumbo',   type: 'Catatumbo', pow: 105, acc: 80 },
-    aguacerito:  { name: 'Aguacerito',            type: 'Caribe',    pow: 40,  acc: 100 },
-    mordida:     { name: 'Mordida de Caribe',     type: 'Caribe',    pow: 55,  acc: 100 },
-    paloagua:    { name: 'Palo de Agua',          type: 'Caribe',    pow: 70,  acc: 95 },
-    crecida:     { name: 'Crecida del Guaire',    type: 'Caribe',    pow: 90,  acc: 85 },
-    bejucazo:    { name: 'Bejucazo',              type: 'Monte',     pow: 45,  acc: 100 },
-    hoja:        { name: 'Hoja Afilada',          type: 'Monte',     pow: 60,  acc: 100 },
-    colmillo:    { name: 'Colmillo Mapanare',     type: 'Monte',     pow: 70,  acc: 95 },
-    monteadentro:{ name: 'Monte Adentro',         type: 'Monte',     pow: 85,  acc: 90 },
-    araguaney:   { name: 'Flor de Araguaney',     type: 'Monte',     pow: 0,   acc: 100, fx: { stage: ['atk', 1, 'self'] } },
-    pedrada:     { name: 'Pedrada',               type: 'Tepuy',     pow: 45,  acc: 100 },
-    conchazo:    { name: 'Conchazo',              type: 'Tepuy',     pow: 60,  acc: 100 },
-    kueka:       { name: 'Piedra Kueka',          type: 'Tepuy',     pow: 0,   acc: 100, fx: { stage: ['def', 1, 'self'] } },
-    temblor:     { name: 'Temblorcito',           type: 'Tepuy',     pow: 70,  acc: 95 },
-    avalancha:   { name: 'Derrumbe del Ávila',    type: 'Tepuy',     pow: 85,  acc: 90 },
-    tepuyazo:    { name: 'Peso del Tepuy',        type: 'Tepuy',     pow: 95,  acc: 85 },
+    trancazo:    { name: 'Trancazo',              type: 'Criollo',   pow: 40,  acc: 100, pp: 35 },
+    cachetada:   { name: 'Cachetada Criolla',     type: 'Criollo',   pow: 55,  acc: 95,  pp: 25 },
+    horapico:    { name: 'Empujón de Hora Pico',  type: 'Criollo',   pow: 75,  acc: 95,  pp: 15 },
+    abrazotia:   { name: 'Abrazo de Tía',         type: 'Criollo',   pow: 0,   acc: 100, pp: 10, fx: { heal: 0.5 } },
+    gritomama:   { name: 'Regaño de Mamá',        type: 'Criollo',   pow: 0,   acc: 100, pp: 20, fx: { stage: ['atk', -1, 'foe'] } },
+    forcejeo:    { name: 'Forcejeo',              type: 'Criollo',   pow: 50,  acc: 100, pp: 99, recoil: 0.25 },
+    arepazo:     { name: 'Arepazo',               type: 'Sabroso',   pow: 45,  acc: 100, pp: 30 },
+    empanada:    { name: 'Empanada de Cazón',     type: 'Sabroso',   pow: 60,  acc: 100, pp: 20 },
+    asadonegro:  { name: 'Asado Negro',           type: 'Sabroso',   pow: 80,  acc: 95,  pp: 12 },
+    hallacazo:   { name: 'Hallacazo Decembrino',  type: 'Sabroso',   pow: 95,  acc: 85,  pp: 8 },
+    abuela:      { name: 'Comida de Abuela',      type: 'Sabroso',   pow: 0,   acc: 100, pp: 10, fx: { heal: 0.5 } },
+    cornetazo:   { name: 'Cornetazo',             type: 'Rumba',     pow: 40,  acc: 100, pp: 35 },
+    tambor:      { name: 'Tambor de San Juan',    type: 'Rumba',     pow: 55,  acc: 100, pp: 25 },
+    gaita:       { name: 'Gaita Furruquera',      type: 'Rumba',     pow: 70,  acc: 95,  pp: 15 },
+    joropo:      { name: 'Joropo Recio',          type: 'Rumba',     pow: 85,  acc: 90,  pp: 10 },
+    almallanera: { name: 'Alma Llanera',          type: 'Rumba',     pow: 105, acc: 80,  pp: 5 },
+    serenata:    { name: 'Serenata Caraqueña',    type: 'Rumba',     pow: 0,   acc: 100, pp: 20, fx: { stage: ['atk', -1, 'foe'] } },
+    arrullo:     { name: 'Arrullo Llanero',       type: 'Rumba',     pow: 0,   acc: 75,  pp: 10, fx: { status: 'slp' } },
+    susto:       { name: 'Susto',                 type: 'Espanto',   pow: 40,  acc: 100, pp: 35 },
+    maldeojo:    { name: 'Mal de Ojo',            type: 'Espanto',   pow: 0,   acc: 100, pp: 20, fx: { stage: ['atk', -1, 'foe'] } },
+    pava:        { name: 'Pavita Negra',          type: 'Espanto',   pow: 0,   acc: 100, pp: 20, fx: { stage: ['def', -1, 'foe'] } },
+    llanto:      { name: 'Llanto Eterno',         type: 'Espanto',   pow: 60,  acc: 100, pp: 20 },
+    nocturno:    { name: 'Espanto Nocturno',      type: 'Espanto',   pow: 80,  acc: 95,  pp: 12 },
+    silbido:     { name: 'Silbido Lejano',        type: 'Espanto',   pow: 85,  acc: 1000, pp: 8 },
+    ultimoviaje: { name: 'Último Viaje',          type: 'Espanto',   pow: 100, acc: 80,  pp: 5 },
+    chispazo:    { name: 'Chispazo',              type: 'Catatumbo', pow: 40,  acc: 100, pp: 35 },
+    corrientazo: { name: 'Corrientazo',           type: 'Catatumbo', pow: 65,  acc: 100, pp: 20, fx: { status: 'par', chance: 0.2 } },
+    bajon:       { name: 'Bajón de Luz',          type: 'Catatumbo', pow: 0,   acc: 100, pp: 20, fx: { stage: ['spd', -1, 'foe'] } },
+    tercerriel:  { name: 'Tercer Riel',           type: 'Catatumbo', pow: 80,  acc: 95,  pp: 12, fx: { status: 'par', chance: 0.3 } },
+    catatumbazo: { name: 'Relámpago Catatumbo',   type: 'Catatumbo', pow: 105, acc: 80,  pp: 5,  fx: { status: 'par', chance: 0.2 } },
+    aguacerito:  { name: 'Aguacerito',            type: 'Caribe',    pow: 40,  acc: 100, pp: 35 },
+    mordida:     { name: 'Mordida de Caribe',     type: 'Caribe',    pow: 55,  acc: 100, pp: 25 },
+    paloagua:    { name: 'Palo de Agua',          type: 'Caribe',    pow: 70,  acc: 95,  pp: 15 },
+    crecida:     { name: 'Crecida del Guaire',    type: 'Caribe',    pow: 90,  acc: 85,  pp: 8,  fx: { status: 'psn', chance: 0.2 } },
+    bejucazo:    { name: 'Bejucazo',              type: 'Monte',     pow: 45,  acc: 100, pp: 30 },
+    hoja:        { name: 'Hoja Afilada',          type: 'Monte',     pow: 60,  acc: 100, pp: 20 },
+    colmillo:    { name: 'Colmillo Mapanare',     type: 'Monte',     pow: 70,  acc: 95,  pp: 15, fx: { status: 'psn', chance: 0.3 } },
+    monteadentro:{ name: 'Monte Adentro',         type: 'Monte',     pow: 85,  acc: 90,  pp: 10 },
+    araguaney:   { name: 'Flor de Araguaney',     type: 'Monte',     pow: 0,   acc: 100, pp: 15, fx: { stage: ['atk', 1, 'self'] } },
+    pedrada:     { name: 'Pedrada',               type: 'Tepuy',     pow: 45,  acc: 100, pp: 30 },
+    conchazo:    { name: 'Conchazo',              type: 'Tepuy',     pow: 60,  acc: 100, pp: 20 },
+    kueka:       { name: 'Piedra Kueka',          type: 'Tepuy',     pow: 0,   acc: 100, pp: 15, fx: { stage: ['def', 1, 'self'] } },
+    temblor:     { name: 'Temblorcito',           type: 'Tepuy',     pow: 70,  acc: 95,  pp: 15 },
+    avalancha:   { name: 'Derrumbe del Ávila',    type: 'Tepuy',     pow: 85,  acc: 90,  pp: 10 },
+    tepuyazo:    { name: 'Peso del Tepuy',        type: 'Tepuy',     pow: 95,  acc: 85,  pp: 8 },
+  };
+
+  // ---- Estados ---------------------------------------------------------------
+  MQ.STATUS = {
+    psn: { name: 'ENV', color: '#9a4ad9', verb: 'quedó envenenado' },
+    par: { name: 'PAR', color: '#f5d76e', verb: 'quedó paralizado' },
+    slp: { name: 'DRM', color: '#8a8aa0', verb: 'se quedó dormido' },
   };
 
   // ---- Especies --------------------------------------------------------------
@@ -127,7 +138,7 @@
     turpialin: {
       name: 'Turpialín', types: ['Rumba', 'Monte'],
       base: { hp: 50, atk: 58, def: 50, spd: 68 }, catch: 60,
-      learn: [[1, 'cornetazo'], [1, 'trancazo'], [7, 'serenata'], [12, 'tambor'], [19, 'gaita'], [26, 'joropo'], [36, 'almallanera']],
+      learn: [[1, 'cornetazo'], [1, 'trancazo'], [7, 'serenata'], [12, 'tambor'], [14, 'arrullo'], [19, 'gaita'], [26, 'joropo'], [36, 'almallanera']],
       evolve: { lvl: 16, to: 'cantaclaro' },
       dex: 'El pájaro nacional, pero chiquito y arrecho. Canta a las 5 a.m. sin pedir permiso, como las licuadoras de toda Venezuela.',
       pal: { k: '#1c1c1c', o: '#f5a623', w: '#ffffff', b: '#d98a2b', e: '#f2ead8' },
@@ -149,7 +160,7 @@
     cantaclaro: {
       name: 'Cantaclaro', types: ['Rumba', 'Monte'],
       base: { hp: 70, atk: 82, def: 64, spd: 90 }, catch: 40,
-      learn: [[1, 'cornetazo'], [1, 'trancazo'], [7, 'serenata'], [12, 'tambor'], [19, 'gaita'], [26, 'joropo'], [30, 'monteadentro'], [36, 'almallanera']],
+      learn: [[1, 'cornetazo'], [1, 'trancazo'], [7, 'serenata'], [12, 'tambor'], [14, 'arrullo'], [19, 'gaita'], [26, 'joropo'], [30, 'monteadentro'], [36, 'almallanera']],
       dex: 'Turpial coplero con sombrero pelo e\' guama. Ganó un contrapunteo contra el mismísimo Diablo y desde entonces no hay quien lo calle.',
       pal: { k: '#1c1c1c', o: '#f5a623', w: '#ffffff', h: '#c9a36a', b: '#d98a2b', e: '#f2ead8', n: '#ffffff' },
       art: [
@@ -274,7 +285,7 @@
     pereza: {
       name: 'Pereza', types: ['Monte', 'Criollo'],
       base: { hp: 85, atk: 55, def: 70, spd: 22 }, catch: 160,
-      learn: [[1, 'bejucazo'], [1, 'abrazotia'], [10, 'hoja'], [14, 'araguaney'], [26, 'monteadentro']],
+      learn: [[1, 'bejucazo'], [1, 'abrazotia'], [10, 'hoja'], [14, 'araguaney'], [18, 'arrullo'], [26, 'monteadentro']],
       dex: 'Llegó al Calvario en 1987 cruzando un solo cable de luz. Sigue en el mismo árbol. No es flojera: es que vio la ciudad apurarse cuarenta años y decidió esperarla aquí.',
       pal: { k: '#2a241a', g: '#8a8468', f: '#c9bda0', m: '#3a2d1e', e: '#222222' },
       art: [
@@ -575,7 +586,7 @@
     llorona: {
       name: 'La Llorona', types: ['Espanto', 'Caribe'],
       base: { hp: 76, atk: 80, def: 60, spd: 64 }, catch: 40,
-      learn: [[1, 'llanto'], [1, 'aguacerito'], [14, 'maldeojo'], [20, 'paloagua'], [26, 'nocturno'], [33, 'crecida']],
+      learn: [[1, 'llanto'], [1, 'aguacerito'], [10, 'arrullo'], [14, 'maldeojo'], [20, 'paloagua'], [26, 'nocturno'], [33, 'crecida']],
       dex: 'Llora por las quebradas del Ávila desde hace siglos. En el túnel su llanto se confunde con los frenos del tren. No es el tren.',
       pal: { k: '#1e1e2e', w: '#e8e8f0', f: '#cfcfe0', b: '#8888c9', e: '#222222' },
       art: [
@@ -746,7 +757,24 @@
 
   MQ.makeMon = (id, lvl) => {
     const st = MQ.calcStats(id, lvl);
-    return { id, lvl, xp: MQ.xpForLevel(lvl), hp: st.hp, maxhp: st.hp, atk: st.atk, def: st.def, spd: st.spd, moves: MQ.movesAtLevel(id, lvl) };
+    const m = { id, lvl, xp: MQ.xpForLevel(lvl), hp: st.hp, maxhp: st.hp, atk: st.atk, def: st.def, spd: st.spd, moves: MQ.movesAtLevel(id, lvl), status: null, pp: {} };
+    MQ.ensurePP(m);
+    return m;
+  };
+
+  // rellena PP faltantes (también migra partidas guardadas antes de que existieran)
+  MQ.ensurePP = (m) => {
+    m.pp = m.pp || {};
+    for (const mv of m.moves) if (m.pp[mv] === undefined) m.pp[mv] = MQ.MOVES[mv].pp;
+    return m;
+  };
+
+  // curación completa: PS, estado y PP (módulo, abuela, respawn)
+  MQ.fullHeal = (m) => {
+    m.hp = m.maxhp;
+    m.status = null;
+    m.pp = {};
+    MQ.ensurePP(m);
   };
 
   MQ.expYield = (id) => {
@@ -763,5 +791,6 @@
     cafe:     { name: 'Marroncito',       price: 45,  desc: 'Restaura 70 PS. Oscuro, dulce y de máquina de estación.', heal: 70 },
     golfeado: { name: 'Golfeado',         price: 90,  desc: 'Restaura todos los PS. Con queso de mano encima, obvio.', heal: 9999 },
     cocada:   { name: 'Cocada',           price: 120, desc: 'Revive a un espanto debilitado con la mitad de sus PS.', revive: 0.5 },
+    aguacoco: { name: 'Agua de Coco',     price: 60,  desc: 'Cura veneno, parálisis o sueño. Fresquita, recién bajada de La Guaira.', cure: true },
   };
 })();

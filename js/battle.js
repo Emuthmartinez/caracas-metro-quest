@@ -20,9 +20,10 @@
       this.phase = 'msg';
       this.menu = null;
       this.over = false;
-      this.anim = { shake: 0, flash: 0, px: 0, ex: 0 };
+      this.anim = { shake: 0, flash: 0, px: 0, ex: 0, intro: 36 };
 
       const p = MQ.player;
+      p.party.forEach(MQ.ensurePP); // migra partidas viejas sin PP
       this.trainer = opts.trainer || null;
       if (this.trainer) {
         this.eteam = this.trainer.team.map(([id, lvl]) => MQ.makeMon(id, lvl));
@@ -70,12 +71,20 @@
 
     pickAction(a) {
       if (a === 'PELEAR') {
+        if (!this.mine.moves.some((id) => (this.mine.pp[id] ?? 0) > 0)) {
+          this.say(`¡A ${name(this.mine)} no le quedan fuerzas pa' más! Le toca FORCEJEO.`, () => this.turn('forcejeo'));
+          this.pump();
+          return;
+        }
         const mv = this.mine.moves.map((id) => ({
-          label: MQ.MOVES[id].name.slice(0, 18), sub: MQ.MOVES[id].type.slice(0, 3), value: id }));
+          label: MQ.MOVES[id].name.slice(0, 16), sub: `${this.mine.pp[id] ?? 0}/${MQ.MOVES[id].pp}`, value: id }));
         this.phase = 'moves';
         this.menu = new MQ.Menu(mv, { x: 6, y: MQ.H - 13 * mv.length - 28, w: 180, rows: 4,
           title: 'MOVIMIENTOS',
-          onPick: (it) => this.turn(it.value),
+          onPick: (it) => {
+            if ((this.mine.pp[it.value] ?? 0) <= 0) { MQ.audio.sfx('bump'); return; }
+            this.turn(it.value);
+          },
           onCancel: () => this.toMenu() });
       } else if (a === 'MOCHILA') this.openBag();
       else if (a === 'EQUIPO') this.openParty(false);
@@ -107,6 +116,13 @@
         MQ.audio.sfx('heal');
         this.say(`${name(this.mine)} recupera ${h} PS. ¡Qué sabroso!`, () => this.enemyTurn());
         this.pump();
+      } else if (item.cure) {
+        if (!this.mine.status) { this.say('No tiene ningún mal que curar. ¡Está más sano que tú!', () => this.toMenu()); this.pump(); return; }
+        p.bag[k]--;
+        this.mine.status = null;
+        MQ.audio.sfx('heal');
+        this.say(`El agua de coco obra el milagro: ¡${name(this.mine)} quedó como nuevo!`, () => this.enemyTurn());
+        this.pump();
       } else if (item.revive) {
         const t = p.party.find((m) => m.hp <= 0);
         if (!t) { this.say('Nadie necesita la cocada... todavía.', () => this.toMenu()); this.pump(); return; }
@@ -124,7 +140,9 @@
       this.phase = 'msg';
       MQ.audio.sfx('ficha');
       const hpFrac = this.enemy.hp / this.enemy.maxhp;
-      const p = (sp.catch / 255) * (1 - 0.66 * hpFrac) * item.ball;
+      // dormido ayuda el doble; paralizado o envenenado, la mitad más
+      const statusMul = this.enemy.status === 'slp' ? 2 : this.enemy.status ? 1.5 : 1;
+      const p = (sp.catch / 255) * (1 - 0.66 * hpFrac) * item.ball * statusMul;
       const caught = !noCatch && (item.ball >= 255 || Math.random() < Math.max(0.03, p));
       this.say(`Lanzas una ${item.name}... La ficha gira en el aire...`);
       if (caught) {
@@ -176,8 +194,9 @@
     // ---- turno ----------------------------------------------------------------
     turn(moveId) {
       this.phase = 'msg';
-      const pSpd = this.mine.spd * stageMul(this.pst.spd);
-      const eSpd = this.enemy.spd * stageMul(this.est.spd);
+      const parMul = (m) => (m.status === 'par' ? 0.5 : 1);
+      const pSpd = this.mine.spd * stageMul(this.pst.spd) * parMul(this.mine);
+      const eSpd = this.enemy.spd * stageMul(this.est.spd) * parMul(this.enemy);
       const mineFirst = pSpd === eSpd ? Math.random() < 0.5 : pSpd > eSpd;
       if (mineFirst) {
         this.doMove(this.mine, this.enemy, moveId, true, () => {
@@ -199,21 +218,46 @@
     }
 
     enemyPick() {
-      const mv = this.enemy.moves;
-      const scored = mv.map((id) => {
+      const avail = this.enemy.moves.filter((id) => (this.enemy.pp[id] ?? 0) > 0);
+      if (!avail.length) return 'forcejeo';
+      const scored = avail.map((id) => {
         const m = MQ.MOVES[id];
         let s = Math.random() * 20;
         if (m.pow) s += m.pow * MQ.effect(m.type, MQ.SPECIES[this.mine.id].types);
+        else if (m.fx && m.fx.status) s += this.mine.status ? 0 : 40;
         else s += this.est.atk + this.pst.atk > -2 ? 25 : 0;
         return [s, id];
       }).sort((a, b) => b[0] - a[0]);
       return scored[0][1];
     }
 
+    applyStatus(target, st, then) {
+      if (target.hp <= 0) { then(); return; }
+      if (target.status) { this.say('...pero no surte efecto.', then); return; }
+      target.status = st;
+      if (st === 'slp') target.slpT = 1 + MQ.rand(3); // 1-3 turnos
+      MQ.audio.sfx('weak');
+      this.say(`¡${name(target)} ${MQ.STATUS[st].verb}!`, then);
+    }
+
     doMove(atk, def, moveId, isMine, then) {
       const mv = MQ.MOVES[moveId];
       const aSt = isMine ? this.pst : this.est;
       const dSt = isMine ? this.est : this.pst;
+      // dormido: pierde el turno hasta despertar
+      if (atk.status === 'slp') {
+        atk.slpT = (atk.slpT || 1) - 1;
+        if (atk.slpT > 0) { this.say(`${name(atk)} está dormido... sueña con el llano.`, then); return; }
+        atk.status = null;
+        this.say(`¡${name(atk)} despertó!`);
+      }
+      // paralizado: 25% de quedarse pegado
+      if (atk.status === 'par' && Math.random() < 0.25) {
+        MQ.audio.sfx('weak');
+        this.say(`¡${name(atk)} está paralizado! El corrientazo no lo deja moverse.`, then);
+        return;
+      }
+      if (moveId !== 'forcejeo' && atk.pp && atk.pp[moveId] !== undefined) atk.pp[moveId]--;
       this.say(`${isMine ? '' : 'El rival: '}¡${name(atk)} usa ${mv.name}!`, () => {
         if (Math.random() * 100 > mv.acc) {
           MQ.audio.sfx('weak');
@@ -224,17 +268,32 @@
           const sp = MQ.SPECIES[def.id];
           const eff = MQ.effect(mv.type, sp.types);
           const stab = MQ.SPECIES[atk.id].types.includes(mv.type) ? 1.5 : 1;
+          const crit = Math.random() < 1 / 16 ? 1.5 : 1;
           const A = atk.atk * stageMul(aSt.atk), D = Math.max(1, def.def * stageMul(dSt.def));
-          let dmg = Math.floor((((2 * atk.lvl / 5 + 2) * mv.pow * A / D) / 50 + 2) * stab * eff * (0.85 + Math.random() * 0.15));
+          let dmg = Math.floor((((2 * atk.lvl / 5 + 2) * mv.pow * A / D) / 50 + 2) * stab * eff * crit * (0.85 + Math.random() * 0.15));
           dmg = Math.max(1, dmg);
           def.hp = Math.max(0, def.hp - dmg);
-          this.anim.shake = 8;
-          MQ.audio.sfx(eff > 1 ? 'eff' : eff < 1 ? 'weak' : 'hit');
+          this.anim.shake = crit > 1 ? 12 : 8;
+          MQ.audio.sfx(eff > 1 || crit > 1 ? 'eff' : eff < 1 ? 'weak' : 'hit');
           let extra = eff > 1 ? ' ¡Le dolió hasta el apellido!' : eff < 1 ? ' No le hizo ni cosquillas...' : '';
+          if (crit > 1) extra = ' ¡GOLPE CRÍTICO! De los que no se olvidan.' + (eff > 1 ? ' Y encima le dolió doble.' : '');
           this.say(`Hace ${dmg} de daño.${extra}`, () => {
-            if (def.hp <= 0 && !isMine) return this.mineFaint(then);
-            then();
+            const cont = () => {
+              if (def.hp <= 0) return isMine ? then() : this.mineFaint(then);
+              if (mv.fx && mv.fx.status && Math.random() < (mv.fx.chance ?? 1))
+                return this.applyStatus(def, mv.fx.status, then);
+              then();
+            };
+            if (mv.recoil && dmg > 0) {
+              atk.hp = Math.max(0, atk.hp - Math.max(1, Math.ceil(dmg * mv.recoil)));
+              this.say(`¡${name(atk)} se resiente del forcejeo!`, () => {
+                if (atk.hp <= 0) return isMine ? this.mineFaint(then) : this.enemyFaint();
+                cont();
+              });
+            } else cont();
           });
+        } else if (mv.fx && mv.fx.status) {
+          this.applyStatus(def, mv.fx.status, then);
         } else if (mv.fx && mv.fx.heal) {
           const h = Math.min(Math.floor(atk.maxhp * mv.fx.heal), atk.maxhp - atk.hp);
           atk.hp += h;
@@ -255,11 +314,26 @@
     afterRound() {
       if (this.enemy.hp <= 0) return this.enemyFaint();
       if (this.mine.hp <= 0) return; // mineFaint ya encoló
-      this.toMenu();
+      // el veneno gotea al cierre de la ronda
+      const ticks = [];
+      if (this.mine.status === 'psn') ticks.push([this.mine, true]);
+      if (this.enemy.status === 'psn') ticks.push([this.enemy, false]);
+      const next = () => {
+        if (!ticks.length) return this.toMenu();
+        const [m, isMine] = ticks.shift();
+        m.hp = Math.max(0, m.hp - Math.max(1, Math.floor(m.maxhp / 8)));
+        MQ.audio.sfx('weak');
+        this.say(`El veneno hace lo suyo con ${name(m)}...`, () => {
+          if (m.hp <= 0) return isMine ? this.mineFaint(() => {}) : this.enemyFaint();
+          next();
+        });
+      };
+      next();
     }
 
     mineFaint(thenIgnored) {
       MQ.audio.sfx('faint');
+      this.mine.status = null;
       this.say(`¡${name(this.mine)} se debilitó! Se fue en blanco.`, () => {
         const alive = MQ.player.party.some((m) => m.hp > 0);
         if (!alive) {
@@ -274,6 +348,7 @@
       MQ.audio.sfx('faint');
       MQ.audio.cry(this.enemy.id);
       const e = this.enemy;
+      e.status = null;
       this.say(`¡${name(e)} rival quedó fuera de servicio!`, () => this.giveXP(e));
     }
 
@@ -390,7 +465,16 @@
 
     update() {
       if (this.anim.shake > 0) this.anim.shake--;
+      if (this.anim.intro > 0) this.anim.intro--;
       if (!this.tb.active && this.phase === 'msg') this.pump();
+    }
+
+    statusChip(ctx, st, x, y) {
+      if (!st) return;
+      const S = MQ.STATUS[st];
+      ctx.fillStyle = S.color; ctx.fillRect(x, y, 22, 9);
+      ctx.fillStyle = '#16121f'; ctx.font = MQ.FONT;
+      ctx.fillText(S.name, x + 2, y + 1);
     }
 
     hpBar(ctx, x, y, w, m) {
@@ -410,13 +494,19 @@
       ctx.fillStyle = 'rgba(245,166,35,0.06)';
       for (let i = 0; i < 5; i++) ctx.fillRect(20 + i * 64, 0, 10, MQ.H);
 
+      // entrada al combate: los contrincantes se deslizan a escena
+      const slide = this.anim.intro > 0 ? this.anim.intro * 5 : 0;
       const sh = this.anim.shake ? (Math.random() * 4 - 2) : 0;
-      // enemigo (arriba derecha)
+      // enemigo (arriba derecha, entra desde la derecha)
       if (this.enemy.hp > 0 || this.phase === 'msg') {
-        MQ.drawMon(ctx, this.enemy.id, MQ.W - 84 + sh, 28, 4);
+        MQ.drawMon(ctx, this.enemy.id, MQ.W - 84 + sh + slide, 28, 4);
       }
-      // mío (abajo izquierda, volteado)
-      if (this.mine.hp > 0) MQ.drawMon(ctx, this.mine.id, 18 - sh, 130, 4, true);
+      // mío (abajo izquierda, volteado, entra desde la izquierda)
+      if (this.mine.hp > 0) MQ.drawMon(ctx, this.mine.id, 18 - sh - slide, 130, 4, true);
+      // destello inicial
+      if (this.anim.intro > 28 && this.anim.intro % 4 < 2) {
+        ctx.fillStyle = 'rgba(245,215,110,0.35)'; ctx.fillRect(0, 0, MQ.W, MQ.H);
+      }
 
       ctx.font = MQ.FONT_B; ctx.textBaseline = 'top';
       // panel enemigo
@@ -424,6 +514,8 @@
       ctx.fillStyle = '#e8dfc8';
       ctx.fillText(name(this.enemy) + '  N' + this.enemy.lvl, 14, 15);
       this.hpBar(ctx, 14, 28, 120, this.enemy);
+      this.statusChip(ctx, this.enemy.status, 112, 14);
+      ctx.font = MQ.FONT_B;
       const types = MQ.SPECIES[this.enemy.id].types;
       types.forEach((t, i) => {
         ctx.fillStyle = MQ.TYPES[t].color;
@@ -437,6 +529,7 @@
       ctx.font = MQ.FONT;
       ctx.fillStyle = '#8a8aa0';
       ctx.fillText(`${this.mine.hp}/${this.mine.maxhp} PS`, MQ.W - 158, 186);
+      this.statusChip(ctx, this.mine.status, MQ.W - 92, 185);
       // barra xp
       const cur = MQ.xpForLevel(this.mine.lvl), nxt = MQ.xpForLevel(this.mine.lvl + 1);
       const xf = MQ.clamp((this.mine.xp - cur) / (nxt - cur), 0, 1);

@@ -37,7 +37,7 @@
   MQ.respawn = (world) => {
     const p = MQ.player;
     p.money = Math.floor(p.money / 2);
-    p.party.forEach((m) => { m.hp = m.maxhp; });
+    p.party.forEach(MQ.fullHeal);
     p.x = p.respawn.x; p.y = p.respawn.y;
     world.enterMap(p.respawn.map);
     world.tb.open(MQ.ctx, 'Te fuiste en blanco... El Doctorcito te recogió del andén, te sanó el equipo y te cobró la mitad de los bolos "por concepto de susto".');
@@ -221,6 +221,54 @@
   MQ.popScene = () => MQ.scenes.pop();
   const top = () => MQ.scenes[MQ.scenes.length - 1];
 
+  // ---- intro cinematográfica (saltable, estilo apertura de los clásicos) -----------
+  class IntroScene {
+    constructor() {
+      this.done = false;
+      this.hint = 0;
+      const v = (this.v = document.createElement('video'));
+      v.muted = true; v.playsInline = true; v.preload = 'auto';
+      for (const [src, type] of [['assets/intro.webm', 'video/webm'], ['assets/intro.mp4', 'video/mp4']]) {
+        const s = document.createElement('source');
+        s.src = src; s.type = type;
+        v.appendChild(s);
+      }
+      v.oncanplay = () => v.play().catch(() => this.skip());
+      v.onended = () => this.skip();
+      v.onerror = () => this.skip();
+      v.load();
+      // si el video no carga (sin red, navegador viejo), directo al título
+      this.timeout = setTimeout(() => { if (v.readyState < 2) this.skip(); }, 5000);
+    }
+    skip() {
+      if (this.done) return;
+      this.done = true;
+      clearTimeout(this.timeout);
+      try { this.v.pause(); } catch (e) {}
+      MQ.popScene();
+      MQ.pushScene(new TitleScene());
+    }
+    press(k) {
+      if (k === 'a' && this.v.muted && !this.v.ended) { this.v.muted = false; return; } // primer A: sonido
+      this.skip();
+    }
+    update() { this.hint++; }
+    draw(ctx) {
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, MQ.W, MQ.H);
+      if (this.v.readyState >= 2 && this.v.videoWidth) {
+        const s = Math.min(MQ.W / this.v.videoWidth, MQ.H / this.v.videoHeight);
+        const w = this.v.videoWidth * s, h = this.v.videoHeight * s;
+        try { ctx.drawImage(this.v, (MQ.W - w) / 2, (MQ.H - h) / 2, w, h); } catch (e) {}
+      }
+      if ((this.hint / 40 | 0) % 2) {
+        ctx.font = MQ.FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+        ctx.fillStyle = 'rgba(232,223,200,0.8)';
+        ctx.fillText(this.v.muted ? 'A: sonido · B: saltar' : 'B: saltar', MQ.W / 2, MQ.H - 14);
+        ctx.textAlign = 'left';
+      }
+    }
+  }
+
   // ---- título -----------------------------------------------------------------------
   class TitleScene {
     constructor() { this.mode = 'splash'; this.menu = null; this.t = 0; MQ.audio.music('title'); }
@@ -387,7 +435,7 @@
     MQ.LOOKS.player.shirt = '#7a1f3d';
     MQ.LOOKS.playera = { skin: '#b87a4a', shirt: '#7a1f3d', pants: '#33334a', hair: '#26100a' };
 
-    MQ.pushScene(new TitleScene());
+    MQ.pushScene(new IntroScene());
     const loop = () => {
       const s = top();
       if (s) {

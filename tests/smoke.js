@@ -65,7 +65,11 @@ for (const id of MQ.DEX_ORDER) {
 for (const [id, mv] of Object.entries(MQ.MOVES)) {
   ok(MQ.TYPES[mv.type], `mov ${id}: tipo válido`);
   ok(mv.pow > 0 || mv.fx, `mov ${id}: tiene poder o efecto`);
+  ok(mv.pp > 0 && mv.pp <= 99, `mov ${id}: PP válidos (${mv.pp})`);
+  if (mv.fx && mv.fx.status) ok(MQ.STATUS[mv.fx.status], `mov ${id}: estado '${mv.fx.status}' existe`);
 }
+ok(MQ.MOVES.forcejeo && MQ.MOVES.forcejeo.recoil > 0, 'Forcejeo existe con retroceso');
+ok(MQ.MOVES.arrullo && MQ.MOVES.arrullo.fx.status === 'slp', 'Arrullo duerme');
 for (const [atk, row] of Object.entries(MQ.CHART))
   for (const def of Object.keys(row)) ok(MQ.TYPES[def], `tabla de tipos: ${atk}->${def} válido`);
 
@@ -146,6 +150,17 @@ section('Lógica');
 const mon = MQ.makeMon('frontinito', 5);
 ok(mon.hp === mon.maxhp && mon.hp > 10, 'makeMon: PS positivos');
 ok(mon.moves.length >= 1 && mon.moves.length <= 4, 'makeMon: 1-4 movimientos');
+ok(mon.moves.every((m) => mon.pp[m] === MQ.MOVES[m].pp), 'makeMon: PP llenos');
+// curación completa: limpia estado y restaura PP (y migra mons sin pp)
+{
+  const m = MQ.makeMon('mapanare', 12);
+  m.status = 'psn'; m.hp = 3; m.pp[m.moves[0]] = 0;
+  MQ.fullHeal(m);
+  ok(m.hp === m.maxhp && !m.status && m.pp[m.moves[0]] === MQ.MOVES[m.moves[0]].pp, 'fullHeal: PS, estado y PP');
+  const viejo = { id: 'morrocoy', lvl: 9, hp: 5, maxhp: 30, moves: ['conchazo'] }; // guardado pre-PP
+  MQ.ensurePP(viejo);
+  ok(viejo.pp.conchazo === MQ.MOVES.conchazo.pp, 'ensurePP migra guardados viejos');
+}
 ok(MQ.movesAtLevel('frontinito', 50).length === 4, 'movesAtLevel recorta a 4');
 ok(MQ.effect('Rumba', ['Espanto']) === 2, 'tabla: Rumba > Espanto');
 ok(MQ.effect('Caribe', ['Monte', 'Tepuy']) === 1, 'tabla: multiplicadores compuestos');
@@ -180,6 +195,10 @@ function autoBattle(opts, presses = 3000) {
 }
 const r1 = autoBattle({ wild: { id: 'duendecito', lvl: 5 } });
 ok(r1 === 'win', `combate salvaje termina en victoria (=${r1})`);
+{
+  const m = MQ.player.party[0];
+  ok(m.moves.some((k) => m.pp[k] < MQ.MOVES[k].pp), 'los PP se gastan al pelear');
+}
 const r2 = autoBattle({ trainer: { id: 'tt', cls: 'Test', team: [['bachaquito', 4], ['caribito', 4]], money: 50, intro: 'hola', win: 'ganaste', lose: 'perdiste' } });
 ok(r2 === 'win', `combate de entrenador termina en victoria (=${r2})`);
 ok(MQ.player.money === 300, `dinero del entrenador pagado (${MQ.player.money})`);

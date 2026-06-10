@@ -72,8 +72,15 @@ const path = require('path');
     }
   };
 
+  // — intro cinematográfica: dejarla correr completa (termina sola) —
+  await page.waitForFunction(() => {
+    const MQ = window.MQ;
+    const s = MQ.scenes[MQ.scenes.length - 1];
+    return s && s.constructor && s.constructor.name === 'TitleScene';
+  }, { timeout: 25000 });
+
   // — título —
-  await wait(3000);
+  await wait(2200);
   await z(700);              // splash → menú
   await z(700);              // NUEVA PARTIDA
   await z(900);              // CHAMO (el prompt del nombre se acepta solo)
