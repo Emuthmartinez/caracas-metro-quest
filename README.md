@@ -30,15 +30,18 @@ python3 -m http.server 8000
 
 ## El juego
 
-- Es la **hora fantasma**: pasó el último tren y los espantos del folclore venezolano
-  bajaron a los túneles de la Línea 1.
-- Tu abuela te da un inicial (**Arepito**, **Turpialín** o **Cocuyín**) y cinco
-  **fichas del Metro del 83**: lánzaselas a los espantos salvajes para **ficharlos**.
+- Es la **hora fantasma**: pasó el último tren y la fauna de toda Venezuela —
+  chigüires, toninas, osos frontinos — bajó a los túneles de la Línea 1 junto a los
+  espantos del folclore. En Caracas a nadie le parece raro: se les da el asiento y ya.
+- Tu abuela te da un inicial (**Frontinito** el oso de anteojos, **Turpialín** o
+  **Cocuyín**) y cinco **fichas del Metro del 83**: lánzaselas a las criaturas
+  salvajes para **ficharlas**. Cada una tiene su grito: el chigüire silba, el
+  araguato ruge, la tonina hace clics.
 - Camina los túneles de **Propatria a Petare**, vence a los **cuatro Jefes de Estación**
   por sus **Fichas Doradas**, pelea con tu primo **Cheo** (que volvió de visita después
   de cinco años afuera) y baja a la **Línea Fantasma** a enfrentar al **Tren Fantasma**,
   el que se lleva los recuerdos de la ciudad.
-- 25 espantos para fichar, 8 tipos criollos (Sabroso, Rumba, Espanto, Catatumbo,
+- 29 criaturas para fichar, 8 tipos criollos (Sabroso, Rumba, Espanto, Catatumbo,
   Caribe, Monte, Tepuy, Criollo), combate por turnos, evoluciones, tienda de buhonero,
   el Doctorcito que cura, tren rápido entre estaciones y guardado automático en el navegador.
 

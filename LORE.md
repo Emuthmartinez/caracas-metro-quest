@@ -56,33 +56,50 @@ son las "medallas" del juego: las custodian los Jefes de Estación.
 | **Monte** | El monte que se traga todo lo que uno deja quieto seis meses. |
 | **Tepuy** | La piedra más vieja del planeta. Lo ancestral pemón: la Gran Sabana, la piedra Kueka. |
 
-## El Cuaderno de Espantos (los 25)
+## El Cuaderno de Espantos (las 29)
 
-1. **Arepito** *(Sabroso)* — inicial. Nació en un budare a las 6 a.m. Evoluciona a...
-2. **Reina Pepiada** *(Sabroso/Criollo)* — coronada en 1955 en honor a una reina de belleza, como la arepa real.
-3. **Turpialín** *(Rumba)* — inicial. El ave nacional, chiquito y arrecho. Evoluciona a...
+El realismo mágico es la regla de la casa: la fauna real de Venezuela convive con los
+espantos del folclore y nadie en Caracas levanta una ceja. El oso pide la hora, la
+tonina nada por el aire del túnel, el rabipelado vuelve de su propio velorio — y la
+ciudad les da el asiento. Cada criatura tiene además **su grito sintetizado**: el
+chigüire silba, el araguato ruge a cinco kilómetros, el Silbón... mejor ni lo nombres.
+
+1. **Frontinito** *(Tepuy)* — inicial. Osezno frontino (oso de anteojos, el único oso
+   de Suramérica, vecino real del Ávila). Bajó una noche de neblina y se quedó porque
+   aquí el café huele mejor. Evoluciona a...
+2. **Ucumarí** *(Tepuy/Monte)* — el oso frontino adulto, portero secreto del Ávila.
+   "Ucumarí" es su nombre andino ancestral.
+3. **Turpialín** *(Rumba/Monte)* — inicial. El ave nacional, chiquito y arrecho. Evoluciona a...
 4. **Cantaclaro** *(Rumba/Monte)* — el turpial coplero con sombrero. Homenaje a *Cantaclaro* de Rómulo Gallegos y a Florentino, el que venció al Diablo cantando.
 5. **Cocuyín** *(Catatumbo)* — inicial. Cocuyo que se tragó un cable de alta tensión. Evoluciona a...
 6. **La Centella** *(Catatumbo/Espanto)* — la bola de fuego que persigue caminantes en la sabana, espanto llanero clásico.
 7. **Chigüi** *(Caribe)* — chigüire (capibara). El Vaticano dictaminó que en Semana Santa cuenta como pescado: dato real y meme eterno.
 8. **Chigüirón** *(Caribe/Tepuy)* — chigüire ancestral con lomo de piedra.
-9. **Guacamayo** *(Rumba/Monte)* — las guacamayas de Caracas, que cobran su semilla en los balcones a las 4 en punto. Patrimonio emocional de la ciudad.
-10. **Caribito** *(Caribe)* — pirañita. Evoluciona a...
-11. **Caribazo** *(Caribe)* — lo único que sobrevivió al Guaire. Respeto.
-12. **Araguako** *(Monte/Rumba)* — mono araguato. Se oye a 5 km, como tu tía.
-13. **Bachaquito** *(Monte)* — bachaco que carga 50 veces su peso. Evoluciona a...
-14. **Bachacón** *(Monte/Tepuy)* — bachaco culón legendario.
-15. **Cachicamo** *(Tepuy)* — "cachicamo trabaja pa' lapa", dice el refrán. Este se independizó.
-16. **Morrocoy** *(Tepuy/Sabroso)* — le dijo conchudo al cachicamo (el refrán completo). Vive en un patio desde 1974.
-17. **Mapanare** *(Monte/Espanto)* — "más peligrosa que mapanare en bolsillo de liqui-liqui".
-18. **Duendecito** *(Espanto/Monte)* — esconde las chancletas izquierdas. Solo las izquierdas.
-19. **Pavoso** *(Espanto)* — la pava encarnada. No lo toques, no lo nombres.
-20. **Vagónima** *(Espanto/Catatumbo)* — el vagón que salió de Propatria en 1987 y nunca llegó a Palo Verde.
-21. **La Llorona** *(Espanto/Caribe)* — llora por las quebradas del Ávila; en el túnel se confunde con los frenos del tren.
-22. **La Sayona** *(Espanto)* — aparece bella en el andén y pregunta por tu situación sentimental. Responde con sinceridad.
-23. **El Silbón** *(Espanto/Rumba)* — legendario. Saco de huesos, silbido que si suena lejos está cerca. Su movimiento firma (*Silbido Lejano*) nunca falla.
-24. **Catatumbo** *(Catatumbo/Caribe)* — legendario post-final. El relámpago eterno bajó a Caracas a ver qué era el corre-corre.
-25. **Tren Fantasma** *(Espanto/Catatumbo)* — el jefe final. No es un villano: es el guardián de lo que dejaron atrás los que se fueron, y ya no puede solo.
+9. **Cunaguaro** *(Monte)* — el ocelote venezolano. Caza de noche en los túneles y baja al Calvario a contar palomas: contar también es cazar, pero más elegante.
+10. **Pereza** *(Monte/Criollo)* — llegó al Calvario en 1987 por un cable de luz y sigue en el mismo árbol, esperando a que la ciudad se desapure.
+11. **Rabipelado** *(Criollo/Espanto)* — el zarigüeya criollo. Se hizo el muerto tan bien que lo velaron con café y todo; al tercer día volvió por las teticas de mango. Mitad animal, mitad aparecido.
+12. **Guacamayo** *(Rumba/Monte)* — las guacamayas de Caracas, que cobran su semilla en los balcones a las 4 en punto. Patrimonio emocional de la ciudad.
+13. **Caribito** *(Caribe)* — pirañita. Evoluciona a...
+14. **Caribazo** *(Caribe)* — lo único que sobrevivió al Guaire. Respeto.
+15. **Araguako** *(Monte/Rumba)* — mono araguato. Se oye a 5 km, como tu tía.
+16. **Tonina** *(Caribe/Espanto)* — el delfín rosado del Orinoco. Un reventón la trajo al túnel 4 y nada por el aire como si el río siguiera ahí. La leyenda del *encantado*: en las fiestas se viste de gente — no le mires los pies.
+17. **Bachaquito** *(Monte)* — bachaco que carga 50 veces su peso. Evoluciona a...
+18. **Bachacón** *(Monte/Tepuy)* — bachaco culón legendario.
+19. **Cachicamo** *(Tepuy)* — "cachicamo trabaja pa' lapa", dice el refrán. Este se independizó.
+20. **Morrocoy** *(Tepuy/Sabroso)* — le dijo conchudo al cachicamo (el refrán completo). Vive en un patio desde 1974.
+21. **Mapanare** *(Monte/Espanto)* — "más peligrosa que mapanare en bolsillo de liqui-liqui".
+22. **Duendecito** *(Espanto/Monte)* — esconde las chancletas izquierdas. Solo las izquierdas.
+23. **Pavoso** *(Espanto)* — la pava encarnada. No lo toques, no lo nombres.
+24. **Vagónima** *(Espanto/Catatumbo)* — el vagón que salió de Propatria en 1987 y nunca llegó a Palo Verde.
+25. **La Llorona** *(Espanto/Caribe)* — llora por las quebradas del Ávila; en el túnel se confunde con los frenos del tren.
+26. **La Sayona** *(Espanto)* — aparece bella en el andén y pregunta por tu situación sentimental. Responde con sinceridad.
+27. **El Silbón** *(Espanto/Rumba)* — legendario. Saco de huesos, silbido que si suena lejos está cerca. Su movimiento firma (*Silbido Lejano*) nunca falla.
+28. **Catatumbo** *(Catatumbo/Caribe)* — legendario post-final. El relámpago eterno bajó a Caracas a ver qué era el corre-corre.
+29. **Tren Fantasma** *(Espanto/Catatumbo)* — el jefe final. No es un villano: es el guardián de lo que dejaron atrás los que se fueron, y ya no puede solo.
+
+Los iniciales forman su triángulo: **Frontinito** (Tepuy) le gana a **Cocuyín**
+(Catatumbo), que le gana a **Turpialín** (Rumba/Monte), que le gana a **Frontinito**.
+La piedra aterriza al rayo, el rayo calla la canción, la raíz parte la piedra.
 
 ## La gente del subterráneo
 

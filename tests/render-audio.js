@@ -3,8 +3,19 @@
 // Uso: node tests/render-audio.js <duración_seg> [/tmp/audlog.json] [/tmp/soundtrack.wav]
 'use strict';
 const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
 
 const SR = 44100;
+
+// los gritos de las criaturas viven en js/dex.js (MQ.CRIES) — cárgalos de verdad
+const CRIES = (() => {
+  const sb = { console };
+  sb.globalThis = sb;
+  vm.createContext(sb);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'js', 'dex.js'), 'utf8'), sb);
+  return sb.MQ.CRIES;
+})();
 
 // ---- tabla de notas (idéntica a js/audio.js) ----
 const N = {};
@@ -136,11 +147,12 @@ for (const [t, kind, name] of events) {
   music.push({ name, start: t, end: durSec });
 }
 for (const seg of music) renderTrack(seg.name, seg.start, seg.end);
-let nsfx = 0;
+let nsfx = 0, ncry = 0;
 for (const [t, kind, name] of events) {
-  if (kind !== 'sfx' || !SFX[name]) continue;
-  nsfx++;
-  for (const fx of SFX[name]) {
+  const steps = kind === 'sfx' ? SFX[name] : kind === 'cry' ? CRIES[name] : null;
+  if (!steps) continue;
+  kind === 'sfx' ? nsfx++ : ncry++;
+  for (const fx of steps) {
     if (fx[0] === 'n') noise(fx[1], fx[2], t + fx[3]);
     else beep(fx[1], fx[2], fx[3], fx[4], t + fx[5], fx[6]);
   }
@@ -158,4 +170,4 @@ hdr.write('fmt ', 12); hdr.writeUInt32LE(16, 16); hdr.writeUInt16LE(1, 20); hdr.
 hdr.writeUInt32LE(SR, 24); hdr.writeUInt32LE(SR * 2, 28); hdr.writeUInt16LE(2, 32); hdr.writeUInt16LE(16, 34);
 hdr.write('data', 36); hdr.writeUInt32LE(pcm.length, 40);
 fs.writeFileSync(outPath, Buffer.concat([hdr, pcm]));
-console.log(`soundtrack: ${outPath} · ${durSec}s · ${music.length} segmentos de música (${music.map(m => m.name).join('→')}) · ${nsfx} sfx`);
+console.log(`soundtrack: ${outPath} · ${durSec}s · ${music.length} segmentos de música (${music.map(m => m.name).join('→')}) · ${nsfx} sfx · ${ncry} gritos`);

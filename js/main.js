@@ -70,19 +70,20 @@
   MQ.SCRIPTS = {
     intro: () => [
       { say: ['', 'Caracas. El Metro abrió en 1983: «La Gran Solución». Pero las tuneladoras pasaron por donde no debían: por debajo de la memoria de la ciudad.'] },
-      { say: ['', 'Desde entonces, cuando pasa el último tren, empieza la HORA FANTASMA: los espantos de toda Venezuela bajan a los túneles a calentarse junto a los rieles.'] },
+      { say: ['', 'Desde entonces, cuando pasa el último tren, empieza la HORA FANTASMA: la fauna de toda Venezuela baja a los túneles a calentarse junto a los rieles.'] },
+      { say: ['', 'Chigüires que cruzaron desde el llano por los sueños de la gente. Toninas que nadan por el aire. Osos que bajan del Ávila a pedir la hora. En Caracas a nadie le parece raro: se les da el asiento y ya.'] },
       { say: ['', 'Esta noche, dicen, vuelve a rodar el TREN FANTASMA... y cada vez que pasa, la ciudad amanece con menos recuerdos. Y la diáspora, con menos sueños.'] },
       { say: ['Abuela', '¡Mijito! Ven acá antes de salir. Asómate a la mesa: tengo tres criaturitas esperando por ti. Háblales, que no muerden... bueno, casi.'] },
     ],
 
-    'starter:arepito': starterScript('arepito', '¿El Arepito? Buena elección, mi amor: contigo no pasa hambre ni tristeza nadie. Redondito como el cariño.'),
+    'starter:frontinito': starterScript('frontinito', '¿El Frontinito? Bajó del Ávila una noche de neblina y se quedó porque aquí el café huele mejor. Nació con los anteojos puestos: ve clarito quién tiene buen corazón. Por eso te está mirando así.'),
     'starter:turpialin': starterScript('turpialin', '¿El Turpialín? Ese pajarito cantó el día que tú naciste, te lo juro por esta luz. Tiene la rumba por dentro.'),
     'starter:cocuyin': starterScript('cocuyin', '¿El Cocuyín? Sabia decisión, mijo: en este país, el que alumbra cuando se va la luz... ese manda.'),
 
     abuela: () => {
       const f = MQ.player.flags;
       if (!f.starter) return [
-        { say: ['Abuela', 'En esa mesa hay tres compañeros: el Arepito te cuida la barriga y el corazón, el Turpialín canta y pelea, y el Cocuyín alumbra hasta en apagón. Escoge con calma.'] },
+        { say: ['Abuela', 'En esa mesa hay tres compañeros: el Frontinito te carga y te abraza como montaña, el Turpialín canta y pelea, y el Cocuyín alumbra hasta en apagón. Escoge con calma.'] },
       ];
       if (f.tren) return [
         { say: ['Abuela', 'Ay, mi amor... La ciudad amaneció distinta. Me llamó tu primo llorando: soñó con el pan de jamón de la bisabuela, después de años sin soñar en venezolano.'] },
@@ -208,7 +209,7 @@
   };
 
   const firstStarter = () => {
-    for (const id of ['arepito', 'pepiada']) if (hasLine(id)) return 'arepito';
+    for (const id of ['frontinito', 'ucumari']) if (hasLine(id)) return 'frontinito';
     for (const id of ['turpialin', 'cantaclaro']) if (hasLine(id)) return 'turpialin';
     return 'cocuyin';
   };
@@ -358,7 +359,7 @@
         ctx.fillText('Caracas no se olvida:', MQ.W / 2, 130);
         ctx.fillText('Caracas se lleva.', MQ.W / 2, 144);
         // desfile de espantos
-        const ids = ['arepito', 'turpialin', 'cocuyin', 'chigui', 'guacamayo', 'duendecito'];
+        const ids = ['frontinito', 'turpialin', 'cocuyin', 'chigui', 'tonina', 'cunaguaro'];
         ids.forEach((id, i) => MQ.drawMon(ctx, id, 30 + i * 45 + Math.sin(this.t / 20 + i) * 3, 180 + Math.cos(this.t / 25 + i) * 4, 2));
         ctx.fillStyle = '#8a8aa0';
         ctx.font = MQ.FONT;

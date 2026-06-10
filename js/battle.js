@@ -42,11 +42,12 @@
       if (this.trainer) {
         this.say(`¡${this.trainer.cls} ${this.trainer.name || ''} te reta!`.replace('  ', ' '));
         this.say(this.trainer.intro);
-        this.say(`${this.trainer.name || this.trainer.cls} saca a ${name(this.enemy)}.`);
+        this.say(`${this.trainer.name || this.trainer.cls} saca a ${name(this.enemy)}.`, () => MQ.audio.cry(this.enemy.id));
       } else {
+        MQ.audio.cry(this.enemy.id);
         this.say(`¡Un ${name(this.enemy)} salvaje apareció en la oscuridad!`);
       }
-      this.say(`¡Dale, ${name(this.mine)}!`, () => this.toMenu());
+      this.say(`¡Dale, ${name(this.mine)}!`, () => { MQ.audio.cry(this.mine.id); this.toMenu(); });
     }
 
     say(t, fn) { this.queue.push({ t, fn }); }
@@ -271,6 +272,7 @@
 
     enemyFaint() {
       MQ.audio.sfx('faint');
+      MQ.audio.cry(this.enemy.id);
       const e = this.enemy;
       this.say(`¡${name(e)} rival quedó fuera de servicio!`, () => this.giveXP(e));
     }
@@ -334,7 +336,7 @@
         this.enemy = this.eteam[this.ei];
         MQ.player.dexSeen[this.enemy.id] = true;
         this.est = { atk: 0, def: 0, spd: 0 };
-        this.say(`${this.trainer.name || this.trainer.cls} saca a ${name(this.enemy)}. ¡La cosa sigue!`, () => this.toMenu());
+        this.say(`${this.trainer.name || this.trainer.cls} saca a ${name(this.enemy)}. ¡La cosa sigue!`, () => { MQ.audio.cry(this.enemy.id); this.toMenu(); });
         this.pump();
         return;
       }
@@ -371,6 +373,7 @@
             if (l <= m.lvl && !m.moves.includes(mv) && m.moves.length < 4) m.moves.push(mv);
           MQ.player.dexCaught[m.id] = true; MQ.player.dexSeen[m.id] = true;
           MQ.audio.sfx('catch');
+          MQ.audio.cry(m.id);
           this.say(`¡Evolucionó a ${name(m)}! Caracas lo vio crecer.`, doEvo);
         });
         this.pump();
