@@ -740,7 +740,7 @@
         this.pendingWarp = w;
         return;
       }
-      if (ch === 'M') { if (p.dir === 'up') this.openTrain(); return; }
+      if (ch === 'M') { this.openTrain(); return; } // pisar la franja del andén = tomar el tren
       if (this.checkTrigger()) return;
       // encuentro salvaje: la pantalla parpadea y arranca la música antes del combate
       const enc = this.map.enc;
@@ -782,9 +782,27 @@
           MQ.drawTile(ctx, m.grid[y][x], Math.round(x * T - camX), Math.round(y * T - camY), th, now);
         }
       }
-      // tren decorativo en estaciones
-      if (m.station && (now / 9000 | 0) % 2 === 0) {
-        MQ.drawTrain(ctx, Math.round(T - camX), Math.round(T - camY), m.grid[0].length * T - 2 * T);
+      // el tren de la estación vive su ciclo: entra, espera con las puertas
+      // encendidas y sigue su ruta (pisar la franja M lo aborda en cualquier momento)
+      if (m.station) {
+        const per = 11000, ph = (now % per) / 1000;
+        const tw = m.grid[0].length * T - 2 * T;
+        let tx = null;
+        if (ph < 1.2) tx = T - (tw + 2 * T) * Math.pow(1 - ph / 1.2, 2);
+        else if (ph < 6.4) tx = T;
+        else if (ph < 7.6) tx = T + (tw + 2 * T) * Math.pow((ph - 6.4) / 1.2, 2);
+        if (tx !== null) {
+          MQ.drawTrain(ctx, Math.round(tx - camX), Math.round(T - camY), tw);
+          if (ph >= 1.2 && ph < 6.4) { // puertas cálidas mientras espera
+            ctx.fillStyle = (now / 500 | 0) % 2 ? 'rgba(255,230,110,0.85)' : 'rgba(255,230,110,0.55)';
+            for (let dx = 20; dx < tw - 20; dx += 56) ctx.fillRect(Math.round(tx + dx - camX), Math.round(T - camY) + 11, 8, 5);
+          }
+        }
+        // seña parpadeante para abordar cuando estás cerca del borde
+        if (!this.menu && !this.tb.active && !this.script && p.y >= 3 && p.y <= 4 && (now / 450 | 0) % 2) {
+          ctx.font = MQ.FONT_B; ctx.fillStyle = '#f5d76e';
+          ctx.fillText('▲ TREN', Math.round(p.x * T - camX) - 6, Math.round(2 * T - camY) + 4);
+        }
       }
       // NPCs
       for (const n of m.npcs || []) {
