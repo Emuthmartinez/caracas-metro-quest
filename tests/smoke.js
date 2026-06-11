@@ -372,6 +372,47 @@ section('Overworld');
   ok(MQ.player.party.length === 1, 'no se puede agarrar un segundo inicial');
 }
 
+// tren: abordar desde el tile M, elegir destino y VIAJAR (RideScene)
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 5)];
+  MQ.player.flags.starter = true;
+  MQ.player.map = 'propatria'; MQ.player.x = 13; MQ.player.y = 3;
+  MQ.player.visited = { propatria: true, capitolio: true, petare: true };
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  // sube hasta la franja del tren (M) mirando arriba
+  MQ.player.x = 13; MQ.player.y = 2; MQ.player.dir = 'up';
+  w.arrived();
+  ok(!!w.menu && w.mapBehind, 'tile M abre el menú del tren con el mapa de fondo');
+  w.draw(ctxStub); // el mapa + menú dibujan sin reventar
+  w.press('a');    // primer destino (capitolio)
+  ok(MQ.scenes[MQ.scenes.length - 1] instanceof MQ.RideScene, 'elegir destino monta el RideScene');
+  const ride = MQ.scenes[MQ.scenes.length - 1];
+  for (let i = 0; i < 1000 && MQ.scenes.length > 1; i++) { ride.update(); ride.draw(ctxStub); }
+  ok(MQ.scenes.length === 1, 'el viaje termina solo');
+  ok(MQ.player.map === 'capitolio', `el tren llega a capitolio (=${MQ.player.map})`);
+  while (w.tb.active) w.press('a');
+  // viaje largo con saltar (A) a mitad de camino
+  MQ.player.x = 13; MQ.player.y = 2; MQ.player.dir = 'up';
+  w.arrived();
+  w.press('down'); w.press('a'); // segundo destino (petare)
+  const ride2 = MQ.scenes[MQ.scenes.length - 1];
+  ok(ride2 instanceof MQ.RideScene && ride2.passing.length >= 3, `el viaje largo pasa estaciones (${ride2.passing.length})`);
+  for (let i = 0; i < 10; i++) ride2.update();
+  ride2.press('a'); // llegar de una vez
+  ok(MQ.player.map === 'petare', `saltar el viaje también llega (=${MQ.player.map})`);
+  while (w.tb.active) w.press('a');
+  // el mapa del Metro desde el menú de pausa
+  w.openPause();
+  w.press('down'); w.press('down'); w.press('a'); // EQUIPO→CUADERNO→MAPA
+  ok(w.mapView === true && !w.menu, 'MAPA abre el mapa del Metro');
+  w.draw(ctxStub);
+  w.press('b');
+  ok(w.mapView === false, 'el mapa se cierra con B');
+}
+
 // scripts de historia existen y devuelven listas
 for (const k of ['intro', 'abuela', 'heal', 'rival1', 'rival2', 'rival3', 'altar', 'trenfantasma']) {
   MQ.player = MQ.newPlayer('T', 'player');

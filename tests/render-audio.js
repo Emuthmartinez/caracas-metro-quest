@@ -76,6 +76,7 @@ const SFX = {
   lvl: [523, 659, 784, 1046, 1318].map((f, i) => ['b', f, 0.09, 'square', 0.04, i * 0.07, 0]),
   faint: [['b', 400, 0.4, 'sawtooth', 0.06, 0, -350]],
   train: [['n', 0.5, 0.04, 0], ['b', 220, 0.5, 'triangle', 0.03, 0, 60]],
+  riel: [['n', 0.04, 0.03, 0], ['b', 70, 0.06, 'triangle', 0.04, 0, 0]],
   whistle: [['b', 1100, 0.5, 'sine', 0.05, 0, 500], ['b', 1400, 0.5, 'sine', 0.04, 0.55, -600]],
 };
 
@@ -83,6 +84,9 @@ const SFX = {
 const durSec = parseFloat(process.argv[2] || '60');
 const logPath = process.argv[3] || '/tmp/audlog.json';
 const outPath = process.argv[4] || '/tmp/soundtrack.wav';
+// corrección opcional de deriva del video grabado: t_video = offset + scale·t_evento
+const tScale = parseFloat(process.argv[5] || '1');
+const tOffset = parseFloat(process.argv[6] || '0');
 const buf = new Float32Array(Math.ceil(durSec * SR));
 
 function osc(type, phase) {
@@ -137,7 +141,8 @@ function renderTrack(name, t0, t1) {
   }
 }
 
-const { events } = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+const events = JSON.parse(fs.readFileSync(logPath, 'utf8'))
+  .events.map(([t, k, n]) => [tOffset + tScale * t, k, n]);
 // segmentos de música: de cada cambio hasta el siguiente
 const music = [];
 for (const [t, kind, name] of events) {
