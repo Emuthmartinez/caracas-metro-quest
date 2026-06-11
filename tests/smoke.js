@@ -384,12 +384,32 @@ section('Overworld');
   MQ.scenes.length = 0;
   const w = new MQ.WorldScene();
   MQ.pushScene(w);
+  // jugador nuevo: aunque solo conozca propatria, el tren ofrece la siguiente
+  {
+    MQ.player.visited = { propatria: true };
+    w.openTrain();
+    ok(!!w.menu, 'recién empezado, el tren igual ofrece destino');
+    ok(w.menu.items.some((it) => it.value === 'canoamarillo'), 'ofrece la siguiente estación de la línea');
+    w.press('b');
+    // la reja de la Doña no se brinca ni en tren
+    MQ.player.map = 'capitolio'; MQ.player.visited = { propatria: true, canoamarillo: true, capitolio: true };
+    w.openTrain();
+    ok(!w.menu.items.some((it) => it.value === 'bellasartes'), 'sin ficha1 el tren no pasa de Capitolio');
+    w.press('b');
+    MQ.setFlag('ficha1');
+    w.openTrain();
+    ok(w.menu.items.some((it) => it.value === 'bellasartes'), 'con ficha1 el tren sí sigue al este');
+    w.press('b');
+    MQ.player.flags.ficha1 = false; MQ.player.flags.fichas4 = false;
+    MQ.player.map = 'propatria';
+    MQ.player.visited = { propatria: true, capitolio: true, petare: true };
+  }
   // pisa la franja del tren (M) caminando de lado: igual aborda
   MQ.player.x = 13; MQ.player.y = 2; MQ.player.dir = 'right';
   w.arrived();
   ok(!!w.menu && w.mapBehind, 'pisar la franja M abre el tren (en cualquier dirección) con el mapa de fondo');
   w.draw(ctxStub); // el mapa + menú dibujan sin reventar
-  w.press('a');    // primer destino (capitolio)
+  w.press('down'); w.press('a'); // capitolio (el primero es la adyacente caño amarillo)
   ok(MQ.scenes[MQ.scenes.length - 1] instanceof MQ.RideScene, 'elegir destino monta el RideScene');
   const ride = MQ.scenes[MQ.scenes.length - 1];
   for (let i = 0; i < 1200 && MQ.scenes.length > 1; i++) { ride.update(); ride.draw(ctxStub); }
@@ -400,7 +420,7 @@ section('Overworld');
   MQ.player.x = 13; MQ.player.y = 3; MQ.player.dir = 'up';
   w.interact();
   ok(!!w.menu, 'A mirando la vía también abre el tren');
-  w.press('down'); w.press('a'); // segundo destino (petare)
+  w.press('down'); w.press('down'); w.press('a'); // petare (tras propatria y la adyacente caño amarillo)
   const ride2 = MQ.scenes[MQ.scenes.length - 1];
   ok(ride2 instanceof MQ.RideScene && ride2.passing.length >= 3, `el viaje largo pasa estaciones (${ride2.passing.length})`);
   for (let i = 0; i < 10; i++) ride2.update();

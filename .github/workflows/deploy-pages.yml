@@ -32,6 +32,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: Bust caches con el SHA del commit
+        run: sed -i "s/\.js\"/.js?v=${GITHUB_SHA::8}\"/g" index.html
       - uses: actions/configure-pages@v5
         with:
           enablement: true
