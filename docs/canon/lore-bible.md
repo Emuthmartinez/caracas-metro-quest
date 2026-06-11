@@ -3,8 +3,8 @@
 > *Para los que se fueron y para los que se quedaron.*
 > *Caracas no se olvida: Caracas se lleva.*
 
-**Status:** Draft for GATE 0 review. Once approved, this document is frozen canon;
-changes require explicit amendment recorded in the amendment log at the bottom.
+**Status:** FROZEN — GATE 0 closed 2026-06-11 by owner approval. Changes require
+explicit amendment recorded in the amendment log at the bottom.
 
 **Sources ingested:** `LORE.md` (la biblia del mundo), `DESIGN.md` (systems reference),
 `README.md`, and the shipped game data in `js/dex.js`, `js/world.js`, `js/main.js`.
@@ -231,4 +231,4 @@ as canon defaults (changes = flagged amendments):
 
 | Date | Amendment | Approved by |
 |---|---|---|
-| — | (none — pre-GATE 0 draft) | — |
+| 2026-06-11 | GATE 0 closed. Recommended options adopted wholesale per owner approval ("You are good to go"): Q1A canon starters kept; Q2A 8 types kept; **Q3B six-stat Gen-3 model adopted, amending the shipped 4-stat "a propósito" note (§9)**; Q4A the 29 frozen as subset (stats rebalanceable, stages addable); Q5A no-villain ending kept + human mid-game faction (los Bachaqueros de Recuerdos, design pending Phase 7 gate); Q6A Línea 1 = Act 1, Tren Fantasma = end of Act 3, Metrocable/Ávila/Los Teques = post-game; Q7A 8 Fichas Doradas + Consejo de la Hora Fantasma; Q8A status additions (QUE, PAV, mareado) specced in Phase 1; Q9A no real clock, location-based light/weather; Q10A sacred-figure rule generalized; **Q11A art moves to generated+post-processed PNG sheets (still static files, no build step)**; Q12A Spanish as language of record, English as localization. Q13 framing confirmed. Each individually overridable by future amendment. | Owner |

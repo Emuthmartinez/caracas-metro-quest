@@ -1,5 +1,10 @@
 # Metro Quest: Caracas — Open Questions for GATE 0
 
+> **RESOLVED 2026-06-11 — GATE 0 closed.** Owner approved wholesale; the
+> **recommended option of every question** (Q1A, Q2A, Q3B, Q4A, Q5A, Q6A, Q7A, Q8A,
+> Q9A, Q10A, Q11A, Q12A; Q13 framing confirmed) is now canon, recorded in the
+> lore bible amendment log. Kept below for the record.
+
 Each question lists the gap or conflict, 2–3 options, and a recommendation. Per Hard
 Rule 1 nothing below is decided until you pick; canon freezes with your answers.
 Questions marked **⚠ CONFLICT** are places where the master build plan contradicts
