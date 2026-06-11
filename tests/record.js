@@ -10,11 +10,13 @@ const path = require('path');
   const ctx = await browser.newContext({
     viewport: { width: 660, height: 600 },
     recordVideo: { dir: '/tmp/video', size: { width: 660, height: 600 } },
+    ignoreHTTPSErrors: true,
   });
   const page = await ctx.newPage();
   const tVideo = Date.now(); // el video por página arranca aquí (aprox)
   page.on('dialog', (d) => d.accept('Primo'));
-  await page.goto('file://' + path.resolve(__dirname, '..', 'index.html'));
+  // GAME_URL=https://... prueba contra el sitio publicado; por defecto, el local
+  await page.goto(process.env.GAME_URL || 'file://' + path.resolve(__dirname, '..', 'index.html'));
 
   // registra cada llamada de música/sfx con su tiempo absoluto para
   // re-sintetizar el soundtrack exacto (tests/render-audio.js) y muxearlo
