@@ -4,6 +4,120 @@
   const T = MQ.TILE;
   const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 
+  // ---- El viaje en tren: POV desde adentro del vagón -------------------------------
+  MQ.RideScene = class {
+    constructor(fromId, toId, onArrive) {
+      this.to = toId;
+      this.onArrive = onArrive;
+      const stops = MQ.TRAIN_STOPS;
+      const a = stops.indexOf(fromId), b = stops.indexOf(toId);
+      // estaciones intermedias que se ven pasar por la ventana
+      this.passing = stops.slice(Math.min(a, b) + 1, Math.max(a, b));
+      if (a > b) this.passing.reverse();
+      this.hops = Math.max(1, Math.abs(a - b));
+      this.dur = Math.min(150 + this.hops * 55, 420);
+      this.t = 0;
+      this.x = 0;          // distancia recorrida (px de ventana)
+      this.done = false;
+      MQ.audio.sfx('whistle');
+    }
+    // velocidad: arranca suave, cruza a tope y frena al final
+    speed() {
+      const f = this.t / this.dur;
+      if (f < 0.15) return 2 + (f / 0.15) * 8;
+      if (f > 0.82) return Math.max(1.2, 10 * (1 - f) / 0.18);
+      return 10;
+    }
+    finish() {
+      if (this.done) return;
+      this.done = true;
+      MQ.audio.sfx('train');
+      MQ.popScene();
+      this.onArrive();
+    }
+    press(k) { if (k === 'a' || k === 'b' || k === 'start') this.finish(); }
+    update() {
+      this.t++;
+      this.x += this.speed();
+      if (this.t % 22 === 0) MQ.audio.sfx('riel');
+      if (this.t >= this.dur) this.finish();
+    }
+    draw(ctx) {
+      const W = MQ.W, H = MQ.H;
+      const rumble = Math.round(Math.sin(this.t * 1.7) * Math.min(1.5, this.speed() / 5));
+      ctx.fillStyle = '#1c1826'; ctx.fillRect(0, 0, W, H);
+
+      // — ventana del vagón (el túnel corre afuera) —
+      const wy = 56 + rumble, wh = 96;
+      ctx.fillStyle = '#06040c'; ctx.fillRect(12, wy, W - 24, wh);
+      // cableado del túnel ondulando
+      ctx.strokeStyle = '#2a2438'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let px = 12; px <= W - 12; px += 8) {
+        const yy = wy + 18 + Math.sin((px + this.x) / 38) * 5;
+        px === 12 ? ctx.moveTo(px, yy) : ctx.lineTo(px, yy);
+      }
+      ctx.stroke();
+      // luces de servicio pasando (más separadas cuando frena)
+      for (let i = 0; i < 6; i++) {
+        const lx = W - 12 - ((this.x * 2 + i * 95) % (W + 60)) + 24;
+        if (lx < 12 || lx > W - 16) continue;
+        ctx.fillStyle = '#f5d76e'; ctx.fillRect(lx, wy + 10, 3, 8);
+        ctx.fillStyle = 'rgba(245,215,110,0.12)'; ctx.fillRect(lx - 8, wy, 19, wh);
+      }
+      // andenes iluminados de las estaciones intermedias
+      const span = this.dur * 10 / (this.passing.length + 1); // px aprox entre estaciones
+      this.passing.forEach((sid, i) => {
+        const sx = W - ((this.x - span * (i + 1) * 0.9) * 1.0);
+        if (sx < -160 || sx > W) return;
+        ctx.fillStyle = '#2e2840'; ctx.fillRect(sx, wy + 30, 150, wh - 30);
+        ctx.fillStyle = '#f5a623';
+        for (let j = 0; j < 6; j++) ctx.fillRect(sx + 8 + j * 24, wy + 36, 4, 3);
+        ctx.fillStyle = '#0e0a16'; ctx.fillRect(sx + 20, wy + 48, 110, 14);
+        ctx.fillStyle = '#e8dfc8'; ctx.font = MQ.FONT;
+        ctx.fillText(MQ.MAPS[sid].name.replace('Estación ', '').toUpperCase(), sx + 26, wy + 51);
+      });
+      // marco de la ventana
+      ctx.strokeStyle = '#3a3242'; ctx.lineWidth = 4;
+      ctx.strokeRect(12, wy, W - 24, wh);
+      for (let mx = 12 + (W - 24) / 3; mx < W - 24; mx += (W - 24) / 3)
+        ctx.fillRect(mx, wy, 4, wh);
+
+      // — interior: letrero LED, pasamanos, asientos y un pasajero de la hora fantasma —
+      ctx.fillStyle = '#0e0a16'; ctx.fillRect(0, 18 + rumble, W, 16);
+      ctx.font = MQ.FONT_B;
+      const led = `PRÓXIMA PARADA: ${MQ.MAPS[this.to].name.replace('Estación ', '').toUpperCase()}  ·  LÍNEA 1  ·  `;
+      const lw = ctx.measureText(led).width;
+      ctx.fillStyle = '#e85a1a';
+      const off = (this.t * 1.2) % lw;
+      ctx.fillText(led, 8 - off, 22 + rumble);
+      ctx.fillText(led, 8 - off + lw, 22 + rumble);
+      // pasamanos con agarraderas que se mecen
+      ctx.fillStyle = '#8a8a96'; ctx.fillRect(0, 42 + rumble, W, 3);
+      for (let hx = 30; hx < W; hx += 56) {
+        const sw = Math.sin(this.t / 14 + hx) * this.speed() * 0.7;
+        ctx.strokeStyle = '#c9c9d4'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(hx, 45 + rumble); ctx.lineTo(hx + sw, 58 + rumble); ctx.stroke();
+        ctx.strokeRect(hx + sw - 3, 58 + rumble, 7, 9);
+      }
+      // banca del vagón
+      ctx.fillStyle = '#2a3a55'; ctx.fillRect(0, H - 96 + rumble, W, 34);
+      ctx.fillStyle = '#1c2840';
+      for (let bx = 6; bx < W; bx += 44) ctx.fillRect(bx, H - 96 + rumble, 3, 34);
+      ctx.fillStyle = '#14101e'; ctx.fillRect(0, H - 62 + rumble, W, 62);
+      // un chigüi viaja contigo, porque en la hora fantasma a nadie le parece raro
+      MQ.drawMon(ctx, 'chigui', W - 74, H - 104 + rumble + Math.round(Math.sin(this.t / 9) * 1.5), 3);
+
+      // letrero de saltar
+      if ((this.t / 35 | 0) % 2) {
+        ctx.fillStyle = '#8a8aa0'; ctx.font = MQ.FONT;
+        ctx.textAlign = 'center';
+        ctx.fillText('A: llegar de una vez', W / 2, H - 14);
+        ctx.textAlign = 'left';
+      }
+    }
+  };
+
   MQ.WorldScene = class {
     constructor() {
       this.tb = new MQ.Textbox();
@@ -16,6 +130,8 @@
       this.fade = 0;
       this.dexView = null;       // página del cuaderno
       this.statView = null;
+      this.mapView = false;      // mapa del Metro a pantalla completa
+      this.mapBehind = false;    // mapa de fondo al elegir destino del tren
       this.enterMap(MQ.player.map, true);
     }
 
@@ -164,18 +280,108 @@
         this.tb.open(MQ.ctx, 'El tren de la hora fantasma solo para en estaciones que ya conoces. Por ahora: túnel y pata, mi pana.', null, 'Voz del Metro');
         return;
       }
+      this.mapBehind = true; // el mapa del Metro de fondo mientras eliges
       this.menu = new MQ.Menu(
         stops.map((s) => ({ label: MQ.MAPS[s].name.replace('Estación ', ''), value: s })).concat([{ label: 'Quedarme', value: null }]),
-        { x: 8, y: 30, w: 190, rows: 9, title: 'TREN FANTASMA · ¿Destino?',
+        { x: MQ.W - 158, y: MQ.H - 116, w: 150, rows: 6, title: '¿Destino?',
           onPick: (it) => {
-            this.menu = null;
+            this.menu = null; this.mapBehind = false;
             if (!it.value) return;
-            MQ.audio.sfx('train');
-            MQ.player.x = 13; MQ.player.y = 3; MQ.player.dir = 'down';
-            this.enterMap(it.value);
-            this.tb.open(MQ.ctx, `«Próxima estación: ${MQ.MAPS[it.value].name.replace('Estación ', '')}. Recuerde: deje salir antes de entrar.»`, null, 'Voz del Metro');
+            MQ.pushScene(new MQ.RideScene(p.map, it.value, () => {
+              MQ.player.x = 13; MQ.player.y = 3; MQ.player.dir = 'down';
+              this.enterMap(it.value);
+              this.tb.open(MQ.ctx, `«Estación ${MQ.MAPS[it.value].name.replace('Estación ', '')}. Recuerde: deje salir antes de entrar.»`, null, 'Voz del Metro');
+            }));
           },
-          onCancel: () => { this.menu = null; } });
+          onCancel: () => { this.menu = null; this.mapBehind = false; } });
+    }
+
+    // ---- el mapa del Metro (como el Town Map de los clásicos) -----------------------
+    drawMetroMap(ctx) {
+      const p = MQ.player;
+      const stops = MQ.TRAIN_STOPS;
+      const SHORT = {
+        propatria: 'Propatria', canoamarillo: 'C. Amarillo', capitolio: 'Capitolio',
+        bellasartes: 'B. Artes', plazavenezuela: 'Pza. Vzla', sabanagrande: 'S. Grande',
+        chacaito: 'Chacaíto', altamira: 'Altamira', petare: 'Petare',
+      };
+      MQ.panel(ctx, 8, 8, MQ.W - 16, MQ.H - 16);
+      ctx.font = MQ.FONT_B; ctx.textBaseline = 'top';
+      ctx.fillStyle = '#f5a623';
+      ctx.fillText('METRO DE CARACAS · LÍNEA 1', 24, 22);
+      ctx.fillStyle = '#3a3242'; ctx.fillRect(24, 33, MQ.W - 48, 2);
+
+      const x0 = 34, x1 = MQ.W - 46, ly = 122;
+      const sx = (i) => x0 + ((x1 - x0) * i) / (stops.length - 1);
+      // la línea 1, naranja como la franja de los vagones
+      ctx.fillStyle = '#e85a1a'; ctx.fillRect(x0, ly - 2, x1 - x0, 4);
+      // ramales a pie (lugares arriba/abajo de cada estación)
+      const SPURS = [
+        { at: 0, dy: -22, label: '⌂', maps: ['casa'] },
+        { at: 1, dy: -22, label: 'Calvario', maps: ['calvario'] },
+        { at: 4, dy: 26, label: 'Fuente', maps: ['fuente'] },
+        { at: 8, dy: -22, label: 'Mercado', maps: ['mercado'] },
+      ];
+      ctx.font = MQ.FONT;
+      for (const s of SPURS) {
+        const x = sx(s.at);
+        ctx.strokeStyle = '#5a5a72'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x, ly); ctx.lineTo(x, ly + s.dy); ctx.stroke();
+        ctx.fillStyle = s.maps.includes(p.map) ? '#f5d76e' : '#8a8aa0';
+        const lw = ctx.measureText(s.label).width;
+        ctx.fillText(s.label, Math.min(x - 4, MQ.W - 28 - lw), ly + s.dy + (s.dy < 0 ? -9 : 3));
+      }
+      // la Línea Fantasma, punteada y verdosa (solo si ya sabes de ella)
+      if (p.flags.fichas4 || p.flags.tren) {
+        const x = sx(4);
+        ctx.strokeStyle = '#7affc9'; ctx.lineWidth = 2;
+        ctx.setLineDash([3, 4]);
+        ctx.beginPath(); ctx.moveTo(x, ly); ctx.lineTo(x, ly + 52); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = ['zonarental', 'lineafantasma'].includes(p.map) ? '#7affc9' : '#3a8a6a';
+        ctx.fillText('Línea 5', x + 6, ly + 46);
+      }
+      // estaciones
+      const now = performance.now();
+      stops.forEach((s, i) => {
+        const x = sx(i);
+        const seen = p.visited[s];
+        ctx.fillStyle = '#101020'; ctx.fillRect(x - 5, ly - 5, 10, 10);
+        ctx.fillStyle = seen ? '#f2ead8' : '#2a2438';
+        ctx.fillRect(x - 3, ly - 3, 6, 6);
+        // nombre en diagonal, como los mapas de pared
+        ctx.save();
+        ctx.translate(x + 2, ly - (i % 2 ? 34 : 14));
+        ctx.rotate(-0.7);
+        ctx.fillStyle = seen ? '#e8dfc8' : '#5a5a72';
+        ctx.fillText(seen ? SHORT[s] : '???', 0, 0);
+        ctx.restore();
+      });
+      // ¿dónde estás? (estación, ramal o túnel intermedio)
+      let here = stops.indexOf(p.map);
+      if (here < 0) {
+        const spur = SPURS.find((s) => s.maps.includes(p.map));
+        if (spur) here = spur.at;
+      }
+      let hx = here >= 0 ? sx(here) : null;
+      const tn = /^tunel(\d+)$/.exec(p.map);
+      if (tn) hx = (sx(tn[1] - 1) + sx(+tn[1])) / 2;
+      if (p.map === 'zonarental' || p.map === 'lineafantasma') hx = sx(4);
+      if (hx !== null && (now / 400 | 0) % 2) {
+        ctx.fillStyle = '#f5d76e'; ctx.font = MQ.FONT_B;
+        ctx.fillText('▼', hx - 4, ly - 14);
+      }
+      // leyenda
+      ctx.font = MQ.FONT;
+      ctx.fillStyle = '#f2ead8'; ctx.fillRect(24, MQ.H - 51, 6, 6);
+      ctx.fillStyle = '#2a2438'; ctx.fillRect(98, MQ.H - 51, 6, 6);
+      ctx.fillStyle = '#8a8aa0';
+      ctx.fillText('conocida', 34, MQ.H - 52);
+      ctx.fillText('por conocer', 108, MQ.H - 52);
+      ctx.fillStyle = '#f5d76e'; ctx.fillText('▼', 186, MQ.H - 52);
+      ctx.fillStyle = '#8a8aa0';
+      ctx.fillText('estás aquí', 196, MQ.H - 52);
+      ctx.fillText('(A para volver)', 24, MQ.H - 34);
     }
 
     // ---- menú de pausa ----------------------------------------------------------
@@ -183,14 +389,15 @@
       MQ.audio.sfx('sel');
       const p = MQ.player;
       this.menu = new MQ.Menu([
-        { label: 'EQUIPO' }, { label: 'CUADERNO' }, { label: 'MOCHILA' },
+        { label: 'EQUIPO' }, { label: 'CUADERNO' }, { label: 'MAPA' }, { label: 'MOCHILA' },
         { label: 'LOCKER' }, { label: 'FICHAS' }, { label: 'GUARDAR' },
         { label: MQ.audio.muted ? 'SONIDO: NO' : 'SONIDO: SÍ' }, { label: 'CERRAR' },
-      ], { x: MQ.W - 124, y: 8, w: 116, rows: 8, title: p.name + ' · ' + p.money + 'b',
+      ], { x: MQ.W - 124, y: 8, w: 116, rows: 9, title: p.name + ' · ' + p.money + 'b',
         onPick: (it) => {
           const l = it.label;
           if (l === 'EQUIPO') this.openParty();
           else if (l === 'CUADERNO') this.openDex();
+          else if (l === 'MAPA') { this.mapView = true; this.menu = null; }
           else if (l === 'MOCHILA') this.openBag();
           else if (l === 'LOCKER') this.openLocker();
           else if (l === 'FICHAS') this.showFichas();
@@ -308,6 +515,7 @@
 
     // ---- movimiento y mundo -------------------------------------------------------
     press(k) {
+      if (this.mapView) { if (k === 'a' || k === 'b') { this.mapView = false; MQ.audio.sfx('blip'); } return; }
       if (this.dexView) { if (k === 'a' || k === 'b') { this.dexView = null; MQ.audio.sfx('blip'); } return; }
       if (this.statView) { if (k === 'a' || k === 'b') { this.statView = null; MQ.audio.sfx('blip'); } return; }
       if (this.tb.active) { if (k === 'a' || k === 'b') this.tb.advance(); return; }
@@ -320,7 +528,7 @@
     update() {
       this.frame++;
       if (this.banner && --this.banner.t <= 0) this.banner = null;
-      if (this.tb.active || this.menu || this.script || this.dexView || this.statView) return;
+      if (this.tb.active || this.menu || this.script || this.dexView || this.statView || this.mapView) return;
 
       const p = MQ.player;
       if (this.moving > 0) {
@@ -437,6 +645,7 @@
         ctx.fillText(this.banner.text, MQ.W / 2 - tw / 2, 11);
       }
 
+      if (this.mapView || this.mapBehind) this.drawMetroMap(ctx);
       if (this.dexView) this.drawDexPage(ctx, this.dexView);
       if (this.statView) this.drawStatPage(ctx, this.statView);
       if (this.menu) this.menu.draw(ctx);

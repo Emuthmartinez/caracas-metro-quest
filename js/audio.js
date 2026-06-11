@@ -51,6 +51,7 @@
     lvl: () => [523, 659, 784, 1046, 1318].forEach((f, i) => beep(f, 0.09, 'square', 0.04, i * 0.07)),
     faint: () => beep(400, 0.4, 'sawtooth', 0.06, 0, -350),
     train: () => { noise(0.5, 0.04); beep(220, 0.5, 'triangle', 0.03, 0, 60); },
+    riel: () => { noise(0.04, 0.03); beep(70, 0.06, 'triangle', 0.04); },
     whistle: () => { beep(1100, 0.5, 'sine', 0.05, 0, 500); beep(1400, 0.5, 'sine', 0.04, 0.55, -600); },
   };
 

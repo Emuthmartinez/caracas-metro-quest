@@ -107,6 +107,31 @@ const path = require('path');
   await wait(1600);          // banner de Propatria
   await drainText(900);
 
+  if (process.env.TRAIN_DEMO) {
+    // — demo del tren: estaciones conocidas, abordar, viajar y ver el mapa —
+    await page.evaluate(() => {
+      Object.assign(window.MQ.player.visited, { canoamarillo: true, plazavenezuela: true, petare: true });
+    });
+    await moveTo(13, 3);
+    await hold('ArrowUp', 150);   // sube a la franja del tren (M)
+    await wait(1500);             // menú de destino con el mapa de fondo
+    await page.keyboard.press('ArrowDown'); await wait(300);
+    await page.keyboard.press('ArrowDown'); await wait(300);
+    await z(600);                 // PETARE → arranca el viaje
+    await wait(8200);             // el viaje completo por la ventana
+    await drainText(900);         // «Estación Petare...»
+    console.log('tras viaje:', (await state()).map);
+    await page.keyboard.press('Enter'); await wait(600);   // pausa
+    await page.keyboard.press('ArrowDown'); await wait(250);
+    await page.keyboard.press('ArrowDown'); await wait(250);
+    await z(600);                 // MAPA
+    await wait(3500);
+    await z(500);                 // cerrar mapa
+    await page.keyboard.press('Escape'); await wait(500);
+    await finishRecording();
+    return;
+  }
+
   // — cruzar el andén hacia el túnel este —
   await moveTo(14, 5);
   await moveTo(24, 5);
@@ -149,19 +174,21 @@ const path = require('path');
   st = await state();
   console.log('final:', st, 'batallas:', battles);
   await wait(2500);
+  await finishRecording();
 
-  // vuelca el registro de audio (tiempos relativos al inicio del video)
-  const aud = await page.evaluate(() => window.__aud);
-  fs.writeFileSync('/tmp/audlog.json', JSON.stringify({
-    events: aud.map(([t, kind, name]) => [Math.max(0, (t - tVideo) / 1000), kind, name]),
-  }));
-  console.log('eventos de audio:', aud.length);
+  // cierra todo, vuelca el registro de audio y renombra el video
+  async function finishRecording() {
+    const aud = await page.evaluate(() => window.__aud);
+    fs.writeFileSync('/tmp/audlog.json', JSON.stringify({
+      events: aud.map(([t, kind, name]) => [Math.max(0, (t - tVideo) / 1000), kind, name]),
+    }));
+    console.log('eventos de audio:', aud.length);
 
-  await ctx.close();
-  await browser.close();
-  // renombra el video
-  const dir = '/tmp/video';
-  const f = fs.readdirSync(dir).find((x) => x.endsWith('.webm'));
-  fs.copyFileSync(path.join(dir, f), '/tmp/metro-quest-gameplay.webm');
-  console.log('video listo: /tmp/metro-quest-gameplay.webm', fs.statSync('/tmp/metro-quest-gameplay.webm').size, 'bytes');
+    await ctx.close();
+    await browser.close();
+    const dir = '/tmp/video';
+    const f = fs.readdirSync(dir).find((x) => x.endsWith('.webm'));
+    fs.copyFileSync(path.join(dir, f), '/tmp/metro-quest-gameplay.webm');
+    console.log('video listo: /tmp/metro-quest-gameplay.webm', fs.statSync('/tmp/metro-quest-gameplay.webm').size, 'bytes');
+  }
 })();
