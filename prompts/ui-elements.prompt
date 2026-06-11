@@ -1,0 +1,8 @@
+# ui-elements v1 (LOCKED GATE 3) — vars: {component}, {state}
+# model: flux_2 pro 1k, aspect 1:1 — feeds postprocess.py --kind icon (32x32) or hand-cut
+Pixel art game UI element: {component}, state: {state}.
+Visual language: Caracas Metro signage — rounded rectangle panels in deep
+concrete gray, metro brand orange accent stripe, cream text areas kept EMPTY,
+yellow 1983 metro token motif for currency, ticket-stub corners.
+GBA Pokemon FireRed menu style, flat colors, crisp 1px outlines, no gradients,
+limited palette. Plain solid white background, no text, no watermark.

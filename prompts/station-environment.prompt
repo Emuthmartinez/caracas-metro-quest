@@ -1,0 +1,9 @@
+# station-environment v1 (LOCKED GATE 3) — vars: {station}, {identity}, {landmarks}
+# model: flux_2 pro 1k, aspect 16:9 — reference art for tileset.prompt; not shipped raw
+Pixel art game environment concept, interior of a Caracas Metro station
+platform: {station}. Identity: {identity}. Visible landmarks: {landmarks}.
+Tropical brutalist concrete architecture, metro brand orange accent stripe
+(franja naranja) on walls and train, tiled platform edge, soft fluorescent
+hora-fantasma lighting with violet spirit glow in dark corners.
+GBA Pokemon FireRed era 3/4 top-down game perspective, flat cel shading, no
+gradients, crisp pixel art, limited palette. No text, no watermark, no people.

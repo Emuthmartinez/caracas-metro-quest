@@ -1,0 +1,8 @@
+# npc-character v1 (LOCKED GATE 3) — vars: {name}, {role}, {design_brief}
+# model: flux_2 pro 1k, aspect 1:1 — feeds postprocess.py --kind battle (trainer card) and --kind overworld
+Pixel art game NPC character sprite, front three-quarter view, full body
+standing. Character: {name}, {role}. Design: {design_brief}.
+Caraqueno everyday clothing, warm dignified expression, no caricature.
+GBA Pokemon FireRed trainer-sprite style, flat cel shading, no gradients,
+crisp 1px very dark outline, maximum 15 colors, readable at 16x32.
+Plain solid white background, centered, no text, no watermark.

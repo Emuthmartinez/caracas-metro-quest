@@ -1,0 +1,12 @@
+# creature-evolution v1 (LOCKED GATE 3) — vars: {name}, {prior_stage_name}, {design_brief}, {palette_rows}
+# model: flux_2 pro 1k, aspect 1:1, medias: [prior stage front job as reference]
+# output feeds postprocess.py --kind battle
+Pixel art game creature battle sprite, front three-quarter view facing slightly
+left, full body. Creature: {name}, the EVOLVED FORM of the creature in the
+reference image ({prior_stage_name}). Keep clear family resemblance: same
+species' face markings, same color identity, recognizably the same animal grown
+into: {design_brief}. Bigger, more imposing silhouette than the reference —
+silhouette growth, not just scale. Colors strictly from: {palette_rows}.
+GBA Pokemon FireRed era style, flat cel shading, no gradients, crisp 1px very
+dark outline, maximum 15 colors, strong silhouette. Plain solid white
+background, centered, no text, no watermark.

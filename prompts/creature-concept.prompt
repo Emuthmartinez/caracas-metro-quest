@@ -1,0 +1,10 @@
+# creature-concept v1 (LOCKED GATE 3) — vars: {name}, {design_brief}, {palette_rows}
+# model: flux_2 pro 1k, aspect 1:1 — output feeds postprocess.py --kind battle
+Pixel art game creature battle sprite, front three-quarter view facing slightly
+left, full body, feet grounded. Creature: {name}. Design: {design_brief}.
+Colors strictly from these ramps: {palette_rows}.
+GBA Pokemon FireRed era style, flat cel shading (base + one shadow + one
+highlight), no gradients, no anti-aliasing, crisp 1px very dark outline,
+maximum 15 colors, strong readable silhouette that also reads at 16x16,
+cute-but-dignified proportions, Venezuelan magical realism character design.
+Plain solid white background, centered, no text, no watermark, no frame.

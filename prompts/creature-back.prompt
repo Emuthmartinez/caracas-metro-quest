@@ -1,0 +1,9 @@
+# creature-back v1 (LOCKED GATE 3) — vars: {name}, {design_brief}
+# model: flux_2 pro 1k, aspect 1:1, medias: [front concept job as reference]
+# output feeds postprocess.py --kind battle
+Pixel art game creature BATTLE BACK SPRITE of the exact same creature as the
+reference image: {name} ({design_brief}). Seen from behind and slightly above,
+over-the-shoulder player camera, full body, same colors, same proportions,
+same markings as the reference. GBA Pokemon FireRed era style, flat cel
+shading, no gradients, crisp 1px very dark outline, maximum 15 colors.
+Plain solid white background, centered, no text, no watermark.

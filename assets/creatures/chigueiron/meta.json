@@ -1,0 +1,11 @@
+{
+  "id": "chigueiron", "name": "Chigüirón", "stage": 2, "line": "chigui",
+  "jobs": {
+    "front": {"job_id": "95cc6814-ee01-4fdd-a2d9-434bb0428ca3", "seed": 299010, "model": "flux_2/pro/1k", "template": "creature-evolution.prompt", "reference": "41bf424d-5b84-45a7-89e1-6d334091a6d7"},
+    "back": {"job_id": "7f655095-4ff1-4d5d-9a1d-6c0458de4bc6", "seed": 679465, "model": "flux_2/pro/1k", "template": "creature-back.prompt", "reference": "95cc6814-ee01-4fdd-a2d9-434bb0428ca3"}
+  },
+  "frames": {"idle": 1, "walk": 0},
+  "palette": {"colors_front": 15, "colors_back": 15, "tornasol_swapped_row": "5_hora_dorada"},
+  "anchor_px": {"ground_y": 63},
+  "notes": "Phase 3 proof asset. Evolution generated from stage-1 reference element; silhouette growth confirmed on contact sheet."
+}
