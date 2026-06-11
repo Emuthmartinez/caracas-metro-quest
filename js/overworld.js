@@ -410,14 +410,25 @@
 
     openTrain() {
       const p = MQ.player;
-      const stops = MQ.TRAIN_STOPS.filter((s) => p.visited[s] && s !== p.map);
+      // a las estaciones que ya conoces, más la siguiente de la línea:
+      // el tren de la hora fantasma sabe pa' dónde vas aunque tú no
+      const EAST_GATE = { capitolio: 'ficha1' }; // la Doña no se brinca ni en tren
+      const idx = MQ.TRAIN_STOPS.indexOf(p.map);
+      const known = new Set(MQ.TRAIN_STOPS.filter((s) => p.visited[s]));
+      if (idx >= 0) {
+        const next = MQ.TRAIN_STOPS[idx + 1];
+        if (next && (!EAST_GATE[p.map] || p.flags[EAST_GATE[p.map]])) known.add(next);
+        if (idx > 0) known.add(MQ.TRAIN_STOPS[idx - 1]);
+      }
+      known.delete(p.map);
+      const stops = MQ.TRAIN_STOPS.filter((s) => known.has(s));
       if (!stops.length) {
         this.tb.open(MQ.ctx, 'El tren de la hora fantasma solo para en estaciones que ya conoces. Camina los túneles primero. Cuando vuelvas, párate aquí en la franja del andén y listo.', null, 'Voz del Metro');
         return;
       }
       this.mapBehind = true; // el mapa del Metro de fondo mientras eliges
       this.menu = new MQ.Menu(
-        stops.map((s) => ({ label: MQ.MAPS[s].name.replace('Estación ', ''), value: s })).concat([{ label: 'Quedarme', value: null }]),
+        stops.map((s) => ({ label: MQ.MAPS[s].name.replace('Estación ', ''), sub: p.visited[s] ? '' : '▸nueva', value: s })).concat([{ label: 'Quedarme', value: null }]),
         { x: MQ.W - 158, y: MQ.H - 116, w: 150, rows: 6, title: '¿Destino?',
           onPick: (it) => {
             this.menu = null; this.mapBehind = false;
