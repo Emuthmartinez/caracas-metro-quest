@@ -360,6 +360,8 @@ section('Overworld');
   ok(MQ.player.flags.starter, 'elegir inicial marca la bandera');
   ok(MQ.player.party.length === 1 && MQ.player.party[0].id === 'frontinito', 'frontinito en el equipo');
   ok(MQ.player.bag.ficha === 5 && MQ.player.bag.malta === 3, 'la abuela da fichas y maltas');
+  ok(!w.npcAt(4, 3), 'el inicial elegido se baja de la mesa (ya no está)');
+  ok(w.npcAt(6, 3) && w.npcAt(8, 3), 'los otros dos se quedan con la abuela');
 
   // intentar agarrar un segundo inicial: la abuela no lo permite
   MQ.player.x = 6; MQ.player.y = 4; MQ.player.dir = 'up';
@@ -394,9 +396,10 @@ section('Overworld');
   ok(MQ.scenes.length === 1, 'el viaje termina solo');
   ok(MQ.player.map === 'capitolio', `el tren llega a capitolio (=${MQ.player.map})`);
   while (w.tb.active) w.press('a');
-  // viaje largo con saltar (A) a mitad de camino
-  MQ.player.x = 13; MQ.player.y = 2; MQ.player.dir = 'up';
-  w.arrived();
+  // viaje largo: abordar con A desde el andén (mirando la vía), saltar a mitad de camino
+  MQ.player.x = 13; MQ.player.y = 3; MQ.player.dir = 'up';
+  w.interact();
+  ok(!!w.menu, 'A mirando la vía también abre el tren');
   w.press('down'); w.press('a'); // segundo destino (petare)
   const ride2 = MQ.scenes[MQ.scenes.length - 1];
   ok(ride2 instanceof MQ.RideScene && ride2.passing.length >= 3, `el viaje largo pasa estaciones (${ride2.passing.length})`);

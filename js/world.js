@@ -94,9 +94,9 @@
     warps: [{ x: 5, y: 7, to: 'propatria', tx: 13, ty: 3, requires: 'starter',
       denied: 'ABUELA: ¿Vas a salir solo a la hora fantasma? ¡Ni de vaina! Escoge primero un compañero de la mesa.' }],
     npcs: [
-      { x: 4, y: 3, mon: 'frontinito', script: 'starter:frontinito' },
-      { x: 6, y: 3, mon: 'turpialin', script: 'starter:turpialin' },
-      { x: 8, y: 3, mon: 'cocuyin', script: 'starter:cocuyin' },
+      { x: 4, y: 3, mon: 'frontinito', script: 'starter:frontinito', hideIf: 'took_frontinito' },
+      { x: 6, y: 3, mon: 'turpialin', script: 'starter:turpialin', hideIf: 'took_turpialin' },
+      { x: 8, y: 3, mon: 'cocuyin', script: 'starter:cocuyin', hideIf: 'took_cocuyin' },
       { x: 2, y: 5, look: 'abuela', dir: 'right', name: 'Abuela', script: 'abuela' },
     ],
     triggers: [], enc: null,
@@ -111,6 +111,7 @@
     npcs: [
       { x: 6, y: 5, look: 'operador', dir: 'down', name: 'Operador Nelson',
         text: ['Deje salir antes de entrar. Es ley del Metro y de la vida, ciudadano.',
+               '¿Quiere tomar el tren? Suba a la FRANJA del borde del andén, mire hacia la vía y él lo siente. El tren para en las estaciones que usted ya conoce.',
                'Después del último tren empieza la hora fantasma. Lo que camine por ahí... ya no es pasajero.'] },
       { x: 16, y: 7, look: 'senora', dir: 'left', name: 'Doña Iraida',
         text: ['Llevo harina, llevo queso, llevo cariño. Lo que no llevo es apuro, mijo.',

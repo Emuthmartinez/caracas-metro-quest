@@ -54,10 +54,12 @@
       { label: '¡Sí, de una!', script: [
         { mon: [id, 5] },
         { flag: 'starter' },
+        { fn: () => MQ.setFlag('took_' + id) }, // se baja de la mesa: ahora viaja contigo
         { give: { item: 'ficha', n: 5 } },
         { give: { item: 'malta', n: 3 } },
         { sfx: 'catch' },
-        { say: ['', `¡${MQ.SPECIES[id].name} se une a tu equipo!`] },
+        { fn: () => MQ.audio.cry(id) },
+        { say: ['', `¡${MQ.SPECIES[id].name} se baja de la mesa y se une a tu equipo!`] },
         { say: ['Abuela', 'Toma: CINCO FICHAS del 83 y unas malticas. Si un espanto salvaje te acepta la ficha, te acompaña pa\' siempre. Eso es FICHAR, como decía tu abuelo.'] },
         { say: ['Abuela', 'Y oye bien: a los espantos no se les grita. Se les canta, se les cocina o se les aguanta el carácter. Como a la familia.'] },
         { say: ['Abuela', 'Los Jefes de Estación guardan cuatro FICHAS DORADAS. Con las cuatro te abren la Línea Fantasma... donde está penando el Tren. Anda. Caracas te necesita despierto.'] },
