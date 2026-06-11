@@ -221,6 +221,8 @@
       const ch = this.tile(tx, ty);
       if (ch === 'H') return this.runScript(MQ.SCRIPTS.heal());
       if (ch === 'S') return this.openShop();
+      // A en el borde del andén (sobre la franja M o mirando la vía) también aborda
+      if (this.map.station && (this.tile(p.x, p.y) === 'M' || ch === 'M' || ch === 'T')) return this.openTrain();
       if (ch === 'a' && this.map.tileScripts && this.map.tileScripts.a)
         return this.runScript(MQ.SCRIPTS[this.map.tileScripts.a]());
     }
@@ -277,7 +279,7 @@
       const p = MQ.player;
       const stops = MQ.TRAIN_STOPS.filter((s) => p.visited[s] && s !== p.map);
       if (!stops.length) {
-        this.tb.open(MQ.ctx, 'El tren de la hora fantasma solo para en estaciones que ya conoces. Por ahora: túnel y pata, mi pana.', null, 'Voz del Metro');
+        this.tb.open(MQ.ctx, 'El tren de la hora fantasma solo para en estaciones que ya conoces. Camina los túneles primero. Cuando vuelvas, párate aquí en la franja del andén y listo.', null, 'Voz del Metro');
         return;
       }
       this.mapBehind = true; // el mapa del Metro de fondo mientras eliges
