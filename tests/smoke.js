@@ -392,8 +392,8 @@ section('Overworld');
   w.press('a');    // primer destino (capitolio)
   ok(MQ.scenes[MQ.scenes.length - 1] instanceof MQ.RideScene, 'elegir destino monta el RideScene');
   const ride = MQ.scenes[MQ.scenes.length - 1];
-  for (let i = 0; i < 1000 && MQ.scenes.length > 1; i++) { ride.update(); ride.draw(ctxStub); }
-  ok(MQ.scenes.length === 1, 'el viaje termina solo');
+  for (let i = 0; i < 1200 && MQ.scenes.length > 1; i++) { ride.update(); ride.draw(ctxStub); }
+  ok(MQ.scenes.length === 1, 'el viaje termina solo (abordaje + interior + llegada)');
   ok(MQ.player.map === 'capitolio', `el tren llega a capitolio (=${MQ.player.map})`);
   while (w.tb.active) w.press('a');
   // viaje largo: abordar con A desde el andén (mirando la vía), saltar a mitad de camino
@@ -404,7 +404,8 @@ section('Overworld');
   const ride2 = MQ.scenes[MQ.scenes.length - 1];
   ok(ride2 instanceof MQ.RideScene && ride2.passing.length >= 3, `el viaje largo pasa estaciones (${ride2.passing.length})`);
   for (let i = 0; i < 10; i++) ride2.update();
-  ride2.press('a'); // llegar de una vez
+  ride2.press('a'); // saltar: adelanta a la ceremonia de llegada
+  for (let i = 0; i < 400 && MQ.scenes.length > 1; i++) { ride2.update(); ride2.draw(ctxStub); }
   ok(MQ.player.map === 'petare', `saltar el viaje también llega (=${MQ.player.map})`);
   while (w.tb.active) w.press('a');
   // el mapa del Metro desde el menú de pausa

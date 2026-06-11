@@ -421,6 +421,8 @@
         this.say(this.trainer.win);
         this.say(`Ganas ${this.trainer.money} bolos.`, () => this.finish('win'));
       } else {
+        MQ.audio.stop();
+        MQ.audio.sfx('victory');
         this.say('La oscuridad vuelve a quedarse quieta.', () => this.finish('win'));
       }
       this.pump();
@@ -464,8 +466,19 @@
     }
 
     update() {
+      this.fc = (this.fc || 0) + 1;
       if (this.anim.shake > 0) this.anim.shake--;
       if (this.anim.intro > 0) this.anim.intro--;
+      // las barras de vida se vacían poco a poco, como debe ser
+      for (const m of [this.mine, this.enemy]) {
+        if (m._disp === undefined) m._disp = m.hp;
+        const rate = Math.max(0.5, m.maxhp / 36);
+        m._disp += MQ.clamp(m.hp - m._disp, -rate, rate);
+        if (Math.abs(m.hp - m._disp) < 0.5) m._disp = m.hp;
+      }
+      // pitido de alarma cuando tu espanto está grave
+      if (!this.over && this.mine.hp > 0 && this.mine.hp <= this.mine.maxhp / 4 && this.fc % 48 === 0)
+        MQ.audio.sfx('lowhp');
       if (!this.tb.active && this.phase === 'msg') this.pump();
     }
 
@@ -479,7 +492,7 @@
 
     hpBar(ctx, x, y, w, m) {
       ctx.fillStyle = '#1a1a28'; ctx.fillRect(x, y, w, 6);
-      const f = m.hp / m.maxhp;
+      const f = (m._disp ?? m.hp) / m.maxhp;
       ctx.fillStyle = f > 0.5 ? '#5e8b3f' : f > 0.2 ? '#e8a040' : '#b5300a';
       ctx.fillRect(x + 1, y + 1, Math.max(0, (w - 2) * f), 4);
     }
