@@ -384,10 +384,10 @@ section('Overworld');
   MQ.scenes.length = 0;
   const w = new MQ.WorldScene();
   MQ.pushScene(w);
-  // sube hasta la franja del tren (M) mirando arriba
-  MQ.player.x = 13; MQ.player.y = 2; MQ.player.dir = 'up';
+  // pisa la franja del tren (M) caminando de lado: igual aborda
+  MQ.player.x = 13; MQ.player.y = 2; MQ.player.dir = 'right';
   w.arrived();
-  ok(!!w.menu && w.mapBehind, 'tile M abre el menú del tren con el mapa de fondo');
+  ok(!!w.menu && w.mapBehind, 'pisar la franja M abre el tren (en cualquier dirección) con el mapa de fondo');
   w.draw(ctxStub); // el mapa + menú dibujan sin reventar
   w.press('a');    // primer destino (capitolio)
   ok(MQ.scenes[MQ.scenes.length - 1] instanceof MQ.RideScene, 'elegir destino monta el RideScene');

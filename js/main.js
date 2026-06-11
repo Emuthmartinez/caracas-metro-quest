@@ -229,16 +229,26 @@
       this.done = false;
       this.hint = 0;
       const v = (this.v = document.createElement('video'));
-      v.muted = true; v.playsInline = true; v.preload = 'auto';
+      v.playsInline = true; v.preload = 'auto';
       for (const [src, type] of [['assets/intro.webm', 'video/webm'], ['assets/intro.mp4', 'video/mp4']]) {
         const s = document.createElement('source');
         s.src = src; s.type = type;
         v.appendChild(s);
       }
-      v.oncanplay = () => v.play().catch(() => this.skip());
+      // primero intenta CON sonido; si el navegador lo bloquea, arranca mudo
+      // y el primer toque o tecla lo enciende
+      let started = false;
+      v.oncanplay = () => {
+        if (started) return;
+        started = true;
+        v.muted = false;
+        v.play().catch(() => { v.muted = true; v.play().catch(() => this.skip()); });
+      };
       v.onended = () => this.skip();
       v.onerror = () => this.skip();
       v.load();
+      this._tap = () => { if (!this.done && this.v.muted) this.v.muted = false; };
+      addEventListener('pointerdown', this._tap);
       // si el video no carga (sin red, navegador viejo), directo al título
       this.timeout = setTimeout(() => { if (v.readyState < 2) this.skip(); }, 5000);
     }
@@ -246,12 +256,14 @@
       if (this.done) return;
       this.done = true;
       clearTimeout(this.timeout);
+      removeEventListener('pointerdown', this._tap);
       try { this.v.pause(); } catch (e) {}
       MQ.popScene();
       MQ.pushScene(new TitleScene());
     }
     press(k) {
-      if (k === 'a' && this.v.muted && !this.v.ended) { this.v.muted = false; return; } // primer A: sonido
+      if (k === 'b') return this.skip();
+      if (this.v.muted && !this.v.ended) { this.v.muted = false; return; } // primera tecla: sonido
       this.skip();
     }
     update() { this.hint++; }
@@ -265,7 +277,7 @@
       if ((this.hint / 40 | 0) % 2) {
         ctx.font = MQ.FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
         ctx.fillStyle = 'rgba(232,223,200,0.8)';
-        ctx.fillText(this.v.muted ? 'A: sonido · B: saltar' : 'B: saltar', MQ.W / 2, MQ.H - 14);
+        ctx.fillText(this.v.muted ? 'toca o presiona: sonido · B: saltar' : 'B: saltar', MQ.W / 2, MQ.H - 14);
         ctx.textAlign = 'left';
       }
     }
