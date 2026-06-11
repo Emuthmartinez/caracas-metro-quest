@@ -157,7 +157,7 @@
 
   // — El Calvario (parque, monte) —
   MAPS.calvario = {
-    id: 'calvario', name: 'Paseo El Calvario', theme: 'calle', music: 'town',
+    id: 'calvario', name: 'Paseo El Calvario', theme: 'calle', music: 'calle',
     grid: [
       '################',
       '#tt.gggg..ggg.t#',
@@ -303,7 +303,7 @@
 
   // — Fuente de Plaza Venezuela (calle) —
   MAPS.fuente = {
-    id: 'fuente', name: 'Plaza Venezuela — La Fuente', theme: 'calle', music: 'town',
+    id: 'fuente', name: 'Plaza Venezuela — La Fuente', theme: 'calle', music: 'calle',
     grid: [
       '################',
       '#t....t...t...t#',
@@ -465,7 +465,7 @@
 
   // — Mercado de Petare —
   MAPS.mercado = {
-    id: 'mercado', name: 'Mercado de Petare', theme: 'calle', music: 'town',
+    id: 'mercado', name: 'Mercado de Petare', theme: 'calle', music: 'calle',
     grid: [
       '################',
       '#k.S..k..S...k.#',

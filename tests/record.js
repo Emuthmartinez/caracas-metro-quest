@@ -118,7 +118,9 @@ const path = require('path');
     await page.keyboard.press('ArrowDown'); await wait(300);
     await page.keyboard.press('ArrowDown'); await wait(300);
     await z(600);                 // PETARE → arranca el viaje
-    await wait(8200);             // el viaje completo por la ventana
+    // el viaje completo: abordaje, ventana y llegada (termina solo)
+    await page.waitForFunction(() => window.MQ.scenes.length === 1, { timeout: 40000 });
+    await wait(600);
     await drainText(900);         // «Estación Petare...»
     console.log('tras viaje:', (await state()).map);
     await page.keyboard.press('Enter'); await wait(600);   // pausa

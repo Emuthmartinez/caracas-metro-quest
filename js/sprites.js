@@ -21,18 +21,27 @@
   };
 
   // ---- Gente ------------------------------------------------------------------
-  // look: { skin, shirt, pants, hat, hair } · dir: up/down/left/right · frame 0/1
-  MQ.drawPerson = (ctx, px, py, look, dir = 'down', frame = 0) => {
+  // look: { skin, shirt, pants, hat, hair, bag } · dir: up/down/left/right
+  // frame: 0/1 del ciclo de paso · moving: false = parado (postura simétrica)
+  MQ.drawPerson = (ctx, px, py, look, dir = 'down', frame = 0, moving = false) => {
     const x = px + 4, y = py + 1;
     const F = (c, dx, dy, w, h) => { ctx.fillStyle = c; ctx.fillRect(x + dx, y + dy, w, h); };
     const skin = look.skin || '#c98e5a', shirt = look.shirt || '#4a6741';
     const pants = look.pants || '#33334a', hair = look.hair || '#26201a';
 
-    // pelo / sombrero
-    if (look.hat) { F(look.hat, 0, 0, 8, 2); F(look.hat, -1, 2, 10, 1); }
-    else F(hair, 0, 0, 8, 2);
     // cabeza
     F(skin, 0, 2, 8, 4);
+    // pelo / gorra con la visera hacia donde mira
+    if (look.hat) {
+      F(look.hat, 0, 0, 8, 2);
+      if (dir === 'down') F(look.hat, 0, 2, 8, 1);
+      else if (dir === 'left') F(look.hat, -2, 2, 5, 1);
+      else if (dir === 'right') F(look.hat, 5, 2, 5, 1);
+      else F(look.hat, 0, 2, 8, 2); // de espaldas se ve la copa completa
+    } else {
+      F(hair, 0, 0, 8, 2);
+      if (dir === 'up') F(hair, 0, 2, 8, 2);
+    }
     // ojos según dirección
     ctx.fillStyle = '#1a1a1a';
     if (dir === 'down') { ctx.fillRect(x + 1, y + 3, 2, 2); ctx.fillRect(x + 5, y + 3, 2, 2); }
@@ -40,15 +49,19 @@
     else if (dir === 'right') ctx.fillRect(x + 6, y + 3, 2, 2);
     // cuerpo
     F(shirt, 0, 6, 8, 5);
-    // brazos
-    F(skin, -1, 7, 1, 3); F(skin, 8, 7, 1, 3);
-    // piernas (animación)
-    if (frame) { F(pants, 0, 11, 3, 3); F(pants, 5, 11, 3, 4); }
+    // de espaldas se le ve el morral
+    if (dir === 'up' && look.bag) { F(look.bag, 1, 6, 6, 4); F(look.hat || hair, 3, 6, 2, 4); }
+    // brazos: quietos en reposo, meciéndose al caminar
+    F(skin, -1, 7 + (moving && frame ? 1 : 0), 1, 3);
+    F(skin, 8, 7 + (moving && !frame ? 1 : 0), 1, 3);
+    // piernas: parejas al estar parado, alternando al caminar
+    if (!moving) { F(pants, 0, 11, 3, 4); F(pants, 5, 11, 3, 4); }
+    else if (frame) { F(pants, 0, 11, 3, 3); F(pants, 5, 11, 3, 4); }
     else { F(pants, 0, 11, 3, 4); F(pants, 5, 11, 3, 3); }
   };
 
   MQ.LOOKS = {
-    player:  { skin: '#c98e5a', shirt: '#b5300a', pants: '#33334a', hat: '#8a1a2a' },   // gorra Leones
+    player:  { skin: '#c98e5a', shirt: '#b5300a', pants: '#33334a', hat: '#8a1a2a', bag: '#5e8b3f' }, // gorra Leones + morral
     rival:   { skin: '#b87a4a', shirt: '#1a3a6b', pants: '#2a2a2a', hat: '#1a3a8a' },   // gorra Magallanes
     abuela:  { skin: '#b87a4a', shirt: '#d98ab0', pants: '#6a4a8a', hair: '#d8d8d8' },
     doctor:  { skin: '#c98e5a', shirt: '#1a1a1a', pants: '#1a1a1a', hat: '#2a2a2a' },

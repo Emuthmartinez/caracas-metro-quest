@@ -4,9 +4,10 @@
   const T = MQ.TILE;
   const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 
-  // ---- El viaje en tren: POV desde adentro del vagón -------------------------------
+  // ---- El viaje en tren: llega, abre puertas, te montas, viajas y te bajas ---------
   MQ.RideScene = class {
     constructor(fromId, toId, onArrive) {
+      this.from = fromId;
       this.to = toId;
       this.onArrive = onArrive;
       const stops = MQ.TRAIN_STOPS;
@@ -15,15 +16,17 @@
       this.passing = stops.slice(Math.min(a, b) + 1, Math.max(a, b));
       if (a > b) this.passing.reverse();
       this.hops = Math.max(1, Math.abs(a - b));
-      this.dur = Math.min(150 + this.hops * 55, 420);
+      this.dur = Math.min(150 + this.hops * 55, 420); // tramo interior
+      this.PRE = 175;   // ceremonia de abordaje
+      this.TAIL = 145;  // ceremonia de llegada
+      this.total = this.PRE + this.dur + this.TAIL;
       this.t = 0;
-      this.x = 0;          // distancia recorrida (px de ventana)
+      this.x = 0;       // distancia recorrida (px de ventana)
       this.done = false;
-      MQ.audio.sfx('whistle');
     }
-    // velocidad: arranca suave, cruza a tope y frena al final
+    // velocidad del tramo interior: arranca suave, cruza a tope y frena al final
     speed() {
-      const f = this.t / this.dur;
+      const f = MQ.clamp((this.t - this.PRE) / this.dur, 0, 1);
       if (f < 0.15) return 2 + (f / 0.15) * 8;
       if (f > 0.82) return Math.max(1.2, 10 * (1 - f) / 0.18);
       return 10;
@@ -31,19 +34,149 @@
     finish() {
       if (this.done) return;
       this.done = true;
-      MQ.audio.sfx('train');
       MQ.popScene();
       this.onArrive();
     }
-    press(k) { if (k === 'a' || k === 'b' || k === 'start') this.finish(); }
+    press(k) {
+      if (k !== 'a' && k !== 'b' && k !== 'start') return;
+      // saltar adelanta a la ceremonia de llegada; durante la llegada no hay apuro
+      if (this.t < this.PRE + this.dur - 20) {
+        this.t = this.PRE + this.dur;
+        MQ.audio.sfx('brake');
+      }
+    }
     update() {
       this.t++;
-      this.x += this.speed();
-      if (this.t % 22 === 0) MQ.audio.sfx('riel');
-      if (this.t >= this.dur) this.finish();
+      const rideT = this.t - this.PRE;
+      if (rideT > 0 && rideT <= this.dur) {
+        this.x += this.speed();
+        if (this.t % 22 === 0) MQ.audio.sfx('riel');
+      }
+      // hitos sonoros del abordaje
+      if (this.t === 16 || this.t === 40) MQ.audio.sfx('riel');   // las luces parpadean dos veces
+      if (this.t === 52) MQ.audio.sfx('brake');                    // el tren entra frenando
+      if (this.t === 118) MQ.audio.sfx('doors');                   // puertas abren
+      if (this.t === this.PRE - 10) MQ.audio.sfx('doors');         // puertas cierran
+      if (this.t === this.PRE) MQ.audio.sfx('whistle');            // arranca
+      // hitos de la llegada
+      const aT = this.t - this.PRE - this.dur;
+      if (aT === 20) MQ.audio.sfx('doors');                        // puertas abren
+      if (aT === 68) MQ.audio.sfx('doors');                        // puertas cierran
+      if (aT === 78) MQ.audio.sfx('train');                        // el tren sigue su ruta
+      if (this.t >= this.total) this.finish();
     }
+
+    // tren grande de perfil: tx=0 lo deja cuadrado con el andén · puertas 0-1
+    drawBigTrain(ctx, tx, doorOpen) {
+      const W = MQ.W;
+      const y = 112, h = 56, len = 460;
+      const x = tx - 70;
+      ctx.fillStyle = '#c9c9d4'; ctx.fillRect(x, y, len, h);
+      ctx.fillStyle = '#a8a8b8'; ctx.fillRect(x, y, len, 4);
+      // ventanas
+      ctx.fillStyle = '#28323c';
+      for (let wx = x + 10; wx < x + len - 20; wx += 42) ctx.fillRect(wx, y + 10, 24, 16);
+      // franja naranja
+      ctx.fillStyle = '#e85a1a'; ctx.fillRect(x, y + 34, len, 6);
+      // bajos y ruedas
+      ctx.fillStyle = '#1a1a24'; ctx.fillRect(x, y + h - 6, len, 6);
+      ctx.fillStyle = '#0e0e16';
+      for (let wx = x + 24; wx < x + len; wx += 80) ctx.fillRect(wx, y + h - 4, 14, 4);
+      // puerta central (alineada con el caminar del jugador)
+      const dx = tx + W / 2 - 14, dw = 28;
+      ctx.fillStyle = doorOpen > 0 ? '#241c30' : '#b8b8c8';
+      ctx.fillRect(dx, y + 8, dw, h - 16);
+      if (doorOpen > 0) {
+        // luz cálida adentro
+        ctx.fillStyle = 'rgba(245,215,110,0.25)';
+        ctx.fillRect(dx + 2, y + 10, dw - 4, h - 20);
+      }
+      const slide = Math.round((dw / 2) * doorOpen);
+      ctx.fillStyle = '#b8b8c8';
+      ctx.fillRect(dx, y + 8, dw / 2 - slide, h - 16);
+      ctx.fillRect(dx + dw / 2 + slide, y + 8, dw / 2 - slide, h - 16);
+      ctx.fillStyle = '#e85a1a';
+      if (dw / 2 - slide > 2) { ctx.fillRect(dx, y + 34, dw / 2 - slide, 6); ctx.fillRect(dx + dw / 2 + slide, y + 34, dw / 2 - slide, 6); }
+    }
+
+    // andén de perfil: cartel, lámparas, piso y el jugador montándose o bajándose
+    drawPlatform(ctx, mapId, ph) {
+      const W = MQ.W, H = MQ.H;
+      ctx.fillStyle = '#1c1826'; ctx.fillRect(0, 0, W, H);
+      // pared del fondo con cenefa
+      ctx.fillStyle = '#3a3242'; ctx.fillRect(0, 60, W, 110);
+      ctx.fillStyle = '#2a2438';
+      for (let bx = 0; bx < W; bx += 24) ctx.fillRect(bx, 60, 12, 110);
+      ctx.fillStyle = '#e85a1a'; ctx.fillRect(0, 64, W, 3);
+      // lámparas
+      for (let lx = 28; lx < W; lx += 64) {
+        ctx.fillStyle = '#8a8a96'; ctx.fillRect(lx, 48, 2, 8);
+        ctx.fillStyle = ph.lightsOut ? '#3a3a44' : '#ffe66e';
+        ctx.fillRect(lx - 5, 56, 12, 4);
+        if (!ph.lightsOut) { ctx.fillStyle = 'rgba(255,230,110,0.08)'; ctx.fillRect(lx - 16, 60, 34, 110); }
+      }
+      // cartel de la estación
+      const nm = MQ.MAPS[mapId].name.replace('Estación ', '').toUpperCase();
+      ctx.font = MQ.FONT_B;
+      const tw = ctx.measureText(nm).width;
+      MQ.panel(ctx, W / 2 - tw / 2 - 12, 76, tw + 24, 20);
+      ctx.fillStyle = ph.lightsOut ? '#5a5a72' : '#f5a623';
+      ctx.textBaseline = 'top';
+      ctx.fillText(nm, W / 2 - tw / 2, 82);
+      // el tren (si ya llegó)
+      if (ph.trainX !== null) this.drawBigTrain(ctx, ph.trainX, ph.doorOpen);
+      // piso del andén con franja amarilla
+      ctx.fillStyle = '#f5d76e'; ctx.fillRect(0, 168, W, 3);
+      ctx.fillStyle = '#b8a888'; ctx.fillRect(0, 171, W, 50);
+      ctx.fillStyle = '#a89878';
+      for (let fx = 0; fx < W; fx += 32) ctx.fillRect(fx, 171, 16, 50);
+      ctx.fillStyle = '#14101e'; ctx.fillRect(0, 221, W, H - 221);
+      // el jugador
+      if (ph.playerY !== null) {
+        const look = MQ.LOOKS[MQ.player.look] || MQ.LOOKS.player;
+        MQ.drawPerson(ctx, W / 2 - 8, ph.playerY, look, ph.playerDir, (this.t / 8 | 0) % 2, ph.playerWalk);
+      }
+      // apagón de la hora fantasma
+      if (ph.lightsOut) { ctx.fillStyle = 'rgba(2,0,8,0.55)'; ctx.fillRect(0, 0, W, H); }
+    }
+
     draw(ctx) {
       const W = MQ.W, H = MQ.H;
+      const t = this.t;
+      // — abordaje —
+      if (t < this.PRE) {
+        const flicker = (t >= 16 && t < 23) || (t >= 40 && t < 47);
+        const trainX = t < 50 ? null : t < 112 ? -420 * Math.pow(1 - (t - 50) / 62, 2) : 0;
+        const doorOpen = t < 118 ? 0 : t < 130 ? (t - 118) / 12 : t < this.PRE - 10 ? 1 : Math.max(0, 1 - (t - (this.PRE - 10)) / 8);
+        let playerY = 196, playerDir = 'up', playerWalk = false;
+        if (t >= 132 && t < 165) { playerY = 196 - (t - 132) * 1.7; playerWalk = true; }
+        this.drawPlatform(ctx, this.from, {
+          lightsOut: flicker, trainX, doorOpen,
+          playerY: t >= 132 && playerY < 142 ? null : playerY,
+          playerDir, playerWalk,
+        });
+        if ((t / 35 | 0) % 2) {
+          ctx.fillStyle = '#8a8aa0'; ctx.font = MQ.FONT; ctx.textAlign = 'center';
+          ctx.fillText('A: llegar de una vez', W / 2, H - 14);
+          ctx.textAlign = 'left';
+        }
+        return;
+      }
+      // — llegada —
+      const aT = t - this.PRE - this.dur;
+      if (aT >= 0) {
+        const doorOpen = aT < 20 ? 0 : aT < 32 ? (aT - 20) / 12 : aT < 68 ? 1 : Math.max(0, 1 - (aT - 68) / 8);
+        const trainX = aT < 78 ? 0 : 420 * Math.pow((aT - 78) / 64, 2);
+        let playerY = null, playerWalk = false;
+        if (aT >= 34 && aT < 66) { playerY = 142 + (aT - 34) * 1.7; playerWalk = true; }
+        else if (aT >= 66) playerY = 196;
+        this.drawPlatform(ctx, this.to, {
+          lightsOut: false, trainX, doorOpen,
+          playerY, playerDir: 'down', playerWalk,
+        });
+        return;
+      }
+      // — interior del vagón —
       const rumble = Math.round(Math.sin(this.t * 1.7) * Math.min(1.5, this.speed() / 5));
       ctx.fillStyle = '#1c1826'; ctx.fillRect(0, 0, W, H);
 
@@ -403,7 +536,7 @@
           else if (l === 'MOCHILA') this.openBag();
           else if (l === 'LOCKER') this.openLocker();
           else if (l === 'FICHAS') this.showFichas();
-          else if (l === 'GUARDAR') { MQ.save(); this.menu = null; this.tb.open(MQ.ctx, '¡Partida guardada! Tranquilo, que esto no se lo lleva ni un apagón.'); }
+          else if (l === 'GUARDAR') { MQ.save(); MQ.audio.sfx('save'); this.menu = null; this.tb.open(MQ.ctx, '¡Partida guardada! Tranquilo, que esto no se lo lleva ni un apagón.'); }
           else if (l.startsWith('SONIDO')) { MQ.audio.toggleMute(); it.label = MQ.audio.muted ? 'SONIDO: NO' : 'SONIDO: SÍ'; }
           else this.menu = null;
         },
@@ -530,7 +663,45 @@
     update() {
       this.frame++;
       if (this.banner && --this.banner.t <= 0) this.banner = null;
+      // mariposas amarillas: cruzan el andén y nadie pregunta de dónde vienen
+      const th = this.map.theme;
+      this.motes = this.motes || [];
+      if ((th === 'metro' || th === 'calle') && this.motes.length < 2 && Math.random() < 0.004) {
+        this.motes.push({ x: -8, y: 36 + Math.random() * 150, t: Math.random() * 99 });
+      }
+      this.motes = this.motes.filter((m) => (m.x += 0.55, m.t++, m.x < MQ.W + 10));
+      // fundido del warp: a mitad del negro se cambia de mapa
+      if (this.fade > 0) {
+        this.fade--;
+        if (this.fade === 11 && this.pendingWarp) {
+          const w = this.pendingWarp;
+          this.pendingWarp = null;
+          MQ.player.x = w.tx; MQ.player.y = w.ty;
+          this.enterMap(w.to);
+        }
+        return;
+      }
+      // destello del encuentro salvaje
+      if (this.encFlash > 0) {
+        this.encFlash--;
+        if (this.encFlash === 0) {
+          const e = this.pendingEnc;
+          this.pendingEnc = null;
+          MQ.pushScene(new MQ.BattleScene({ wild: e }, (res) => {
+            MQ.popScene();
+            MQ.audio.music(this.map.music || 'town');
+            if (res === 'lose') MQ.respawn(this);
+          }));
+        }
+        return;
+      }
       if (this.tb.active || this.menu || this.script || this.dexView || this.statView || this.mapView) return;
+
+      // la gente del andén mira alrededor, como la gente de verdad
+      if (this.frame % 70 === 0 && Math.random() < 0.6) {
+        const idlers = (this.map.npcs || []).filter((n) => !n.mon && !(n.hideIf && MQ.player.flags[n.hideIf]));
+        if (idlers.length) MQ.pick(idlers).dir = MQ.pick(['up', 'down', 'left', 'right']);
+      }
 
       const p = MQ.player;
       if (this.moving > 0) {
@@ -545,7 +716,7 @@
           if (this.walkable(p.x + dx, p.y + dy)) {
             p.x += dx; p.y += dy;
             this.moving = T;
-          }
+          } else if (this.frame % 16 === 0) MQ.audio.sfx('bump'); // el topetazo contra la pared
           break;
         }
       }
@@ -563,13 +734,15 @@
           this.tb.open(MQ.ctx, w.denied || 'No puedes pasar por aquí todavía.');
           return;
         }
-        p.x = w.tx; p.y = w.ty;
-        this.enterMap(w.to);
+        // el shoop de la puerta + fundido a negro, como manda la tradición
+        MQ.audio.sfx('door');
+        this.fade = 22;
+        this.pendingWarp = w;
         return;
       }
       if (ch === 'M') { if (p.dir === 'up') this.openTrain(); return; }
       if (this.checkTrigger()) return;
-      // encuentro salvaje
+      // encuentro salvaje: la pantalla parpadea y arranca la música antes del combate
       const enc = this.map.enc;
       if (enc && (ch === '~' || ch === 'g') && Math.random() < enc.rate) {
         const pool = enc.mons.filter((m) => !m[4] || p.flags[m[4]]);
@@ -578,11 +751,9 @@
         let pickd = pool[0];
         for (const m of pool) { r -= m[1]; if (r <= 0) { pickd = m; break; } }
         const lvl = pickd[2] + MQ.rand(pickd[3] - pickd[2] + 1);
-        MQ.pushScene(new MQ.BattleScene({ wild: { id: pickd[0], lvl } }, (res) => {
-          MQ.popScene();
-          MQ.audio.music(this.map.music || 'town');
-          if (res === 'lose') MQ.respawn(this);
-        }));
+        this.encFlash = 22;
+        this.pendingEnc = { id: pickd[0], lvl };
+        MQ.audio.music(pickd[0] === 'trenfantasma' ? 'boss' : 'battle');
       }
     }
 
@@ -629,7 +800,15 @@
       }
       // jugador
       const walkFrame = this.moving > 0 ? ((this.moving / 8) | 0) % 2 : 0;
-      MQ.drawPerson(ctx, Math.round(ppx - camX), Math.round(ppy - camY), MQ.LOOKS[p.look] || MQ.LOOKS.player, p.dir, walkFrame);
+      MQ.drawPerson(ctx, Math.round(ppx - camX), Math.round(ppy - camY), MQ.LOOKS[p.look] || MQ.LOOKS.player, p.dir, walkFrame, this.moving > 0);
+
+      // mariposas amarillas (realismo mágico de a 3 píxeles)
+      for (const mt of this.motes || []) {
+        const fy = mt.y + Math.sin(mt.t / 9) * 6;
+        ctx.fillStyle = '#ffd94a';
+        ctx.fillRect(mt.x, fy, 2, 2);
+        if ((mt.t / 6 | 0) % 2) { ctx.fillRect(mt.x - 2, fy - 1, 2, 2); ctx.fillRect(mt.x + 2, fy - 1, 2, 2); }
+      }
 
       // oscuridad ambiental en túneles
       if (m.theme === 'tunel' || m.theme === 'ghost') {
@@ -652,6 +831,17 @@
       if (this.statView) this.drawStatPage(ctx, this.statView);
       if (this.menu) this.menu.draw(ctx);
       this.tb.draw(ctx);
+
+      // fundido del warp / destello del encuentro
+      if (this.fade > 0) {
+        const a = this.fade > 11 ? (22 - this.fade) / 11 : this.fade / 11;
+        ctx.fillStyle = `rgba(2,0,8,${a.toFixed(2)})`;
+        ctx.fillRect(0, 0, MQ.W, MQ.H);
+      }
+      if (this.encFlash > 0 && (this.encFlash / 4 | 0) % 2) {
+        ctx.fillStyle = 'rgba(245,235,210,0.85)';
+        ctx.fillRect(0, 0, MQ.W, MQ.H);
+      }
     }
 
     drawDexPage(ctx, id) {

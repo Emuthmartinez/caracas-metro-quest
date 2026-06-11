@@ -435,7 +435,7 @@
     MQ.ctx.imageSmoothingEnabled = false;
     // look femenino: vinotinto, sin gorra
     MQ.LOOKS.player.shirt = '#7a1f3d';
-    MQ.LOOKS.playera = { skin: '#b87a4a', shirt: '#7a1f3d', pants: '#33334a', hair: '#26100a' };
+    MQ.LOOKS.playera = { skin: '#b87a4a', shirt: '#7a1f3d', pants: '#33334a', hair: '#26100a', bag: '#5e8b3f' };
 
     MQ.pushScene(new IntroScene());
     const loop = () => {

@@ -56,6 +56,28 @@ hora del día (la hora fantasma vs. el amanecer), intercambios con NPCs (la econ
 del trueque criollo), y los espantos regionales que faltan: el Ánima Sola, María
 Lionza completa, el Carretón.
 
+## Los detalles de las 11 estrellas
+
+Los toques sutiles de los clásicos de Game Boy, cruzados con el realismo mágico
+caraqueño. La regla: cada transición tiene su sonido, cada lugar su música, y lo
+imposible ocurre sin que nadie lo comente.
+
+| Detalle | Dónde vive |
+|---|---|
+| El **shoop** de la puerta + fundido a negro en cada warp | `overworld` (`fade`, sfx `door`) |
+| Destello de pantalla antes del combate salvaje, con la música arrancando antes | `encFlash` |
+| **Ceremonia del tren**: las luces parpadean dos veces (la seña de Yorbi), el tren entra frenando, campanita, puertas que se abren, te montas, viajas, te bajas y el tren sigue su ruta | `RideScene` |
+| Barras de PS que se **vacían poco a poco** | `_disp` en battle |
+| **Alarma de PS bajos** (el pitido de urgencia) | sfx `lowhp` |
+| Fanfarria de victoria salvaje · jingle de guardado · campanita del vagón | sfx `victory`/`save`/`doors` |
+| Música propia por ambiente: estación, **calle** (sol de esquina), túnel, Línea Fantasma, combate, jefe, gaita de victoria | `TRACKS` |
+| Topetazo al caminar contra la pared | sfx `bump` |
+| Los NPC **miran alrededor** cada tanto, como gente de verdad | `update()` |
+| **Mariposas amarillas** que cruzan los andenes y nadie pregunta de dónde vienen | `motes` |
+| El jugador: gorra con visera direccional, **morral verde visto de espaldas**, brazos que se mecen al caminar y postura simétrica en reposo | `drawPerson` |
+| El inicial **se baja de la mesa** al elegirlo, con su grito | `took_<id>` |
+| Cada criatura con su **grito** al aparecer, caer y evolucionar | `MQ.CRIES` |
+
 ## Audio
 
 Todo es chiptune procedural (`js/audio.js`): pistas en `TRACKS`, efectos en `SFX`,
