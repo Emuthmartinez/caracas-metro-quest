@@ -1,0 +1,47 @@
+{
+ "$schema": "http://json-schema.org/draft-07/schema#",
+ "title": "Metro Quest encounter tables (Phase 4)",
+ "description": "Exactly one table per non-null `encounters` ref in data/maps/maps.json (key = the ref, e.g. 'enc.tn_propatria__canoamarillo'). Slot weights sum to 100 per table; rarity buckets per systems-spec §1.8 (común 60 / frecuente 30 / raro 9 / rarísimo 1, splittable). w:0 = rumor-only listing for dex habitat hints, never rolled. Per-step proc by kind: oscura 1/8, matorral 1/10, anden 1/12, sendero 1/10, azotea 1/10, tableau 1/8, safari (Zoológico rules, systems-spec §1.5). Species ids must exist in data/creatures/creatures.json. Enforced by scripts/validate_bestiario.py.",
+ "type": "object",
+ "required": ["schema_version", "tables", "static", "gifts", "roaming"],
+ "definitions": {
+  "slot": {"type": "object", "required": ["id","w","min","max"],
+           "properties": {"id":{"type":"string"},
+                          "w":{"type":"integer","minimum":0,"maximum":100},
+                          "min":{"type":"integer","minimum":1,"maximum":100},
+                          "max":{"type":"integer","minimum":1,"maximum":100}}}
+ },
+ "properties": {
+  "schema_version": {"const": 1},
+  "notes": {"type": "string"},
+  "tables": {
+   "type": "object",
+   "additionalProperties": {
+    "type": "object",
+    "required": ["kind","slots"],
+    "properties": {
+     "kind": {"enum": ["oscura","matorral","anden","sendero","azotea","tableau","safari"]},
+     "slots": {"type": "array", "items": {"$ref": "#/definitions/slot"}},
+     "fishing": {"type": "object",
+                 "properties": {"viejo":{"type":"array","items":{"$ref":"#/definitions/slot"}},
+                                "bueno":{"type":"array","items":{"$ref":"#/definitions/slot"}},
+                                "super":{"type":"array","items":{"$ref":"#/definitions/slot"}}},
+                 "description": "Anzuelo Viejo/Bueno/Súper sub-tables (systems-spec §1.8); each sums to 100."},
+     "notes": {"type": "string"}
+    }
+   }
+  },
+  "static": {"type": "array",
+             "items": {"type": "object", "required": ["id","map","level"],
+                       "properties": {"id":{"type":"string"},"map":{"type":"string"},
+                                      "level":{"type":"integer"},"gate":{"type":"string"},
+                                      "notes":{"type":"string"}}},
+             "description": "One-off encounters (legendaries, Bachacón's shaft). gate: oficio.*, ficha.N, postgame, story.*."},
+  "gifts": {"type": "array",
+            "items": {"type": "object", "required": ["id","map","level"]},
+            "description": "Story-given creatures (starters at in_casaabuela)."},
+  "roaming": {"type": "array",
+              "items": {"type": "object", "required": ["id","region","level"]},
+              "description": "Roams all encounter maps of its region (el Carretón)."}
+ }
+}
