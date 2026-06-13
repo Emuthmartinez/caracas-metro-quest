@@ -11,6 +11,18 @@ Preflight every batch with `get_cost:true`; report running totals at each batch
 gate; warn before any batch that would push phase spend past plan; 3 failed
 regenerations of the same asset → stop and flag for manual review.
 
+**Phase 5 template hardening (2026-06-13, v2):** flux_2 was under-constrained by
+the v1 "Plain solid white background" line and rendered creatures on textured
+concrete scenes, which the corner-flood background remover cannot key off
+neutral-palette subjects. The creature templates (concept/evolution/back) now
+open with an explicit "die-cut sprite isolated on a PURE FLAT #FFFFFF background,
+no scenery/floor/wall/cast-shadow, cleanly cuttable" clause. This enforces the
+existing background requirement — no style/content change. Higgsfield's ML
+`remove_background` (2 cr/image) was evaluated and rejected: the prompt fix is
+free and reliable. Production tooling: `scripts/build_art_manifest.py` (fills
+templates from the bestiario → `build/art-manifest.json`), `scripts/art_ingest.py`
+(download + postprocess + meta), `scripts/make_contact_sheet.py` (review sheets).
+
 | Template | Variables | Reference media | Post-process kind |
 |---|---|---|---|
 | `creature-concept.prompt` | {name} {design_brief} {palette_rows} | — (stage 1 = anchor) | `battle` (64×64) |
