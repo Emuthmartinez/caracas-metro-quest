@@ -1,0 +1,34 @@
+{
+  "id": "cantaclaro",
+  "name": "Cantaclaro",
+  "num": 5,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "fdc2bb82-b8f2-4735-b68c-e82738b33f53",
+      "seed": 668524,
+      "model": "flux_2 pro 1k",
+      "template": "creature-evolution.prompt"
+    },
+    "back": {
+      "job_id": "026fae12-f6ca-4763-b979-b90f35808c90",
+      "seed": 94812,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "fdc2bb82-b8f2-4735-b68c-e82738b33f53"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "7_caribe_vitales",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}
