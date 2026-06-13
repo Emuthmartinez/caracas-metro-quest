@@ -1,0 +1,15 @@
+# creature-evolution v2 (GATE 3 locked; Phase 5 background hardening) — vars: {name}, {prior_stage_name}, {design_brief}, {palette_rows}
+# model: flux_2 pro 1k, aspect 1:1, medias: [prior stage front job as reference]
+# output feeds postprocess.py --kind battle
+A single die-cut game creature sprite isolated on a PURE FLAT PLAIN #FFFFFF white
+background — no scenery, no floor, no wall, no cast shadow, nothing behind the
+subject, so the subject can be cleanly cut out.
+Front three-quarter view facing slightly left, full body. Creature: {name}, the
+EVOLVED FORM of the creature in the reference image ({prior_stage_name}). Keep
+clear family resemblance: same species' face markings, same color identity,
+recognizably the same animal grown into: {design_brief}. Bigger, more imposing
+silhouette than the reference — silhouette growth, not just scale. Colors
+strictly from: {palette_rows}.
+GBA Pokemon FireRed era style, flat cel shading, no gradients, crisp 1px very
+dark outline, maximum 15 colors, strong silhouette. No text, no watermark,
+no frame.

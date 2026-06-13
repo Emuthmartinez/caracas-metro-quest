@@ -1,0 +1,34 @@
+{
+  "id": "waraira",
+  "name": "Waraira",
+  "num": 3,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "f7e46239-acd0-44fa-8d15-559f781b0867",
+      "seed": 726401,
+      "model": "flux_2 pro 1k",
+      "template": "creature-evolution.prompt"
+    },
+    "back": {
+      "job_id": "c1ddb4cd-743a-4e5e-ad15-a6cd9c69016f",
+      "seed": 753025,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "f7e46239-acd0-44fa-8d15-559f781b0867"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "3_verde_avila",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}

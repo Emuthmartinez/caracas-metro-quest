@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "name": "Metro Quest master palette v1",
+  "notes": "64 colors in 8 semantic rows of 8 (dark to light). Every shipped asset quantizes to this palette (scripts/postprocess.py). Locked at GATE 3.",
+  "rows": {
+    "0_outline_earth": ["#0d0a08", "#1a1a1a", "#2e2620", "#4a4038", "#6b5d4f", "#8a7a68", "#b0a890", "#d8cfc0"],
+    "1_concreto_brutalista": ["#3a3d40", "#54585c", "#6e7378", "#8a9096", "#a8aeb4", "#c5cbd0", "#e0e4e8", "#f4f6f8"],
+    "2_naranja_metro": ["#7a2d0c", "#a8430f", "#d45a12", "#f47114", "#ff8c2e", "#ffa554", "#ffc080", "#ffdcb0"],
+    "3_verde_avila": ["#16301c", "#235030", "#2f6e42", "#3f8f54", "#58ab68", "#7cc384", "#a8d8a8", "#d4ecd0"],
+    "4_selva_calida": ["#4a5216", "#6c7a1e", "#8fa226", "#b4c63a", "#d4e05c", "#ecf08c", "#5c4420", "#7a5c2e"],
+    "5_hora_dorada": ["#5c2c18", "#8a4520", "#b86428", "#e08838", "#f0a848", "#f8c860", "#ffe088", "#fff0b8"],
+    "6_neon_espiritu": ["#2a1a4a", "#44287a", "#6038aa", "#8050d4", "#a070f0", "#c094ff", "#e0bcff", "#f4e4ff"],
+    "7_caribe_vitales": ["#0f2a52", "#1c4d8c", "#2f6fb8", "#4a90d9", "#84bce8", "#c83c44", "#d94f8a", "#f4a0b8"]
+  }
+}

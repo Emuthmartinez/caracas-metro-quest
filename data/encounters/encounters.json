@@ -1,0 +1,2960 @@
+{
+ "schema_version": 1,
+ "notes": "One table per enc.<map_id> ref in data/maps/maps.json. Weights sum to 100 per table (rarity buckets per systems-spec §1.8). kind: oscura 1/8 per step, matorral 1/10, anden 1/12, sendero 1/10, azotea 1/10, tableau 1/8, safari (zoo rules §1.5). fishing: anzuelo viejo/bueno/super sub-tables. w:0 = rumor-only listing (dex habitat hint), never rolled.",
+ "tables": {
+  "enc.tn_propatria__canoamarillo": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "ratica",
+     "w": 35,
+     "min": 3,
+     "max": 5
+    },
+    {
+     "id": "palomita",
+     "w": 25,
+     "min": 3,
+     "max": 5
+    },
+    {
+     "id": "sustico",
+     "w": 20,
+     "min": 3,
+     "max": 5
+    },
+    {
+     "id": "bachaquito",
+     "w": 10,
+     "min": 3,
+     "max": 5
+    },
+    {
+     "id": "gatonegro",
+     "w": 5,
+     "min": 4,
+     "max": 5
+    },
+    {
+     "id": "cocuyin",
+     "w": 4,
+     "min": 4,
+     "max": 5
+    },
+    {
+     "id": "fichita",
+     "w": 1,
+     "min": 5,
+     "max": 5
+    }
+   ],
+   "notes": "Paradas menores: Pérez Bonalde, Plaza Sucre, Gato Negro, Agua Salud. Gato Negro mans its own stop."
+  },
+  "enc.tn_canoamarillo__capitolio": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "ratica",
+     "w": 30,
+     "min": 4,
+     "max": 7
+    },
+    {
+     "id": "sustico",
+     "w": 25,
+     "min": 4,
+     "max": 7
+    },
+    {
+     "id": "duendecito",
+     "w": 20,
+     "min": 4,
+     "max": 7
+    },
+    {
+     "id": "mapanarita",
+     "w": 10,
+     "min": 5,
+     "max": 7
+    },
+    {
+     "id": "rabipelado",
+     "w": 9,
+     "min": 5,
+     "max": 7
+    },
+    {
+     "id": "velita",
+     "w": 5,
+     "min": 5,
+     "max": 7
+    },
+    {
+     "id": "fichita",
+     "w": 1,
+     "min": 6,
+     "max": 7
+    }
+   ]
+  },
+  "enc.tn_capitolio__bellasartes": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "sustico",
+     "w": 30,
+     "min": 6,
+     "max": 9
+    },
+    {
+     "id": "ratica",
+     "w": 25,
+     "min": 6,
+     "max": 9
+    },
+    {
+     "id": "velita",
+     "w": 20,
+     "min": 6,
+     "max": 9
+    },
+    {
+     "id": "zamurito",
+     "w": 10,
+     "min": 7,
+     "max": 9
+    },
+    {
+     "id": "pavoso",
+     "w": 9,
+     "min": 7,
+     "max": 9
+    },
+    {
+     "id": "bombillito",
+     "w": 5,
+     "min": 7,
+     "max": 9
+    },
+    {
+     "id": "telefonito",
+     "w": 1,
+     "min": 9,
+     "max": 9
+    }
+   ],
+   "notes": "Paradas menores: La Hoyada, Parque Carabobo."
+  },
+  "enc.tn_bellasartes__plazavenezuela": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "sustico",
+     "w": 30,
+     "min": 8,
+     "max": 11
+    },
+    {
+     "id": "velita",
+     "w": 25,
+     "min": 8,
+     "max": 11
+    },
+    {
+     "id": "bombillito",
+     "w": 20,
+     "min": 8,
+     "max": 11
+    },
+    {
+     "id": "ratica",
+     "w": 10,
+     "min": 8,
+     "max": 11
+    },
+    {
+     "id": "pavoso",
+     "w": 9,
+     "min": 9,
+     "max": 11
+    },
+    {
+     "id": "fuentecita",
+     "w": 5,
+     "min": 10,
+     "max": 11
+    },
+    {
+     "id": "cafecito",
+     "w": 1,
+     "min": 10,
+     "max": 11
+    }
+   ]
+  },
+  "enc.tn_plazavenezuela__sabanagrande": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "palomita",
+     "w": 30,
+     "min": 10,
+     "max": 13
+    },
+    {
+     "id": "sustico",
+     "w": 25,
+     "min": 10,
+     "max": 13
+    },
+    {
+     "id": "maraquita",
+     "w": 20,
+     "min": 10,
+     "max": 13
+    },
+    {
+     "id": "periquito",
+     "w": 10,
+     "min": 10,
+     "max": 13
+    },
+    {
+     "id": "fuentecita",
+     "w": 9,
+     "min": 11,
+     "max": 13
+    },
+    {
+     "id": "cafecito",
+     "w": 5,
+     "min": 11,
+     "max": 13
+    },
+    {
+     "id": "cuatrico",
+     "w": 1,
+     "min": 12,
+     "max": 13
+    }
+   ]
+  },
+  "enc.tn_sabanagrande__chacaito": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "periquito",
+     "w": 30,
+     "min": 12,
+     "max": 15
+    },
+    {
+     "id": "cachorro",
+     "w": 25,
+     "min": 12,
+     "max": 15
+    },
+    {
+     "id": "sustico",
+     "w": 20,
+     "min": 12,
+     "max": 15
+    },
+    {
+     "id": "maraquita",
+     "w": 10,
+     "min": 12,
+     "max": 15
+    },
+    {
+     "id": "tequenito",
+     "w": 9,
+     "min": 13,
+     "max": 15
+    },
+    {
+     "id": "gatonegro",
+     "w": 5,
+     "min": 13,
+     "max": 15
+    },
+    {
+     "id": "paraulata",
+     "w": 1,
+     "min": 14,
+     "max": 15
+    }
+   ]
+  },
+  "enc.tn_chacaito__altamira": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "cachorro",
+     "w": 30,
+     "min": 14,
+     "max": 17
+    },
+    {
+     "id": "zamurito",
+     "w": 25,
+     "min": 14,
+     "max": 17
+    },
+    {
+     "id": "sustico",
+     "w": 20,
+     "min": 14,
+     "max": 17
+    },
+    {
+     "id": "velita",
+     "w": 10,
+     "min": 14,
+     "max": 17
+    },
+    {
+     "id": "tucusito",
+     "w": 9,
+     "min": 15,
+     "max": 17
+    },
+    {
+     "id": "duendecito",
+     "w": 5,
+     "min": 15,
+     "max": 17
+    },
+    {
+     "id": "elsereno",
+     "w": 1,
+     "min": 16,
+     "max": 17
+    }
+   ],
+   "notes": "Parada menor: Chacao."
+  },
+  "enc.tn_altamira__petare": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "zamurito",
+     "w": 30,
+     "min": 16,
+     "max": 19
+    },
+    {
+     "id": "cachicamo",
+     "w": 25,
+     "min": 16,
+     "max": 19
+    },
+    {
+     "id": "sustico",
+     "w": 20,
+     "min": 16,
+     "max": 19
+    },
+    {
+     "id": "manguito",
+     "w": 10,
+     "min": 16,
+     "max": 19
+    },
+    {
+     "id": "duendecito",
+     "w": 9,
+     "min": 17,
+     "max": 19
+    },
+    {
+     "id": "mapanarita",
+     "w": 5,
+     "min": 17,
+     "max": 19
+    },
+    {
+     "id": "fichita",
+     "w": 1,
+     "min": 18,
+     "max": 19
+    }
+   ],
+   "notes": "Paradas menores: Miranda, Los Dos Caminos, Los Cortijos, La California."
+  },
+  "enc.tn_petare__paloverde": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "cachicamo",
+     "w": 30,
+     "min": 18,
+     "max": 22
+    },
+    {
+     "id": "manguito",
+     "w": 25,
+     "min": 18,
+     "max": 22
+    },
+    {
+     "id": "zamurito",
+     "w": 20,
+     "min": 18,
+     "max": 22
+    },
+    {
+     "id": "arepita",
+     "w": 10,
+     "min": 18,
+     "max": 22
+    },
+    {
+     "id": "burritosabanero",
+     "w": 9,
+     "min": 19,
+     "max": 22
+    },
+    {
+     "id": "ratonante",
+     "w": 5,
+     "min": 20,
+     "max": 22
+    },
+    {
+     "id": "elsereno",
+     "w": 1,
+     "min": 21,
+     "max": 22
+    }
+   ],
+   "notes": "Parada menor: Palo Verde vestibule (Mariche dock, post-game)."
+  },
+  "enc.sf_calvario": {
+   "kind": "matorral",
+   "slots": [
+    {
+     "id": "bejuquito",
+     "w": 30,
+     "min": 5,
+     "max": 9
+    },
+    {
+     "id": "mayita",
+     "w": 25,
+     "min": 5,
+     "max": 9
+    },
+    {
+     "id": "bachaquito",
+     "w": 20,
+     "min": 5,
+     "max": 9
+    },
+    {
+     "id": "mapanarita",
+     "w": 10,
+     "min": 6,
+     "max": 9
+    },
+    {
+     "id": "araguatico",
+     "w": 9,
+     "min": 6,
+     "max": 9
+    },
+    {
+     "id": "cunaguarin",
+     "w": 5,
+     "min": 7,
+     "max": 9
+    },
+    {
+     "id": "guacamayin",
+     "w": 1,
+     "min": 8,
+     "max": 9
+    }
+   ],
+   "notes": "Machete country (canon). El matapalo grown here is story-famous but battles only via evolution or Mariche."
+  },
+  "enc.sf_caobos": {
+   "kind": "matorral",
+   "slots": [
+    {
+     "id": "iguanin",
+     "w": 30,
+     "min": 8,
+     "max": 12
+    },
+    {
+     "id": "mayita",
+     "w": 20,
+     "min": 8,
+     "max": 12
+    },
+    {
+     "id": "tucusito",
+     "w": 20,
+     "min": 8,
+     "max": 12
+    },
+    {
+     "id": "palomita",
+     "w": 15,
+     "min": 8,
+     "max": 12
+    },
+    {
+     "id": "sapitolipa",
+     "w": 9,
+     "min": 9,
+     "max": 12
+    },
+    {
+     "id": "pereza",
+     "w": 5,
+     "min": 10,
+     "max": 12
+    },
+    {
+     "id": "cardenalito",
+     "w": 1,
+     "min": 11,
+     "max": 12
+    }
+   ],
+   "fishing": {
+    "viejo": [
+     {
+      "id": "guabina",
+      "w": 60,
+      "min": 5,
+      "max": 10
+     },
+     {
+      "id": "caribito",
+      "w": 40,
+      "min": 5,
+      "max": 10
+     }
+    ],
+    "bueno": [
+     {
+      "id": "guabina",
+      "w": 50,
+      "min": 10,
+      "max": 20
+     },
+     {
+      "id": "caribito",
+      "w": 30,
+      "min": 10,
+      "max": 20
+     },
+     {
+      "id": "sapitolipa",
+      "w": 20,
+      "min": 10,
+      "max": 20
+     }
+    ]
+   },
+   "notes": "Pereza's tree (canon). Pond allows fishing."
+  },
+  "enc.sf_bulevar": {
+   "kind": "matorral",
+   "slots": [
+    {
+     "id": "palomita",
+     "w": 30,
+     "min": 10,
+     "max": 14
+    },
+    {
+     "id": "periquito",
+     "w": 25,
+     "min": 10,
+     "max": 14
+    },
+    {
+     "id": "maraquita",
+     "w": 20,
+     "min": 10,
+     "max": 14
+    },
+    {
+     "id": "cachorro",
+     "w": 10,
+     "min": 10,
+     "max": 14
+    },
+    {
+     "id": "paraulata",
+     "w": 9,
+     "min": 11,
+     "max": 14
+    },
+    {
+     "id": "tequenito",
+     "w": 5,
+     "min": 11,
+     "max": 14
+    },
+    {
+     "id": "cardenalito",
+     "w": 1,
+     "min": 13,
+     "max": 14
+    }
+   ],
+   "notes": "Chess players, buskers; first Bachaqueros sighting (story)."
+  },
+  "enc.sf_puertaavila": {
+   "kind": "sendero",
+   "slots": [
+    {
+     "id": "araguanecito",
+     "w": 30,
+     "min": 12,
+     "max": 16
+    },
+    {
+     "id": "bejuquito",
+     "w": 25,
+     "min": 12,
+     "max": 16
+    },
+    {
+     "id": "cunaguarin",
+     "w": 20,
+     "min": 12,
+     "max": 16
+    },
+    {
+     "id": "tucusito",
+     "w": 10,
+     "min": 12,
+     "max": 16
+    },
+    {
+     "id": "lajita",
+     "w": 9,
+     "min": 13,
+     "max": 16
+    },
+    {
+     "id": "zamurito",
+     "w": 5,
+     "min": 13,
+     "max": 16
+    },
+    {
+     "id": "ucumari",
+     "w": 1,
+     "min": 16,
+     "max": 16
+    }
+   ],
+   "notes": "Act 1 Ávila teaser. Ucumarí sighting is the trailhead rumor."
+  },
+  "enc.sf_parquedeleste": {
+   "kind": "matorral",
+   "slots": [
+    {
+     "id": "iguanin",
+     "w": 20,
+     "min": 16,
+     "max": 20
+    },
+    {
+     "id": "tucusito",
+     "w": 25,
+     "min": 16,
+     "max": 20
+    },
+    {
+     "id": "guacamayin",
+     "w": 20,
+     "min": 16,
+     "max": 20
+    },
+    {
+     "id": "sapitolipa",
+     "w": 10,
+     "min": 16,
+     "max": 20
+    },
+    {
+     "id": "toninita",
+     "w": 9,
+     "min": 17,
+     "max": 20
+    },
+    {
+     "id": "cuchicuchi",
+     "w": 10,
+     "min": 17,
+     "max": 20
+    },
+    {
+     "id": "chigui",
+     "w": 5,
+     "min": 17,
+     "max": 20
+    },
+    {
+     "id": "cardenalito",
+     "w": 1,
+     "min": 19,
+     "max": 20
+    }
+   ],
+   "fishing": {
+    "viejo": [
+     {
+      "id": "guabina",
+      "w": 60,
+      "min": 8,
+      "max": 14
+     },
+     {
+      "id": "caribito",
+      "w": 40,
+      "min": 8,
+      "max": 14
+     }
+    ],
+    "bueno": [
+     {
+      "id": "toninita",
+      "w": 40,
+      "min": 14,
+      "max": 22
+     },
+     {
+      "id": "guabina",
+      "w": 35,
+      "min": 14,
+      "max": 22
+     },
+     {
+      "id": "caribito",
+      "w": 25,
+      "min": 14,
+      "max": 22
+     }
+    ],
+    "super": [
+     {
+      "id": "manaton",
+      "w": 35,
+      "min": 26,
+      "max": 32
+     },
+     {
+      "id": "guabinota",
+      "w": 35,
+      "min": 26,
+      "max": 32
+     },
+     {
+      "id": "toninita",
+      "w": 30,
+      "min": 26,
+      "max": 32
+     }
+    ]
+   },
+   "notes": "Tonina's pond rumor (world bible). Manatón lives here."
+  },
+  "enc.sf_mercadopetare": {
+   "kind": "matorral",
+   "slots": [
+    {
+     "id": "arepita",
+     "w": 30,
+     "min": 18,
+     "max": 22
+    },
+    {
+     "id": "manguito",
+     "w": 20,
+     "min": 18,
+     "max": 22
+    },
+    {
+     "id": "ratica",
+     "w": 15,
+     "min": 18,
+     "max": 22
+    },
+    {
+     "id": "tequenito",
+     "w": 10,
+     "min": 18,
+     "max": 22
+    },
+    {
+     "id": "cachapin",
+     "w": 5,
+     "min": 18,
+     "max": 22
+    },
+    {
+     "id": "burritosabanero",
+     "w": 9,
+     "min": 19,
+     "max": 22
+    },
+    {
+     "id": "guarapita",
+     "w": 9,
+     "min": 19,
+     "max": 22
+    },
+    {
+     "id": "elpabellon",
+     "w": 2,
+     "min": 22,
+     "max": 22
+    }
+   ],
+   "notes": "Doña Petra's market. El Pabellón is the rarest dish on the menu."
+  },
+  "enc.tn_elsilencio__capuchinos": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "suston",
+     "w": 30,
+     "min": 29,
+     "max": 32
+    },
+    {
+     "id": "ratonante",
+     "w": 25,
+     "min": 29,
+     "max": 32
+    },
+    {
+     "id": "bombillito",
+     "w": 20,
+     "min": 29,
+     "max": 32
+    },
+    {
+     "id": "velita",
+     "w": 10,
+     "min": 29,
+     "max": 32
+    },
+    {
+     "id": "cablebrita",
+     "w": 9,
+     "min": 30,
+     "max": 32
+    },
+    {
+     "id": "telefonito",
+     "w": 5,
+     "min": 30,
+     "max": 32
+    },
+    {
+     "id": "gatonegro",
+     "w": 1,
+     "min": 31,
+     "max": 32
+    }
+   ]
+  },
+  "enc.tn_capuchinos__layaguara": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "babito",
+     "w": 25,
+     "min": 30,
+     "max": 34
+    },
+    {
+     "id": "guabina",
+     "w": 20,
+     "min": 30,
+     "max": 34
+    },
+    {
+     "id": "ratonante",
+     "w": 20,
+     "min": 30,
+     "max": 34
+    },
+    {
+     "id": "cablebrita",
+     "w": 15,
+     "min": 30,
+     "max": 34
+    },
+    {
+     "id": "guabinota",
+     "w": 9,
+     "min": 31,
+     "max": 34
+    },
+    {
+     "id": "caribazo",
+     "w": 9,
+     "min": 32,
+     "max": 34
+    },
+    {
+     "id": "hachador",
+     "w": 2,
+     "min": 33,
+     "max": 34
+    }
+   ],
+   "fishing": {
+    "viejo": [
+     {
+      "id": "caribito",
+      "w": 60,
+      "min": 20,
+      "max": 26
+     },
+     {
+      "id": "guabina",
+      "w": 40,
+      "min": 20,
+      "max": 26
+     }
+    ],
+    "bueno": [
+     {
+      "id": "guabinota",
+      "w": 40,
+      "min": 26,
+      "max": 32
+     },
+     {
+      "id": "babito",
+      "w": 35,
+      "min": 26,
+      "max": 32
+     },
+     {
+      "id": "caribito",
+      "w": 25,
+      "min": 26,
+      "max": 32
+     }
+    ],
+    "super": [
+     {
+      "id": "caribazo",
+      "w": 50,
+      "min": 32,
+      "max": 38
+     },
+     {
+      "id": "babote",
+      "w": 30,
+      "min": 32,
+      "max": 38
+     },
+     {
+      "id": "guabinota",
+      "w": 20,
+      "min": 32,
+      "max": 38
+     }
+    ]
+   },
+   "notes": "Guaire edges — el Pescador's waters. Bachaqueros bottling plant side-dungeon."
+  },
+  "enc.tn_layaguara__caricuao": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "cablebrita",
+     "w": 25,
+     "min": 32,
+     "max": 36
+    },
+    {
+     "id": "bombillito",
+     "w": 20,
+     "min": 32,
+     "max": 36
+    },
+    {
+     "id": "pilica",
+     "w": 20,
+     "min": 32,
+     "max": 36
+    },
+    {
+     "id": "suston",
+     "w": 15,
+     "min": 32,
+     "max": 36
+    },
+    {
+     "id": "cuchicuchi",
+     "w": 9,
+     "min": 33,
+     "max": 36
+    },
+    {
+     "id": "plantaelectrica",
+     "w": 9,
+     "min": 34,
+     "max": 36
+    },
+    {
+     "id": "hachador",
+     "w": 2,
+     "min": 35,
+     "max": 36
+    }
+   ],
+   "notes": "Apagón zone (Antímano/Carapita/Mamera; Luz de Cocuyo required). Bachacón's shaft behind Demolición."
+  },
+  "enc.tn_caricuao__zoologico": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "baquirito",
+     "w": 25,
+     "min": 33,
+     "max": 36
+    },
+    {
+     "id": "dantica",
+     "w": 20,
+     "min": 33,
+     "max": 36
+    },
+    {
+     "id": "iguanota",
+     "w": 20,
+     "min": 33,
+     "max": 36
+    },
+    {
+     "id": "araguatico",
+     "w": 15,
+     "min": 33,
+     "max": 36
+    },
+    {
+     "id": "araguako",
+     "w": 9,
+     "min": 34,
+     "max": 36
+    },
+    {
+     "id": "cuchicuchi",
+     "w": 9,
+     "min": 34,
+     "max": 36
+    },
+    {
+     "id": "tigrito",
+     "w": 2,
+     "min": 35,
+     "max": 36
+    }
+   ]
+  },
+  "enc.tn_caricuao__lasadjuntas": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "cuchicuchi",
+     "w": 25,
+     "min": 34,
+     "max": 38
+    },
+    {
+     "id": "aguaitacamino",
+     "w": 25,
+     "min": 34,
+     "max": 38
+    },
+    {
+     "id": "lajita",
+     "w": 20,
+     "min": 34,
+     "max": 38
+    },
+    {
+     "id": "suston",
+     "w": 10,
+     "min": 34,
+     "max": 38
+    },
+    {
+     "id": "frailejin",
+     "w": 9,
+     "min": 35,
+     "max": 38
+    },
+    {
+     "id": "hachador",
+     "w": 9,
+     "min": 36,
+     "max": 38
+    },
+    {
+     "id": "mulamania",
+     "w": 2,
+     "min": 37,
+     "max": 38
+    }
+   ],
+   "notes": "Paradas menores: Maternidad, Artigas, La Paz. The quiet far west; Cheo 3 territory."
+  },
+  "enc.in_safari": {
+   "kind": "safari",
+   "slots": [
+    {
+     "id": "hormiguerito",
+     "w": 20,
+     "min": 32,
+     "max": 38
+    },
+    {
+     "id": "dantica",
+     "w": 14,
+     "min": 32,
+     "max": 38
+    },
+    {
+     "id": "coquito",
+     "w": 4,
+     "min": 32,
+     "max": 38
+    },
+    {
+     "id": "baquirito",
+     "w": 18,
+     "min": 32,
+     "max": 38
+    },
+    {
+     "id": "chiguiron",
+     "w": 12,
+     "min": 33,
+     "max": 38
+    },
+    {
+     "id": "babote",
+     "w": 10,
+     "min": 34,
+     "max": 38
+    },
+    {
+     "id": "morrocoy",
+     "w": 10,
+     "min": 33,
+     "max": 38
+    },
+    {
+     "id": "tigrito",
+     "w": 6,
+     "min": 34,
+     "max": 38
+    },
+    {
+     "id": "guio",
+     "w": 4,
+     "min": 35,
+     "max": 38
+    },
+    {
+     "id": "manaton",
+     "w": 1,
+     "min": 36,
+     "max": 38
+    },
+    {
+     "id": "dantota",
+     "w": 1,
+     "min": 37,
+     "max": 38
+    }
+   ],
+   "notes": "El Zoológico de Caricuao (safari rules: fee, Fichas de Feria, bait/distract, step limit)."
+  },
+  "enc.tn_plazavenezuela__ciudaduniversitaria": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "suston",
+     "w": 30,
+     "min": 33,
+     "max": 36
+    },
+    {
+     "id": "palomota",
+     "w": 25,
+     "min": 33,
+     "max": 36
+    },
+    {
+     "id": "ratonante",
+     "w": 20,
+     "min": 33,
+     "max": 36
+    },
+    {
+     "id": "paraulata",
+     "w": 10,
+     "min": 33,
+     "max": 36
+    },
+    {
+     "id": "telefonito",
+     "w": 9,
+     "min": 34,
+     "max": 36
+    },
+    {
+     "id": "cuatrico",
+     "w": 5,
+     "min": 34,
+     "max": 36
+    },
+    {
+     "id": "elsereno",
+     "w": 1,
+     "min": 35,
+     "max": 36
+    }
+   ]
+  },
+  "enc.tn_ciudaduniversitaria__labandera": {
+   "kind": "anden",
+   "slots": [
+    {
+     "id": "ratonante",
+     "w": 30,
+     "min": 35,
+     "max": 38
+    },
+    {
+     "id": "palomota",
+     "w": 25,
+     "min": 35,
+     "max": 38
+    },
+    {
+     "id": "busetica",
+     "w": 20,
+     "min": 35,
+     "max": 38
+    },
+    {
+     "id": "tequenon",
+     "w": 10,
+     "min": 35,
+     "max": 38
+    },
+    {
+     "id": "mulamania",
+     "w": 9,
+     "min": 36,
+     "max": 38
+    },
+    {
+     "id": "elsereno",
+     "w": 5,
+     "min": 36,
+     "max": 38
+    },
+    {
+     "id": "paraulata",
+     "w": 1,
+     "min": 37,
+     "max": 38
+    }
+   ],
+   "notes": "La Bandera's andén concurrido — densest crowd-pocket table in the game."
+  },
+  "enc.tn_labandera__elvalle": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "busetica",
+     "w": 25,
+     "min": 36,
+     "max": 40
+    },
+    {
+     "id": "suston",
+     "w": 20,
+     "min": 36,
+     "max": 40
+    },
+    {
+     "id": "guabinota",
+     "w": 20,
+     "min": 36,
+     "max": 40
+    },
+    {
+     "id": "babito",
+     "w": 15,
+     "min": 36,
+     "max": 40
+    },
+    {
+     "id": "cablebra",
+     "w": 9,
+     "min": 37,
+     "max": 40
+    },
+    {
+     "id": "sapoton",
+     "w": 9,
+     "min": 37,
+     "max": 40
+    },
+    {
+     "id": "guio",
+     "w": 2,
+     "min": 39,
+     "max": 40
+    }
+   ],
+   "fishing": {
+    "viejo": [
+     {
+      "id": "caribito",
+      "w": 60,
+      "min": 24,
+      "max": 30
+     },
+     {
+      "id": "guabina",
+      "w": 40,
+      "min": 24,
+      "max": 30
+     }
+    ],
+    "bueno": [
+     {
+      "id": "sapitolipa",
+      "w": 40,
+      "min": 30,
+      "max": 36
+     },
+     {
+      "id": "guabinota",
+      "w": 35,
+      "min": 30,
+      "max": 36
+     },
+     {
+      "id": "babito",
+      "w": 25,
+      "min": 30,
+      "max": 36
+     }
+    ],
+    "super": [
+     {
+      "id": "guio",
+      "w": 40,
+      "min": 36,
+      "max": 42
+     },
+     {
+      "id": "babote",
+      "w": 35,
+      "min": 36,
+      "max": 42
+     },
+     {
+      "id": "caribazo",
+      "w": 25,
+      "min": 36,
+      "max": 42
+     }
+    ]
+   },
+   "notes": "Flooded quebrada segment — the mandatory Nado gate."
+  },
+  "enc.tn_elvalle__larinconada": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "mulamania",
+     "w": 25,
+     "min": 38,
+     "max": 42
+    },
+    {
+     "id": "guachiman",
+     "w": 20,
+     "min": 38,
+     "max": 42
+    },
+    {
+     "id": "baquiron",
+     "w": 20,
+     "min": 38,
+     "max": 42
+    },
+    {
+     "id": "burritosabanero",
+     "w": 15,
+     "min": 38,
+     "max": 42
+    },
+    {
+     "id": "glipton",
+     "w": 9,
+     "min": 39,
+     "max": 42
+    },
+    {
+     "id": "camioneton",
+     "w": 9,
+     "min": 40,
+     "max": 42
+    },
+    {
+     "id": "dientona",
+     "w": 2,
+     "min": 41,
+     "max": 42
+    }
+   ]
+  },
+  "enc.sf_ucv": {
+   "kind": "matorral",
+   "slots": [
+    {
+     "id": "paraulata",
+     "w": 25,
+     "min": 34,
+     "max": 38
+    },
+    {
+     "id": "palomota",
+     "w": 25,
+     "min": 34,
+     "max": 38
+    },
+    {
+     "id": "iguanota",
+     "w": 20,
+     "min": 34,
+     "max": 38
+    },
+    {
+     "id": "chicharrita",
+     "w": 5,
+     "min": 34,
+     "max": 38
+    },
+    {
+     "id": "suston",
+     "w": 10,
+     "min": 34,
+     "max": 38
+    },
+    {
+     "id": "telefonito",
+     "w": 9,
+     "min": 35,
+     "max": 38
+    },
+    {
+     "id": "cardenalito",
+     "w": 5,
+     "min": 35,
+     "max": 38
+    },
+    {
+     "id": "pereza",
+     "w": 1,
+     "min": 37,
+     "max": 38
+    }
+   ],
+   "notes": "Tierra de Nadie. The Estudiante Eterno's rumors begin here."
+  },
+  "enc.sf_hipica": {
+   "kind": "matorral",
+   "slots": [
+    {
+     "id": "guachiman",
+     "w": 30,
+     "min": 38,
+     "max": 42
+    },
+    {
+     "id": "iguanota",
+     "w": 20,
+     "min": 38,
+     "max": 42
+    },
+    {
+     "id": "paraulata",
+     "w": 20,
+     "min": 38,
+     "max": 42
+    },
+    {
+     "id": "zamuron",
+     "w": 15,
+     "min": 38,
+     "max": 42
+    },
+    {
+     "id": "mulamania",
+     "w": 9,
+     "min": 39,
+     "max": 42
+    },
+    {
+     "id": "guarapita",
+     "w": 5,
+     "min": 39,
+     "max": 42
+    },
+    {
+     "id": "dientona",
+     "w": 1,
+     "min": 42,
+     "max": 42
+    }
+   ],
+   "notes": "La Amazona's horses run the hora fantasma here."
+  },
+  "enc.tn_capuchinos__teatros": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "velorion",
+     "w": 25,
+     "min": 42,
+     "max": 46
+    },
+    {
+     "id": "cuatrico",
+     "w": 25,
+     "min": 42,
+     "max": 46
+    },
+    {
+     "id": "furrunguito",
+     "w": 20,
+     "min": 42,
+     "max": 46
+    },
+    {
+     "id": "sombreruo",
+     "w": 15,
+     "min": 42,
+     "max": 46
+    },
+    {
+     "id": "bandolo",
+     "w": 9,
+     "min": 43,
+     "max": 46
+    },
+    {
+     "id": "hachador",
+     "w": 5,
+     "min": 44,
+     "max": 46
+    },
+    {
+     "id": "pavorreal",
+     "w": 1,
+     "min": 45,
+     "max": 46
+    }
+   ]
+  },
+  "enc.tn_teatros__nuevocirco": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "cuatrico",
+     "w": 30,
+     "min": 43,
+     "max": 47
+    },
+    {
+     "id": "tamborcito",
+     "w": 20,
+     "min": 43,
+     "max": 47
+    },
+    {
+     "id": "velorion",
+     "w": 20,
+     "min": 43,
+     "max": 47
+    },
+    {
+     "id": "sustico",
+     "w": 10,
+     "min": 43,
+     "max": 47
+    },
+    {
+     "id": "maletica",
+     "w": 9,
+     "min": 44,
+     "max": 47
+    },
+    {
+     "id": "hallaquin",
+     "w": 9,
+     "min": 44,
+     "max": 47
+    },
+    {
+     "id": "elcoco",
+     "w": 2,
+     "min": 46,
+     "max": 47
+    }
+   ],
+   "notes": "The Bachaqueros' black market sits above (Nuevo Circo; story resolution)."
+  },
+  "enc.tn_nuevocirco__parquecentral": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "reflectoron",
+     "w": 25,
+     "min": 45,
+     "max": 48
+    },
+    {
+     "id": "cablebra",
+     "w": 25,
+     "min": 45,
+     "max": 48
+    },
+    {
+     "id": "torrecita",
+     "w": 20,
+     "min": 45,
+     "max": 48
+    },
+    {
+     "id": "pilica",
+     "w": 10,
+     "min": 45,
+     "max": 48
+    },
+    {
+     "id": "telefonito",
+     "w": 9,
+     "min": 46,
+     "max": 48
+    },
+    {
+     "id": "plantaelectrica",
+     "w": 9,
+     "min": 46,
+     "max": 48
+    },
+    {
+     "id": "cuarzito",
+     "w": 2,
+     "min": 47,
+     "max": 48
+    }
+   ]
+  },
+  "enc.tn_parquecentral__zonarental": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "torrecita",
+     "w": 25,
+     "min": 46,
+     "max": 50
+    },
+    {
+     "id": "cablebra",
+     "w": 20,
+     "min": 46,
+     "max": 50
+    },
+    {
+     "id": "velorion",
+     "w": 20,
+     "min": 46,
+     "max": 50
+    },
+    {
+     "id": "aguaitacamino",
+     "w": 15,
+     "min": 46,
+     "max": 50
+    },
+    {
+     "id": "torregemela",
+     "w": 9,
+     "min": 47,
+     "max": 50
+    },
+    {
+     "id": "vagonima",
+     "w": 9,
+     "min": 48,
+     "max": 50
+    },
+    {
+     "id": "dientona",
+     "w": 2,
+     "min": 49,
+     "max": 50
+    }
+   ]
+  },
+  "enc.tn_zonarental__bellomonte": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "vagonima",
+     "w": 25,
+     "min": 50,
+     "max": 54
+    },
+    {
+     "id": "velorion",
+     "w": 25,
+     "min": 50,
+     "max": 54
+    },
+    {
+     "id": "maletica",
+     "w": 20,
+     "min": 50,
+     "max": 54
+    },
+    {
+     "id": "suston",
+     "w": 15,
+     "min": 50,
+     "max": 54
+    },
+    {
+     "id": "sombreruo",
+     "w": 9,
+     "min": 51,
+     "max": 54
+    },
+    {
+     "id": "elcoco",
+     "w": 5,
+     "min": 52,
+     "max": 54
+    },
+    {
+     "id": "sayona",
+     "w": 1,
+     "min": 54,
+     "max": 54
+    }
+   ]
+  },
+  "enc.tn_bellomonte__lasmercedes": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "maletica",
+     "w": 30,
+     "min": 51,
+     "max": 55
+    },
+    {
+     "id": "vagonima",
+     "w": 25,
+     "min": 51,
+     "max": 55
+    },
+    {
+     "id": "velorion",
+     "w": 20,
+     "min": 51,
+     "max": 55
+    },
+    {
+     "id": "telefonito",
+     "w": 10,
+     "min": 51,
+     "max": 55
+    },
+    {
+     "id": "pavorreal",
+     "w": 9,
+     "min": 52,
+     "max": 55
+    },
+    {
+     "id": "elcoco",
+     "w": 5,
+     "min": 53,
+     "max": 55
+    },
+    {
+     "id": "dientona",
+     "w": 1,
+     "min": 55,
+     "max": 55
+    }
+   ]
+  },
+  "enc.gh_lasmercedes": {
+   "kind": "tableau",
+   "slots": [
+    {
+     "id": "velorion",
+     "w": 30,
+     "min": 52,
+     "max": 56
+    },
+    {
+     "id": "maletica",
+     "w": 25,
+     "min": 52,
+     "max": 56
+    },
+    {
+     "id": "fuentecita",
+     "w": 15,
+     "min": 52,
+     "max": 56
+    },
+    {
+     "id": "cuatrico",
+     "w": 10,
+     "min": 52,
+     "max": 56
+    },
+    {
+     "id": "bandolo",
+     "w": 9,
+     "min": 53,
+     "max": 56
+    },
+    {
+     "id": "guarapita",
+     "w": 9,
+     "min": 53,
+     "max": 56
+    },
+    {
+     "id": "sayona",
+     "w": 2,
+     "min": 55,
+     "max": 56
+    }
+   ],
+   "notes": "Tableau: the quinceañera hall someone never danced in."
+  },
+  "enc.tn_lasmercedes__tamanaco": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "vagonima",
+     "w": 30,
+     "min": 52,
+     "max": 56
+    },
+    {
+     "id": "maletica",
+     "w": 25,
+     "min": 52,
+     "max": 56
+    },
+    {
+     "id": "suston",
+     "w": 20,
+     "min": 52,
+     "max": 56
+    },
+    {
+     "id": "velita",
+     "w": 10,
+     "min": 52,
+     "max": 56
+    },
+    {
+     "id": "telefonito",
+     "w": 9,
+     "min": 53,
+     "max": 56
+    },
+    {
+     "id": "pavorreal",
+     "w": 5,
+     "min": 53,
+     "max": 56
+    },
+    {
+     "id": "elcoco",
+     "w": 1,
+     "min": 55,
+     "max": 56
+    }
+   ]
+  },
+  "enc.gh_tamanaco": {
+   "kind": "tableau",
+   "slots": [
+    {
+     "id": "hallaquin",
+     "w": 30,
+     "min": 53,
+     "max": 57
+    },
+    {
+     "id": "arepon",
+     "w": 20,
+     "min": 53,
+     "max": 57
+    },
+    {
+     "id": "maletica",
+     "w": 20,
+     "min": 53,
+     "max": 57
+    },
+    {
+     "id": "papelonero",
+     "w": 15,
+     "min": 53,
+     "max": 57
+    },
+    {
+     "id": "guarapita",
+     "w": 9,
+     "min": 54,
+     "max": 57
+    },
+    {
+     "id": "hallacon",
+     "w": 5,
+     "min": 55,
+     "max": 57
+    },
+    {
+     "id": "reinapepiada",
+     "w": 1,
+     "min": 57,
+     "max": 57
+    }
+   ],
+   "notes": "Tableau: the kitchen where December still smells of hoja de plátano."
+  },
+  "enc.tn_tamanaco__chuao": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "maletica",
+     "w": 30,
+     "min": 53,
+     "max": 57
+    },
+    {
+     "id": "velorion",
+     "w": 25,
+     "min": 53,
+     "max": 57
+    },
+    {
+     "id": "vagonima",
+     "w": 20,
+     "min": 53,
+     "max": 57
+    },
+    {
+     "id": "sombreruo",
+     "w": 10,
+     "min": 53,
+     "max": 57
+    },
+    {
+     "id": "hallaquin",
+     "w": 9,
+     "min": 54,
+     "max": 57
+    },
+    {
+     "id": "elcoco",
+     "w": 5,
+     "min": 55,
+     "max": 57
+    },
+    {
+     "id": "dientona",
+     "w": 1,
+     "min": 57,
+     "max": 57
+    }
+   ]
+  },
+  "enc.gh_chuao": {
+   "kind": "tableau",
+   "slots": [
+    {
+     "id": "paraulata",
+     "w": 25,
+     "min": 54,
+     "max": 58
+    },
+    {
+     "id": "telefonito",
+     "w": 25,
+     "min": 54,
+     "max": 58
+    },
+    {
+     "id": "sustico",
+     "w": 15,
+     "min": 54,
+     "max": 58
+    },
+    {
+     "id": "suston",
+     "w": 15,
+     "min": 54,
+     "max": 58
+    },
+    {
+     "id": "maletica",
+     "w": 9,
+     "min": 55,
+     "max": 58
+    },
+    {
+     "id": "velorion",
+     "w": 9,
+     "min": 55,
+     "max": 58
+    },
+    {
+     "id": "elcoco",
+     "w": 2,
+     "min": 57,
+     "max": 58
+    }
+   ],
+   "notes": "Tableau: the classroom with the lesson still on the board."
+  },
+  "enc.tn_chuao__bellocampo": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "velorion",
+     "w": 30,
+     "min": 54,
+     "max": 58
+    },
+    {
+     "id": "maletica",
+     "w": 25,
+     "min": 54,
+     "max": 58
+    },
+    {
+     "id": "pavorreal",
+     "w": 20,
+     "min": 54,
+     "max": 58
+    },
+    {
+     "id": "vagonima",
+     "w": 10,
+     "min": 54,
+     "max": 58
+    },
+    {
+     "id": "sombreruo",
+     "w": 9,
+     "min": 55,
+     "max": 58
+    },
+    {
+     "id": "sayona",
+     "w": 5,
+     "min": 56,
+     "max": 58
+    },
+    {
+     "id": "dientona",
+     "w": 1,
+     "min": 58,
+     "max": 58
+    }
+   ]
+  },
+  "enc.gh_bellocampo": {
+   "kind": "tableau",
+   "slots": [
+    {
+     "id": "maletica",
+     "w": 35,
+     "min": 55,
+     "max": 58
+    },
+    {
+     "id": "telefonito",
+     "w": 25,
+     "min": 55,
+     "max": 58
+    },
+    {
+     "id": "vagonima",
+     "w": 15,
+     "min": 55,
+     "max": 58
+    },
+    {
+     "id": "zamuron",
+     "w": 10,
+     "min": 55,
+     "max": 58
+    },
+    {
+     "id": "velorion",
+     "w": 9,
+     "min": 56,
+     "max": 58
+    },
+    {
+     "id": "sayona",
+     "w": 5,
+     "min": 57,
+     "max": 58
+    },
+    {
+     "id": "elcoco",
+     "w": 1,
+     "min": 58,
+     "max": 58
+    }
+   ],
+   "notes": "Tableau: the airport gate, last hug pending."
+  },
+  "enc.tn_bellocampo__miranda_l5": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "vagonima",
+     "w": 30,
+     "min": 55,
+     "max": 58
+    },
+    {
+     "id": "maletica",
+     "w": 25,
+     "min": 55,
+     "max": 58
+    },
+    {
+     "id": "velorion",
+     "w": 20,
+     "min": 55,
+     "max": 58
+    },
+    {
+     "id": "elcoco",
+     "w": 10,
+     "min": 56,
+     "max": 58
+    },
+    {
+     "id": "sayona",
+     "w": 9,
+     "min": 57,
+     "max": 58
+    },
+    {
+     "id": "pavorreal",
+     "w": 5,
+     "min": 57,
+     "max": 58
+    },
+    {
+     "id": "dientona",
+     "w": 1,
+     "min": 58,
+     "max": 58
+    }
+   ]
+  },
+  "enc.gh_miranda_l5": {
+   "kind": "tableau",
+   "slots": [
+    {
+     "id": "torrecita",
+     "w": 25,
+     "min": 56,
+     "max": 58
+    },
+    {
+     "id": "lajon",
+     "w": 20,
+     "min": 56,
+     "max": 58
+    },
+    {
+     "id": "maletica",
+     "w": 20,
+     "min": 56,
+     "max": 58
+    },
+    {
+     "id": "velorion",
+     "w": 15,
+     "min": 56,
+     "max": 58
+    },
+    {
+     "id": "llorona",
+     "w": 9,
+     "min": 57,
+     "max": 58
+    },
+    {
+     "id": "torregemela",
+     "w": 9,
+     "min": 57,
+     "max": 58
+    },
+    {
+     "id": "dientona",
+     "w": 2,
+     "min": 58,
+     "max": 58
+    }
+   ],
+   "notes": "Tableau: the unfinished house, second floor open to the stars. The Tren waits beyond."
+  },
+  "enc.sf_sabasnieves": {
+   "kind": "sendero",
+   "slots": [
+    {
+     "id": "araguanote",
+     "w": 25,
+     "min": 40,
+     "max": 46
+    },
+    {
+     "id": "cunaguaro",
+     "w": 20,
+     "min": 40,
+     "max": 46
+    },
+    {
+     "id": "lajon",
+     "w": 20,
+     "min": 40,
+     "max": 46
+    },
+    {
+     "id": "frailejin",
+     "w": 15,
+     "min": 40,
+     "max": 46
+    },
+    {
+     "id": "condorin",
+     "w": 9,
+     "min": 42,
+     "max": 46
+    },
+    {
+     "id": "tigrito",
+     "w": 9,
+     "min": 42,
+     "max": 46
+    },
+    {
+     "id": "ucumari",
+     "w": 2,
+     "min": 45,
+     "max": 46
+    }
+   ]
+  },
+  "enc.sf_neblina": {
+   "kind": "sendero",
+   "slots": [
+    {
+     "id": "neblinita",
+     "w": 30,
+     "min": 44,
+     "max": 50
+    },
+    {
+     "id": "sombreruo",
+     "w": 20,
+     "min": 44,
+     "max": 50
+    },
+    {
+     "id": "aguaitacamino",
+     "w": 20,
+     "min": 44,
+     "max": 50
+    },
+    {
+     "id": "lajon",
+     "w": 15,
+     "min": 44,
+     "max": 50
+    },
+    {
+     "id": "neblinon",
+     "w": 9,
+     "min": 46,
+     "max": 50
+    },
+    {
+     "id": "llorona",
+     "w": 5,
+     "min": 48,
+     "max": 50
+    },
+    {
+     "id": "luzcaraballo",
+     "w": 0,
+     "min": 50,
+     "max": 50
+    },
+    {
+     "id": "elcoco",
+     "w": 1,
+     "min": 49,
+     "max": 50
+    }
+   ],
+   "notes": "Permanent neblina weather. La Llorona's ravines (canon). Luz Caraballo listed at w0: rumor only, she walks Los Teques."
+  },
+  "enc.sf_cumbre": {
+   "kind": "sendero",
+   "slots": [
+    {
+     "id": "neblinon",
+     "w": 30,
+     "min": 62,
+     "max": 68
+    },
+    {
+     "id": "condoron",
+     "w": 20,
+     "min": 62,
+     "max": 68
+    },
+    {
+     "id": "frailejon",
+     "w": 20,
+     "min": 62,
+     "max": 68
+    },
+    {
+     "id": "cuarzito",
+     "w": 15,
+     "min": 62,
+     "max": 68
+    },
+    {
+     "id": "tepuyon",
+     "w": 9,
+     "min": 64,
+     "max": 68
+    },
+    {
+     "id": "waraira",
+     "w": 5,
+     "min": 66,
+     "max": 68
+    },
+    {
+     "id": "reyzamuro",
+     "w": 1,
+     "min": 67,
+     "max": 68
+    }
+   ],
+   "notes": "Hotel Humboldt ruins; Catatumbo static L70 (post-game)."
+  },
+  "enc.cb_hornosdecal": {
+   "kind": "azotea",
+   "slots": [
+    {
+     "id": "tamborcito",
+     "w": 30,
+     "min": 60,
+     "max": 63
+    },
+    {
+     "id": "palomota",
+     "w": 25,
+     "min": 60,
+     "max": 63
+    },
+    {
+     "id": "maraquita",
+     "w": 15,
+     "min": 60,
+     "max": 63
+    },
+    {
+     "id": "tamboron",
+     "w": 15,
+     "min": 60,
+     "max": 63
+    },
+    {
+     "id": "capachon",
+     "w": 9,
+     "min": 61,
+     "max": 63
+    },
+    {
+     "id": "cardenalito",
+     "w": 5,
+     "min": 61,
+     "max": 63
+    },
+    {
+     "id": "guacamayon",
+     "w": 1,
+     "min": 63,
+     "max": 63
+    }
+   ]
+  },
+  "enc.cb_laceiba": {
+   "kind": "azotea",
+   "slots": [
+    {
+     "id": "tamboron",
+     "w": 30,
+     "min": 61,
+     "max": 64
+    },
+    {
+     "id": "capachon",
+     "w": 20,
+     "min": 61,
+     "max": 64
+    },
+    {
+     "id": "furrucon",
+     "w": 20,
+     "min": 61,
+     "max": 64
+    },
+    {
+     "id": "palomota",
+     "w": 15,
+     "min": 61,
+     "max": 64
+    },
+    {
+     "id": "bandolo",
+     "w": 9,
+     "min": 62,
+     "max": 64
+    },
+    {
+     "id": "paraulata",
+     "w": 5,
+     "min": 62,
+     "max": 64
+    },
+    {
+     "id": "arpaviva",
+     "w": 1,
+     "min": 64,
+     "max": 64
+    }
+   ]
+  },
+  "enc.cb_elmanguito": {
+   "kind": "azotea",
+   "slots": [
+    {
+     "id": "mangazo",
+     "w": 30,
+     "min": 61,
+     "max": 64
+    },
+    {
+     "id": "tamboron",
+     "w": 25,
+     "min": 61,
+     "max": 64
+    },
+    {
+     "id": "cuchicuchon",
+     "w": 20,
+     "min": 61,
+     "max": 64
+    },
+    {
+     "id": "guacamayo",
+     "w": 10,
+     "min": 61,
+     "max": 64
+    },
+    {
+     "id": "capachon",
+     "w": 9,
+     "min": 62,
+     "max": 64
+    },
+    {
+     "id": "guacamayon",
+     "w": 5,
+     "min": 63,
+     "max": 64
+    },
+    {
+     "id": "arpaviva",
+     "w": 1,
+     "min": 64,
+     "max": 64
+    }
+   ],
+   "notes": "Yes, El Manguito gets the mango table. The station asked for it."
+  },
+  "enc.cb_sanagustin": {
+   "kind": "azotea",
+   "slots": [
+    {
+     "id": "tamboron",
+     "w": 30,
+     "min": 62,
+     "max": 66
+    },
+    {
+     "id": "capachon",
+     "w": 20,
+     "min": 62,
+     "max": 66
+    },
+    {
+     "id": "bandolo",
+     "w": 20,
+     "min": 62,
+     "max": 66
+    },
+    {
+     "id": "furrucon",
+     "w": 15,
+     "min": 62,
+     "max": 66
+    },
+    {
+     "id": "guacamayon",
+     "w": 9,
+     "min": 63,
+     "max": 66
+    },
+    {
+     "id": "arpaviva",
+     "w": 5,
+     "min": 64,
+     "max": 66
+    },
+    {
+     "id": "reinapepiada",
+     "w": 1,
+     "min": 66,
+     "max": 66
+    }
+   ],
+   "notes": "Cradle of salsa caraqueña; the Rumbero Mayor's origin quest."
+  },
+  "enc.cb_mariche": {
+   "kind": "azotea",
+   "slots": [
+    {
+     "id": "baquiron",
+     "w": 25,
+     "min": 62,
+     "max": 66
+    },
+    {
+     "id": "aguaitacamino",
+     "w": 20,
+     "min": 62,
+     "max": 66
+    },
+    {
+     "id": "dantota",
+     "w": 15,
+     "min": 62,
+     "max": 66
+    },
+    {
+     "id": "palmero",
+     "w": 15,
+     "min": 62,
+     "max": 66
+    },
+    {
+     "id": "tigrito",
+     "w": 10,
+     "min": 62,
+     "max": 66
+    },
+    {
+     "id": "matapalo",
+     "w": 9,
+     "min": 64,
+     "max": 66
+    },
+    {
+     "id": "guio",
+     "w": 5,
+     "min": 64,
+     "max": 66
+    },
+    {
+     "id": "tigron",
+     "w": 1,
+     "min": 66,
+     "max": 66
+    }
+   ],
+   "notes": "The frontier where urban-magical thins out and the old monte begins."
+  },
+  "enc.tn_lasadjuntas__aliprimera": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "frailejin",
+     "w": 30,
+     "min": 62,
+     "max": 65
+    },
+    {
+     "id": "neblinita",
+     "w": 25,
+     "min": 62,
+     "max": 65
+    },
+    {
+     "id": "lajon",
+     "w": 15,
+     "min": 62,
+     "max": 65
+    },
+    {
+     "id": "aguaitacamino",
+     "w": 15,
+     "min": 62,
+     "max": 65
+    },
+    {
+     "id": "cuarzito",
+     "w": 9,
+     "min": 63,
+     "max": 65
+    },
+    {
+     "id": "sombreruo",
+     "w": 5,
+     "min": 63,
+     "max": 65
+    },
+    {
+     "id": "elsereno",
+     "w": 1,
+     "min": 64,
+     "max": 65
+    }
+   ]
+  },
+  "enc.tn_aliprimera__guaicaipuro": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "neblinita",
+     "w": 25,
+     "min": 63,
+     "max": 66
+    },
+    {
+     "id": "frailejon",
+     "w": 20,
+     "min": 63,
+     "max": 66
+    },
+    {
+     "id": "condorin",
+     "w": 20,
+     "min": 63,
+     "max": 66
+    },
+    {
+     "id": "lajon",
+     "w": 15,
+     "min": 63,
+     "max": 66
+    },
+    {
+     "id": "neblinon",
+     "w": 9,
+     "min": 64,
+     "max": 66
+    },
+    {
+     "id": "hachador",
+     "w": 9,
+     "min": 64,
+     "max": 66
+    },
+    {
+     "id": "tepuyon",
+     "w": 2,
+     "min": 65,
+     "max": 66
+    }
+   ]
+  },
+  "enc.tn_guaicaipuro__independencia": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "frailejon",
+     "w": 25,
+     "min": 64,
+     "max": 67
+    },
+    {
+     "id": "neblinon",
+     "w": 20,
+     "min": 64,
+     "max": 67
+    },
+    {
+     "id": "condorin",
+     "w": 20,
+     "min": 64,
+     "max": 67
+    },
+    {
+     "id": "cuarzito",
+     "w": 15,
+     "min": 64,
+     "max": 67
+    },
+    {
+     "id": "mulamania",
+     "w": 9,
+     "min": 65,
+     "max": 67
+    },
+    {
+     "id": "tepuyon",
+     "w": 9,
+     "min": 65,
+     "max": 67
+    },
+    {
+     "id": "dientona",
+     "w": 2,
+     "min": 66,
+     "max": 67
+    }
+   ],
+   "notes": "La Torre battle facility at Independencia."
+  },
+  "enc.tn_independencia__carrizal": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "neblinon",
+     "w": 25,
+     "min": 65,
+     "max": 68
+    },
+    {
+     "id": "frailejon",
+     "w": 20,
+     "min": 65,
+     "max": 68
+    },
+    {
+     "id": "lajon",
+     "w": 15,
+     "min": 65,
+     "max": 68
+    },
+    {
+     "id": "aguaitacamino",
+     "w": 15,
+     "min": 65,
+     "max": 68
+    },
+    {
+     "id": "condorin",
+     "w": 10,
+     "min": 65,
+     "max": 68
+    },
+    {
+     "id": "tepuyon",
+     "w": 9,
+     "min": 66,
+     "max": 68
+    },
+    {
+     "id": "condoron",
+     "w": 5,
+     "min": 67,
+     "max": 68
+    },
+    {
+     "id": "elcoco",
+     "w": 1,
+     "min": 68,
+     "max": 68
+    }
+   ],
+   "notes": "Parada menor: Las Minas. The fog thickens."
+  },
+  "enc.tn_carrizal__sanantonio": {
+   "kind": "oscura",
+   "slots": [
+    {
+     "id": "neblinon",
+     "w": 25,
+     "min": 66,
+     "max": 70
+    },
+    {
+     "id": "frailejon",
+     "w": 20,
+     "min": 66,
+     "max": 70
+    },
+    {
+     "id": "condoron",
+     "w": 15,
+     "min": 66,
+     "max": 70
+    },
+    {
+     "id": "tepuyon",
+     "w": 15,
+     "min": 66,
+     "max": 70
+    },
+    {
+     "id": "dientona",
+     "w": 9,
+     "min": 67,
+     "max": 70
+    },
+    {
+     "id": "sombreruo",
+     "w": 10,
+     "min": 67,
+     "max": 70
+    },
+    {
+     "id": "luzcaraballo",
+     "w": 0,
+     "min": 68,
+     "max": 70
+    },
+    {
+     "id": "elcoco",
+     "w": 6,
+     "min": 68,
+     "max": 70
+    }
+   ],
+   "notes": "Cheo's weekly rematch at San Antonio. Luz Caraballo at w0: static encounter, see `static`."
+  }
+ },
+ "static": [
+  {
+   "id": "bachacon",
+   "map": "tn_layaguara__caricuao",
+   "level": 36,
+   "gate": "oficio.demolicion",
+   "notes": "The deepest shaft. Canon 'legendary bachaco culón'; holds up something nobody asks about."
+  },
+  {
+   "id": "silbon",
+   "map": "tn_capuchinos__teatros",
+   "level": 48,
+   "gate": "ficha.7",
+   "notes": "Rare static (canon 'raro'). If the whistle sounds far…"
+  },
+  {
+   "id": "catatumbo",
+   "map": "sf_cumbre",
+   "level": 70,
+   "gate": "postgame",
+   "notes": "Ávila summit, post-final (canon)."
+  },
+  {
+   "id": "luzcaraballo",
+   "map": "tn_carrizal__sanantonio",
+   "level": 68,
+   "gate": "postgame",
+   "notes": "De Chachopo a Apartaderos; she counts you among the children if you approach in fog."
+  },
+  {
+   "id": "trenfantasma",
+   "map": "gh_miranda_l5",
+   "level": 60,
+   "gate": "story.finale",
+   "notes": "Story boss; resolution per canon (no villain). Fichable only in the post-game second ride."
+  }
+ ],
+ "gifts": [
+  {
+   "id": "frontinito",
+   "map": "in_casaabuela",
+   "level": 5,
+   "notes": "Starter — la Abuela's choice table."
+  },
+  {
+   "id": "turpialin",
+   "map": "in_casaabuela",
+   "level": 5,
+   "notes": "Starter."
+  },
+  {
+   "id": "cocuyin",
+   "map": "in_casaabuela",
+   "level": 5,
+   "notes": "Starter."
+  }
+ ],
+ "roaming": [
+  {
+   "id": "carreton",
+   "region": "losteques",
+   "level": 65,
+   "gate": "postgame",
+   "notes": "Roams the whole Los Teques line (canon wishlist espanto). Heard before seen; flees to a random map."
+  }
+ ]
+}

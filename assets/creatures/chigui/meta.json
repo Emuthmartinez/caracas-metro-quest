@@ -1,0 +1,12 @@
+{
+  "id": "chigui", "name": "Chigüi", "stage": 1, "line": "chigui",
+  "is_global_style_anchor": true,
+  "jobs": {
+    "front": {"job_id": "41bf424d-5b84-45a7-89e1-6d334091a6d7", "seed": 356330, "model": "flux_2/pro/1k", "template": "creature-concept.prompt"},
+    "back": {"job_id": "16bca9e7-5d39-48ed-a63d-2b3ec52fd58d", "seed": 106482, "model": "flux_2/pro/1k", "template": "creature-back.prompt", "reference": "41bf424d-5b84-45a7-89e1-6d334091a6d7"}
+  },
+  "frames": {"idle": 1, "walk": 0},
+  "palette": {"colors_front": 15, "colors_back": 15, "tornasol_swapped_row": "5_hora_dorada"},
+  "anchor_px": {"ground_y": 63},
+  "notes": "Phase 3 proof asset. Walk frames pixel-edited in Phase 5. Known: back sprite ramp drifted cooler than front; Phase 5 back prompts must restate ramps."
+}

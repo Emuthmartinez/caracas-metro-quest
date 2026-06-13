@@ -1,0 +1,2764 @@
+{
+ "schema_version": 1,
+ "generated_by": "scripts/gen_maps.py",
+ "canon_map": {
+  "in_casaabuela": "casa",
+  "st_propatria": "propatria",
+  "tn_propatria__canoamarillo": "tunel1",
+  "st_canoamarillo": "canoamarillo",
+  "tn_canoamarillo__capitolio": "tunel2",
+  "st_capitolio": "capitolio",
+  "tn_capitolio__bellasartes": "tunel3",
+  "st_bellasartes": "bellasartes",
+  "tn_bellasartes__plazavenezuela": "tunel4",
+  "st_plazavenezuela": "plazavenezuela",
+  "tn_plazavenezuela__sabanagrande": "tunel5",
+  "st_sabanagrande": "sabanagrande",
+  "tn_sabanagrande__chacaito": "tunel6",
+  "st_chacaito": "chacaito",
+  "tn_chacaito__altamira": "tunel7",
+  "st_altamira": "altamira",
+  "tn_altamira__petare": "tunel8",
+  "st_petare": "petare"
+ },
+ "maps": [
+  {
+   "id": "cb_elmanguito",
+   "type": "cable",
+   "region": "metrocable_sanagustin",
+   "name_es": "Estación El Manguito",
+   "name_en": "El Manguito Cable Station",
+   "tileset": "ts.sanagustin",
+   "dimensions": {
+    "w": 24,
+    "h": 16
+   },
+   "connections": [
+    {
+     "to": "cb_laceiba",
+     "via": "cable",
+     "gate": "oficio.teleferico"
+    },
+    {
+     "to": "cb_sanagustin",
+     "via": "cable",
+     "gate": "oficio.teleferico"
+    }
+   ],
+   "features": [],
+   "encounters": "enc.cb_elmanguito",
+   "npcs": [],
+   "events": [],
+   "music": "mus.metrocable_sanagustin.cable"
+  },
+  {
+   "id": "cb_hornosdecal",
+   "type": "cable",
+   "region": "metrocable_sanagustin",
+   "name_es": "Estación Hornos de Cal",
+   "name_en": "Hornos de Cal Cable Station",
+   "tileset": "ts.sanagustin",
+   "dimensions": {
+    "w": 24,
+    "h": 16
+   },
+   "connections": [
+    {
+     "to": "st_parquecentral",
+     "via": "cable",
+     "gate": "oficio.teleferico"
+    },
+    {
+     "to": "cb_laceiba",
+     "via": "cable",
+     "gate": "oficio.teleferico"
+    }
+   ],
+   "features": [],
+   "encounters": "enc.cb_hornosdecal",
+   "npcs": [],
+   "events": [],
+   "music": "mus.metrocable_sanagustin.cable"
+  },
+  {
+   "id": "cb_laceiba",
+   "type": "cable",
+   "region": "metrocable_sanagustin",
+   "name_es": "Estación La Ceiba",
+   "name_en": "La Ceiba Cable Station",
+   "tileset": "ts.sanagustin",
+   "dimensions": {
+    "w": 24,
+    "h": 16
+   },
+   "connections": [
+    {
+     "to": "cb_hornosdecal",
+     "via": "cable",
+     "gate": "oficio.teleferico"
+    },
+    {
+     "to": "cb_elmanguito",
+     "via": "cable",
+     "gate": "oficio.teleferico"
+    }
+   ],
+   "features": [],
+   "encounters": "enc.cb_laceiba",
+   "npcs": [],
+   "events": [],
+   "music": "mus.metrocable_sanagustin.cable"
+  },
+  {
+   "id": "cb_mariche",
+   "type": "cable",
+   "region": "metrocable_mariche",
+   "name_es": "Estación Mariche",
+   "name_en": "Mariche Cable Station",
+   "tileset": "ts.mariche",
+   "dimensions": {
+    "w": 24,
+    "h": 16
+   },
+   "connections": [
+    {
+     "to": "st_paloverde",
+     "via": "cable",
+     "gate": "oficio.teleferico"
+    }
+   ],
+   "features": [],
+   "encounters": "enc.cb_mariche",
+   "npcs": [],
+   "events": [],
+   "music": "mus.metrocable_mariche.cable"
+  },
+  {
+   "id": "cb_sanagustin",
+   "type": "cable",
+   "region": "metrocable_sanagustin",
+   "name_es": "Estación San Agustín",
+   "name_en": "San Agustín Cable Station",
+   "tileset": "ts.sanagustin",
+   "dimensions": {
+    "w": 24,
+    "h": 16
+   },
+   "connections": [
+    {
+     "to": "cb_elmanguito",
+     "via": "cable",
+     "gate": "oficio.teleferico"
+    }
+   ],
+   "features": [],
+   "encounters": "enc.cb_sanagustin",
+   "npcs": [],
+   "events": [],
+   "music": "mus.metrocable_sanagustin.cable"
+  },
+  {
+   "id": "gh_bellocampo",
+   "type": "ghost",
+   "region": "linea5",
+   "name_es": "Estación fantasma Bello Campo",
+   "name_en": "Ghost station Bello Campo",
+   "tileset": "ts.fantasma",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_chuao__bellocampo",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_bellocampo__miranda_l5",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.gh_bellocampo",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea5.ghost"
+  },
+  {
+   "id": "gh_chuao",
+   "type": "ghost",
+   "region": "linea5",
+   "name_es": "Estación fantasma Chuao",
+   "name_en": "Ghost station Chuao",
+   "tileset": "ts.fantasma",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_tamanaco__chuao",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_chuao__bellocampo",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.gh_chuao",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea5.ghost"
+  },
+  {
+   "id": "gh_lasmercedes",
+   "type": "ghost",
+   "region": "linea5",
+   "name_es": "Estación fantasma Las Mercedes",
+   "name_en": "Ghost station Las Mercedes",
+   "tileset": "ts.fantasma",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_bellomonte__lasmercedes",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_lasmercedes__tamanaco",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.gh_lasmercedes",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea5.ghost"
+  },
+  {
+   "id": "gh_miranda_l5",
+   "type": "ghost",
+   "region": "linea5",
+   "name_es": "Estación fantasma Miranda",
+   "name_en": "Ghost station Miranda",
+   "tileset": "ts.fantasma",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_bellocampo__miranda_l5",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.gh_miranda_l5",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea5.ghost"
+  },
+  {
+   "id": "gh_tamanaco",
+   "type": "ghost",
+   "region": "linea5",
+   "name_es": "Estación fantasma Tamanaco",
+   "name_en": "Ghost station Tamanaco",
+   "tileset": "ts.fantasma",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_lasmercedes__tamanaco",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_tamanaco__chuao",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.gh_tamanaco",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea5.ghost"
+  },
+  {
+   "id": "in_casaabuela",
+   "type": "interior",
+   "region": "linea1",
+   "name_es": "Casa de la Abuela",
+   "name_en": "Grandma's House",
+   "tileset": "ts.interior",
+   "dimensions": {
+    "w": 20,
+    "h": 14
+   },
+   "connections": [
+    {
+     "to": "st_propatria",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.interior.default"
+  },
+  {
+   "id": "in_latorre",
+   "type": "interior",
+   "region": "losteques",
+   "name_es": "La Torre",
+   "name_en": "The Tower (battle facility)",
+   "tileset": "ts.interior",
+   "dimensions": {
+    "w": 20,
+    "h": 14
+   },
+   "connections": [
+    {
+     "to": "st_independencia",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.interior.default"
+  },
+  {
+   "id": "in_mercadocirco",
+   "type": "interior",
+   "region": "linea4",
+   "name_es": "Mercado del Coleccionista",
+   "name_en": "The Collector's Market",
+   "tileset": "ts.interior",
+   "dimensions": {
+    "w": 20,
+    "h": 14
+   },
+   "connections": [
+    {
+     "to": "st_nuevocirco",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.interior.default"
+  },
+  {
+   "id": "in_safari",
+   "type": "interior",
+   "region": "linea2",
+   "name_es": "Safari del Zoológico",
+   "name_en": "Zoo Safari",
+   "tileset": "ts.interior",
+   "dimensions": {
+    "w": 20,
+    "h": 14
+   },
+   "connections": [
+    {
+     "to": "st_zoologico",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.in_safari",
+   "npcs": [],
+   "events": [],
+   "music": "mus.interior.default"
+  },
+  {
+   "id": "sf_bulevar",
+   "type": "surface",
+   "region": "superficie",
+   "name_es": "Bulevar de Sabana Grande",
+   "name_en": "Sabana Grande Boulevard",
+   "tileset": "ts.superficie",
+   "dimensions": {
+    "w": 48,
+    "h": 32
+   },
+   "connections": [
+    {
+     "to": "st_sabanagrande",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.sf_bulevar",
+   "npcs": [],
+   "events": [],
+   "music": "mus.superficie.day"
+  },
+  {
+   "id": "sf_calvario",
+   "type": "surface",
+   "region": "superficie",
+   "name_es": "El Calvario",
+   "name_en": "El Calvario Park",
+   "tileset": "ts.superficie",
+   "dimensions": {
+    "w": 48,
+    "h": 32
+   },
+   "connections": [
+    {
+     "to": "st_canoamarillo",
+     "via": "warp",
+     "gate": "oficio.machete"
+    }
+   ],
+   "features": [],
+   "encounters": "enc.sf_calvario",
+   "npcs": [],
+   "events": [],
+   "music": "mus.superficie.day"
+  },
+  {
+   "id": "sf_caobos",
+   "type": "surface",
+   "region": "superficie",
+   "name_es": "Parque Los Caobos",
+   "name_en": "Los Caobos Park",
+   "tileset": "ts.superficie",
+   "dimensions": {
+    "w": 48,
+    "h": 32
+   },
+   "connections": [
+    {
+     "to": "st_bellasartes",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.sf_caobos",
+   "npcs": [],
+   "events": [],
+   "music": "mus.superficie.day"
+  },
+  {
+   "id": "sf_cumbre",
+   "type": "surface",
+   "region": "avila",
+   "name_es": "La Cumbre (Hotel Humboldt)",
+   "name_en": "The Summit (Hotel Humboldt)",
+   "tileset": "ts.avila",
+   "dimensions": {
+    "w": 48,
+    "h": 32
+   },
+   "connections": [
+    {
+     "to": "sf_neblina",
+     "via": "walk",
+     "gate": "oficio.teleferico"
+    }
+   ],
+   "features": [],
+   "encounters": "enc.sf_cumbre",
+   "npcs": [],
+   "events": [],
+   "music": "mus.avila.trail"
+  },
+  {
+   "id": "sf_hipica",
+   "type": "surface",
+   "region": "superficie",
+   "name_es": "La Hípica Sur",
+   "name_en": "Southern Hippodrome Grounds",
+   "tileset": "ts.superficie",
+   "dimensions": {
+    "w": 48,
+    "h": 32
+   },
+   "connections": [
+    {
+     "to": "st_larinconada",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.sf_hipica",
+   "npcs": [],
+   "events": [],
+   "music": "mus.superficie.day"
+  },
+  {
+   "id": "sf_mercadopetare",
+   "type": "surface",
+   "region": "superficie",
+   "name_es": "Mercado de Petare",
+   "name_en": "Petare Market",
+   "tileset": "ts.superficie",
+   "dimensions": {
+    "w": 48,
+    "h": 32
+   },
+   "connections": [
+    {
+     "to": "st_petare",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.sf_mercadopetare",
+   "npcs": [],
+   "events": [],
+   "music": "mus.superficie.day"
+  },
+  {
+   "id": "sf_neblina",
+   "type": "surface",
+   "region": "avila",
+   "name_es": "La Neblina",
+   "name_en": "The Fog Belt",
+   "tileset": "ts.avila",
+   "dimensions": {
+    "w": 48,
+    "h": 32
+   },
+   "connections": [
+    {
+     "to": "sf_sabasnieves",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "sf_cumbre",
+     "via": "walk",
+     "gate": "oficio.teleferico"
+    }
+   ],
+   "features": [
+    {
+     "kind": "weather_zone",
+     "id": "wz_neblina",
+     "name_es": "La Neblina",
+     "weather": "neblina"
+    }
+   ],
+   "encounters": "enc.sf_neblina",
+   "npcs": [],
+   "events": [],
+   "music": "mus.avila.trail"
+  },
+  {
+   "id": "sf_parquedeleste",
+   "type": "surface",
+   "region": "superficie",
+   "name_es": "Parque del Este",
+   "name_en": "Parque del Este",
+   "tileset": "ts.superficie",
+   "dimensions": {
+    "w": 48,
+    "h": 32
+   },
+   "connections": [
+    {
+     "to": "st_altamira",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.sf_parquedeleste",
+   "npcs": [],
+   "events": [],
+   "music": "mus.superficie.day"
+  },
+  {
+   "id": "sf_puertaavila",
+   "type": "surface",
+   "region": "superficie",
+   "name_es": "Puerta del Ávila",
+   "name_en": "Ávila Gateway",
+   "tileset": "ts.superficie",
+   "dimensions": {
+    "w": 48,
+    "h": 32
+   },
+   "connections": [
+    {
+     "to": "st_altamira",
+     "via": "warp",
+     "gate": "oficio.machete"
+    },
+    {
+     "to": "sf_sabasnieves",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.sf_puertaavila",
+   "npcs": [],
+   "events": [],
+   "music": "mus.superficie.day"
+  },
+  {
+   "id": "sf_sabasnieves",
+   "type": "surface",
+   "region": "avila",
+   "name_es": "Sabas Nieves",
+   "name_en": "Sabas Nieves Trail",
+   "tileset": "ts.avila",
+   "dimensions": {
+    "w": 48,
+    "h": 32
+   },
+   "connections": [
+    {
+     "to": "sf_puertaavila",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "sf_neblina",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.sf_sabasnieves",
+   "npcs": [],
+   "events": [],
+   "music": "mus.avila.trail"
+  },
+  {
+   "id": "sf_ucv",
+   "type": "surface",
+   "region": "superficie",
+   "name_es": "Tierra de Nadie (UCV)",
+   "name_en": "UCV Grounds",
+   "tileset": "ts.superficie",
+   "dimensions": {
+    "w": 48,
+    "h": 32
+   },
+   "connections": [
+    {
+     "to": "st_ciudaduniversitaria",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.sf_ucv",
+   "npcs": [],
+   "events": [],
+   "music": "mus.superficie.day"
+  },
+  {
+   "id": "st_aliprimera",
+   "type": "station",
+   "region": "losteques",
+   "name_es": "Estación Alí Primera",
+   "name_en": "Alí Primera Station",
+   "tileset": "ts.losteques",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_lasadjuntas__aliprimera",
+     "via": "walk",
+     "gate": "flag.tren_resuelto"
+    },
+    {
+     "to": "tn_aliprimera__guaicaipuro",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.losteques.station"
+  },
+  {
+   "id": "st_altamira",
+   "type": "station",
+   "region": "linea1",
+   "name_es": "Estación Altamira",
+   "name_en": "Altamira Station",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_chacaito__altamira",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_altamira__petare",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "sf_parquedeleste",
+     "via": "warp",
+     "gate": null
+    },
+    {
+     "to": "sf_puertaavila",
+     "via": "warp",
+     "gate": "oficio.machete"
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.station"
+  },
+  {
+   "id": "st_bellasartes",
+   "type": "station",
+   "region": "linea1",
+   "name_es": "Estación Bellas Artes",
+   "name_en": "Bellas Artes Station",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_capitolio__bellasartes",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_bellasartes__plazavenezuela",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "sf_caobos",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.station"
+  },
+  {
+   "id": "st_bellomonte",
+   "type": "station",
+   "region": "linea5",
+   "name_es": "Estación Bello Monte",
+   "name_en": "Bello Monte Station",
+   "tileset": "ts.fantasma",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_zonarental__bellomonte",
+     "via": "walk",
+     "gate": "flag.bendicion"
+    },
+    {
+     "to": "tn_bellomonte__lasmercedes",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea5.station"
+  },
+  {
+   "id": "st_canoamarillo",
+   "type": "station",
+   "region": "linea1",
+   "name_es": "Estación Caño Amarillo",
+   "name_en": "Caño Amarillo Station",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_propatria__canoamarillo",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_canoamarillo__capitolio",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "sf_calvario",
+     "via": "warp",
+     "gate": "oficio.machete"
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.station"
+  },
+  {
+   "id": "st_capitolio",
+   "type": "station",
+   "region": "linea1",
+   "name_es": "Estación Capitolio",
+   "name_en": "Capitolio Station",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_canoamarillo__capitolio",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_capitolio__bellasartes",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_elsilencio",
+     "via": "transfer",
+     "gate": "fichas>=4"
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.station"
+  },
+  {
+   "id": "st_capuchinos",
+   "type": "station",
+   "region": "linea2",
+   "name_es": "Estación Capuchinos",
+   "name_en": "Capuchinos Station",
+   "tileset": "ts.linea2",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_elsilencio__capuchinos",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_capuchinos__layaguara",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_capuchinos__teatros",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_capuchinos__teatros",
+     "via": "transfer",
+     "gate": "fichas>=7"
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea2.station"
+  },
+  {
+   "id": "st_caricuao",
+   "type": "station",
+   "region": "linea2",
+   "name_es": "Estación Caricuao",
+   "name_en": "Caricuao Station",
+   "tileset": "ts.linea2",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_layaguara__caricuao",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_caricuao__zoologico",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_caricuao__lasadjuntas",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea2.station"
+  },
+  {
+   "id": "st_carrizal",
+   "type": "station",
+   "region": "losteques",
+   "name_es": "Estación Carrizal",
+   "name_en": "Carrizal Station",
+   "tileset": "ts.losteques",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_independencia__carrizal",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_carrizal__sanantonio",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.losteques.station"
+  },
+  {
+   "id": "st_chacaito",
+   "type": "station",
+   "region": "linea1",
+   "name_es": "Estación Chacaíto",
+   "name_en": "Chacaíto Station",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_sabanagrande__chacaito",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_chacaito__altamira",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.station"
+  },
+  {
+   "id": "st_ciudaduniversitaria",
+   "type": "station",
+   "region": "linea3",
+   "name_es": "Estación Ciudad Universitaria",
+   "name_en": "Ciudad Universitaria Station",
+   "tileset": "ts.linea3",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_plazavenezuela__ciudaduniversitaria",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_ciudaduniversitaria__labandera",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "sf_ucv",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea3.station"
+  },
+  {
+   "id": "st_elsilencio",
+   "type": "station",
+   "region": "linea2",
+   "name_es": "Estación El Silencio",
+   "name_en": "El Silencio Station",
+   "tileset": "ts.linea2",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_elsilencio__capuchinos",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_capitolio",
+     "via": "transfer",
+     "gate": "fichas>=4"
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea2.station"
+  },
+  {
+   "id": "st_elvalle",
+   "type": "station",
+   "region": "linea3",
+   "name_es": "Estación El Valle",
+   "name_en": "El Valle Station",
+   "tileset": "ts.linea3",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_labandera__elvalle",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_elvalle__larinconada",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea3.station"
+  },
+  {
+   "id": "st_guaicaipuro",
+   "type": "station",
+   "region": "losteques",
+   "name_es": "Estación Guaicaipuro",
+   "name_en": "Guaicaipuro Station",
+   "tileset": "ts.losteques",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_aliprimera__guaicaipuro",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_guaicaipuro__independencia",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.losteques.station"
+  },
+  {
+   "id": "st_independencia",
+   "type": "station",
+   "region": "losteques",
+   "name_es": "Estación Independencia",
+   "name_en": "Independencia Station",
+   "tileset": "ts.losteques",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_guaicaipuro__independencia",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_independencia__carrizal",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "in_latorre",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.losteques.station"
+  },
+  {
+   "id": "st_labandera",
+   "type": "station",
+   "region": "linea3",
+   "name_es": "Estación La Bandera",
+   "name_en": "La Bandera Station",
+   "tileset": "ts.linea3",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_ciudaduniversitaria__labandera",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_labandera__elvalle",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea3.station"
+  },
+  {
+   "id": "st_larinconada",
+   "type": "station",
+   "region": "linea3",
+   "name_es": "Estación La Rinconada",
+   "name_en": "La Rinconada Station",
+   "tileset": "ts.linea3",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_elvalle__larinconada",
+     "via": "walk",
+     "gate": "oficio.nado"
+    },
+    {
+     "to": "sf_hipica",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea3.station"
+  },
+  {
+   "id": "st_lasadjuntas",
+   "type": "station",
+   "region": "linea2",
+   "name_es": "Estación Las Adjuntas",
+   "name_en": "Las Adjuntas Station",
+   "tileset": "ts.linea2",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_caricuao__lasadjuntas",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_lasadjuntas__aliprimera",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_lasadjuntas__aliprimera",
+     "via": "gate",
+     "gate": "flag.tren_resuelto"
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea2.station"
+  },
+  {
+   "id": "st_layaguara",
+   "type": "station",
+   "region": "linea2",
+   "name_es": "Estación La Yaguara",
+   "name_en": "La Yaguara Station",
+   "tileset": "ts.linea2",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_capuchinos__layaguara",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_layaguara__caricuao",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea2.station"
+  },
+  {
+   "id": "st_nuevocirco",
+   "type": "station",
+   "region": "linea4",
+   "name_es": "Estación Nuevo Circo",
+   "name_en": "Nuevo Circo Station",
+   "tileset": "ts.linea4",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_teatros__nuevocirco",
+     "via": "walk",
+     "gate": "oficio.demolicion"
+    },
+    {
+     "to": "tn_nuevocirco__parquecentral",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "in_mercadocirco",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea4.station"
+  },
+  {
+   "id": "st_paloverde",
+   "type": "station",
+   "region": "linea1",
+   "name_es": "Estación Palo Verde",
+   "name_en": "Palo Verde Station",
+   "minor": true,
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_petare__paloverde",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "cb_mariche",
+     "via": "cable",
+     "gate": "oficio.teleferico"
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.station"
+  },
+  {
+   "id": "st_parquecentral",
+   "type": "station",
+   "region": "linea4",
+   "name_es": "Estación Parque Central",
+   "name_en": "Parque Central Station",
+   "tileset": "ts.linea4",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_nuevocirco__parquecentral",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_parquecentral__zonarental",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "cb_hornosdecal",
+     "via": "cable",
+     "gate": "oficio.teleferico"
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea4.station"
+  },
+  {
+   "id": "st_petare",
+   "type": "station",
+   "region": "linea1",
+   "name_es": "Estación Petare",
+   "name_en": "Petare Station",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_altamira__petare",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_petare__paloverde",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "sf_mercadopetare",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.station"
+  },
+  {
+   "id": "st_plazavenezuela",
+   "type": "station",
+   "region": "linea1",
+   "name_es": "Estación Plaza Venezuela",
+   "name_en": "Plaza Venezuela Station",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_bellasartes__plazavenezuela",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_plazavenezuela__sabanagrande",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_plazavenezuela__ciudaduniversitaria",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_plazavenezuela__ciudaduniversitaria",
+     "via": "transfer",
+     "gate": "fichas>=5"
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.station"
+  },
+  {
+   "id": "st_propatria",
+   "type": "station",
+   "region": "linea1",
+   "name_es": "Estación Propatria",
+   "name_en": "Propatria Station",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_propatria__canoamarillo",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "in_casaabuela",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.station"
+  },
+  {
+   "id": "st_sabanagrande",
+   "type": "station",
+   "region": "linea1",
+   "name_es": "Estación Sabana Grande",
+   "name_en": "Sabana Grande Station",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_plazavenezuela__sabanagrande",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_sabanagrande__chacaito",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "sf_bulevar",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.station"
+  },
+  {
+   "id": "st_sanantonio",
+   "type": "station",
+   "region": "losteques",
+   "name_es": "Estación San Antonio",
+   "name_en": "San Antonio de los Altos Station",
+   "tileset": "ts.losteques",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_carrizal__sanantonio",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.losteques.station"
+  },
+  {
+   "id": "st_teatros",
+   "type": "station",
+   "region": "linea4",
+   "name_es": "Estación Teatros",
+   "name_en": "Teatros Station",
+   "tileset": "ts.linea4",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_capuchinos__teatros",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_teatros__nuevocirco",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea4.station"
+  },
+  {
+   "id": "st_zonarental",
+   "type": "station",
+   "region": "linea4",
+   "name_es": "Estación Zona Rental",
+   "name_en": "Zona Rental Station",
+   "tileset": "ts.linea4",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_parquecentral__zonarental",
+     "via": "walk",
+     "gate": "fichas>=8"
+    },
+    {
+     "to": "tn_zonarental__bellomonte",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "tn_zonarental__bellomonte",
+     "via": "gate",
+     "gate": "flag.consejo"
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea4.station"
+  },
+  {
+   "id": "st_zoologico",
+   "type": "station",
+   "region": "linea2",
+   "name_es": "Estación Zoológico",
+   "name_en": "Zoológico (Caricuao) Station",
+   "tileset": "ts.linea2",
+   "dimensions": {
+    "w": 40,
+    "h": 24
+   },
+   "connections": [
+    {
+     "to": "tn_caricuao__zoologico",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "in_safari",
+     "via": "warp",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": null,
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea2.station"
+  },
+  {
+   "id": "tn_aliprimera__guaicaipuro",
+   "type": "tunnel",
+   "region": "losteques",
+   "name_es": "Túnel aliprimera–guaicaipuro",
+   "name_en": "Tunnel aliprimera–guaicaipuro",
+   "tileset": "ts.losteques",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_aliprimera",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_guaicaipuro",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_aliprimera__guaicaipuro",
+   "npcs": [],
+   "events": [],
+   "music": "mus.losteques.tunnel"
+  },
+  {
+   "id": "tn_altamira__petare",
+   "type": "tunnel",
+   "region": "linea1",
+   "name_es": "Túnel altamira–petare",
+   "name_en": "Tunnel altamira–petare",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_altamira",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_petare",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [
+    {
+     "kind": "parada_menor",
+     "id": "miranda",
+     "name_es": "Miranda (Parque del Este)"
+    },
+    {
+     "kind": "parada_menor",
+     "id": "losdoscaminos",
+     "name_es": "Los Dos Caminos"
+    },
+    {
+     "kind": "parada_menor",
+     "id": "loscortijos",
+     "name_es": "Los Cortijos"
+    },
+    {
+     "kind": "parada_menor",
+     "id": "lacalifornia",
+     "name_es": "La California"
+    }
+   ],
+   "encounters": "enc.tn_altamira__petare",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.tunnel"
+  },
+  {
+   "id": "tn_bellasartes__plazavenezuela",
+   "type": "tunnel",
+   "region": "linea1",
+   "name_es": "Túnel bellasartes–plazavenezuela",
+   "name_en": "Tunnel bellasartes–plazavenezuela",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_bellasartes",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_plazavenezuela",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [
+    {
+     "kind": "parada_menor",
+     "id": "colegiodeingenieros",
+     "name_es": "Colegio de Ingenieros"
+    }
+   ],
+   "encounters": "enc.tn_bellasartes__plazavenezuela",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.tunnel"
+  },
+  {
+   "id": "tn_bellocampo__miranda_l5",
+   "type": "tunnel",
+   "region": "linea5",
+   "name_es": "Vía muerta bellocampo–miranda_l5",
+   "name_en": "Dead track bellocampo–miranda_l5",
+   "tileset": "ts.fantasma",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "gh_bellocampo",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "gh_miranda_l5",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_bellocampo__miranda_l5",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea5.tunnel"
+  },
+  {
+   "id": "tn_bellomonte__lasmercedes",
+   "type": "tunnel",
+   "region": "linea5",
+   "name_es": "Vía muerta bellomonte–lasmercedes",
+   "name_en": "Dead track bellomonte–lasmercedes",
+   "tileset": "ts.fantasma",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_bellomonte",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "gh_lasmercedes",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_bellomonte__lasmercedes",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea5.tunnel"
+  },
+  {
+   "id": "tn_canoamarillo__capitolio",
+   "type": "tunnel",
+   "region": "linea1",
+   "name_es": "Túnel canoamarillo–capitolio",
+   "name_en": "Tunnel canoamarillo–capitolio",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_canoamarillo",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_capitolio",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_canoamarillo__capitolio",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.tunnel"
+  },
+  {
+   "id": "tn_capitolio__bellasartes",
+   "type": "tunnel",
+   "region": "linea1",
+   "name_es": "Túnel capitolio–bellasartes",
+   "name_en": "Tunnel capitolio–bellasartes",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_capitolio",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_bellasartes",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [
+    {
+     "kind": "parada_menor",
+     "id": "lahoyada",
+     "name_es": "La Hoyada"
+    },
+    {
+     "kind": "parada_menor",
+     "id": "parquecarabobo",
+     "name_es": "Parque Carabobo"
+    }
+   ],
+   "encounters": "enc.tn_capitolio__bellasartes",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.tunnel"
+  },
+  {
+   "id": "tn_capuchinos__layaguara",
+   "type": "tunnel",
+   "region": "linea2",
+   "name_es": "Túnel capuchinos–layaguara",
+   "name_en": "Tunnel capuchinos–layaguara",
+   "tileset": "ts.linea2",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_capuchinos",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_layaguara",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [
+    {
+     "kind": "parada_menor",
+     "id": "maternidad",
+     "name_es": "Maternidad"
+    },
+    {
+     "kind": "parada_menor",
+     "id": "artigas",
+     "name_es": "Artigas"
+    },
+    {
+     "kind": "parada_menor",
+     "id": "lapaz",
+     "name_es": "La Paz"
+    }
+   ],
+   "encounters": "enc.tn_capuchinos__layaguara",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea2.tunnel"
+  },
+  {
+   "id": "tn_capuchinos__teatros",
+   "type": "tunnel",
+   "region": "linea4",
+   "name_es": "Túnel capuchinos–teatros",
+   "name_en": "Tunnel capuchinos–teatros",
+   "tileset": "ts.linea4",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_capuchinos",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_teatros",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_capuchinos",
+     "via": "transfer",
+     "gate": "fichas>=7"
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_capuchinos__teatros",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea4.tunnel"
+  },
+  {
+   "id": "tn_caricuao__lasadjuntas",
+   "type": "tunnel",
+   "region": "linea2",
+   "name_es": "Túnel caricuao–lasadjuntas",
+   "name_en": "Tunnel caricuao–lasadjuntas",
+   "tileset": "ts.linea2",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_caricuao",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_lasadjuntas",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [
+    {
+     "kind": "parada_menor",
+     "id": "ruizpineda",
+     "name_es": "Ruiz Pineda"
+    }
+   ],
+   "encounters": "enc.tn_caricuao__lasadjuntas",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea2.tunnel"
+  },
+  {
+   "id": "tn_caricuao__zoologico",
+   "type": "tunnel",
+   "region": "linea2",
+   "name_es": "Túnel caricuao–zoologico",
+   "name_en": "Tunnel caricuao–zoologico",
+   "tileset": "ts.linea2",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_caricuao",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_zoologico",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_caricuao__zoologico",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea2.tunnel"
+  },
+  {
+   "id": "tn_carrizal__sanantonio",
+   "type": "tunnel",
+   "region": "losteques",
+   "name_es": "Túnel carrizal–sanantonio",
+   "name_en": "Tunnel carrizal–sanantonio",
+   "tileset": "ts.losteques",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_carrizal",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_sanantonio",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [
+    {
+     "kind": "parada_menor",
+     "id": "lasminas",
+     "name_es": "Las Minas"
+    }
+   ],
+   "encounters": "enc.tn_carrizal__sanantonio",
+   "npcs": [],
+   "events": [],
+   "music": "mus.losteques.tunnel"
+  },
+  {
+   "id": "tn_chacaito__altamira",
+   "type": "tunnel",
+   "region": "linea1",
+   "name_es": "Túnel chacaito–altamira",
+   "name_en": "Tunnel chacaito–altamira",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_chacaito",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_altamira",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [
+    {
+     "kind": "parada_menor",
+     "id": "chacao",
+     "name_es": "Chacao"
+    }
+   ],
+   "encounters": "enc.tn_chacaito__altamira",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.tunnel"
+  },
+  {
+   "id": "tn_chuao__bellocampo",
+   "type": "tunnel",
+   "region": "linea5",
+   "name_es": "Vía muerta chuao–bellocampo",
+   "name_en": "Dead track chuao–bellocampo",
+   "tileset": "ts.fantasma",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "gh_chuao",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "gh_bellocampo",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_chuao__bellocampo",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea5.tunnel"
+  },
+  {
+   "id": "tn_ciudaduniversitaria__labandera",
+   "type": "tunnel",
+   "region": "linea3",
+   "name_es": "Túnel ciudaduniversitaria–labandera",
+   "name_en": "Tunnel ciudaduniversitaria–labandera",
+   "tileset": "ts.linea3",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_ciudaduniversitaria",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_labandera",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [
+    {
+     "kind": "parada_menor",
+     "id": "lossimbolos",
+     "name_es": "Los Símbolos"
+    }
+   ],
+   "encounters": "enc.tn_ciudaduniversitaria__labandera",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea3.tunnel"
+  },
+  {
+   "id": "tn_elsilencio__capuchinos",
+   "type": "tunnel",
+   "region": "linea2",
+   "name_es": "Túnel elsilencio–capuchinos",
+   "name_en": "Tunnel elsilencio–capuchinos",
+   "tileset": "ts.linea2",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_elsilencio",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_capuchinos",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_elsilencio__capuchinos",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea2.tunnel"
+  },
+  {
+   "id": "tn_elvalle__larinconada",
+   "type": "tunnel",
+   "region": "linea3",
+   "name_es": "Túnel elvalle–larinconada",
+   "name_en": "Tunnel elvalle–larinconada",
+   "tileset": "ts.linea3",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_elvalle",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_larinconada",
+     "via": "walk",
+     "gate": "oficio.nado"
+    }
+   ],
+   "features": [
+    {
+     "kind": "parada_menor",
+     "id": "losjardines",
+     "name_es": "Los Jardines"
+    },
+    {
+     "kind": "parada_menor",
+     "id": "coche",
+     "name_es": "Coche"
+    },
+    {
+     "kind": "parada_menor",
+     "id": "mercado",
+     "name_es": "Mercado"
+    },
+    {
+     "kind": "fishing_spot",
+     "id": "quebrada_elvalle",
+     "name_es": "Quebrada crecida"
+    }
+   ],
+   "encounters": "enc.tn_elvalle__larinconada",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea3.tunnel"
+  },
+  {
+   "id": "tn_guaicaipuro__independencia",
+   "type": "tunnel",
+   "region": "losteques",
+   "name_es": "Túnel guaicaipuro–independencia",
+   "name_en": "Tunnel guaicaipuro–independencia",
+   "tileset": "ts.losteques",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_guaicaipuro",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_independencia",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_guaicaipuro__independencia",
+   "npcs": [],
+   "events": [],
+   "music": "mus.losteques.tunnel"
+  },
+  {
+   "id": "tn_independencia__carrizal",
+   "type": "tunnel",
+   "region": "losteques",
+   "name_es": "Túnel independencia–carrizal",
+   "name_en": "Tunnel independencia–carrizal",
+   "tileset": "ts.losteques",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_independencia",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_carrizal",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [
+    {
+     "kind": "parada_menor",
+     "id": "loscerritos",
+     "name_es": "Los Cerritos"
+    }
+   ],
+   "encounters": "enc.tn_independencia__carrizal",
+   "npcs": [],
+   "events": [],
+   "music": "mus.losteques.tunnel"
+  },
+  {
+   "id": "tn_labandera__elvalle",
+   "type": "tunnel",
+   "region": "linea3",
+   "name_es": "Túnel labandera–elvalle",
+   "name_en": "Tunnel labandera–elvalle",
+   "tileset": "ts.linea3",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_labandera",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_elvalle",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_labandera__elvalle",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea3.tunnel"
+  },
+  {
+   "id": "tn_lasadjuntas__aliprimera",
+   "type": "tunnel",
+   "region": "losteques",
+   "name_es": "Túnel lasadjuntas–aliprimera",
+   "name_en": "Tunnel lasadjuntas–aliprimera",
+   "tileset": "ts.losteques",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_lasadjuntas",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_aliprimera",
+     "via": "walk",
+     "gate": "flag.tren_resuelto"
+    },
+    {
+     "to": "st_lasadjuntas",
+     "via": "gate",
+     "gate": "flag.tren_resuelto"
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_lasadjuntas__aliprimera",
+   "npcs": [],
+   "events": [],
+   "music": "mus.losteques.tunnel"
+  },
+  {
+   "id": "tn_lasmercedes__tamanaco",
+   "type": "tunnel",
+   "region": "linea5",
+   "name_es": "Vía muerta lasmercedes–tamanaco",
+   "name_en": "Dead track lasmercedes–tamanaco",
+   "tileset": "ts.fantasma",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "gh_lasmercedes",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "gh_tamanaco",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_lasmercedes__tamanaco",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea5.tunnel"
+  },
+  {
+   "id": "tn_layaguara__caricuao",
+   "type": "tunnel",
+   "region": "linea2",
+   "name_es": "Túnel layaguara–caricuao",
+   "name_en": "Tunnel layaguara–caricuao",
+   "tileset": "ts.linea2",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_layaguara",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_caricuao",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [
+    {
+     "kind": "parada_menor",
+     "id": "carapita",
+     "name_es": "Carapita"
+    },
+    {
+     "kind": "parada_menor",
+     "id": "antimano",
+     "name_es": "Antímano"
+    },
+    {
+     "kind": "parada_menor",
+     "id": "mamera",
+     "name_es": "Mamera"
+    },
+    {
+     "kind": "weather_zone",
+     "id": "apagon_oeste",
+     "name_es": "Tramo del Apagón",
+     "weather": "apagon"
+    }
+   ],
+   "encounters": "enc.tn_layaguara__caricuao",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea2.tunnel"
+  },
+  {
+   "id": "tn_nuevocirco__parquecentral",
+   "type": "tunnel",
+   "region": "linea4",
+   "name_es": "Túnel nuevocirco–parquecentral",
+   "name_en": "Tunnel nuevocirco–parquecentral",
+   "tileset": "ts.linea4",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_nuevocirco",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_parquecentral",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_nuevocirco__parquecentral",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea4.tunnel"
+  },
+  {
+   "id": "tn_parquecentral__zonarental",
+   "type": "tunnel",
+   "region": "linea4",
+   "name_es": "Túnel parquecentral–zonarental",
+   "name_en": "Tunnel parquecentral–zonarental",
+   "tileset": "ts.linea4",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_parquecentral",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_zonarental",
+     "via": "walk",
+     "gate": "fichas>=8"
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_parquecentral__zonarental",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea4.tunnel"
+  },
+  {
+   "id": "tn_petare__paloverde",
+   "type": "tunnel",
+   "region": "linea1",
+   "name_es": "Túnel petare–paloverde",
+   "name_en": "Tunnel petare–paloverde",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_petare",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_paloverde",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_petare__paloverde",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.tunnel"
+  },
+  {
+   "id": "tn_plazavenezuela__ciudaduniversitaria",
+   "type": "tunnel",
+   "region": "linea3",
+   "name_es": "Túnel plazavenezuela–ciudaduniversitaria",
+   "name_en": "Tunnel plazavenezuela–ciudaduniversitaria",
+   "tileset": "ts.linea3",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_plazavenezuela",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_ciudaduniversitaria",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_plazavenezuela",
+     "via": "transfer",
+     "gate": "fichas>=5"
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_plazavenezuela__ciudaduniversitaria",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea3.tunnel"
+  },
+  {
+   "id": "tn_plazavenezuela__sabanagrande",
+   "type": "tunnel",
+   "region": "linea1",
+   "name_es": "Túnel plazavenezuela–sabanagrande",
+   "name_en": "Tunnel plazavenezuela–sabanagrande",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_plazavenezuela",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_sabanagrande",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_plazavenezuela__sabanagrande",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.tunnel"
+  },
+  {
+   "id": "tn_propatria__canoamarillo",
+   "type": "tunnel",
+   "region": "linea1",
+   "name_es": "Túnel propatria–canoamarillo",
+   "name_en": "Tunnel propatria–canoamarillo",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_propatria",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_canoamarillo",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [
+    {
+     "kind": "parada_menor",
+     "id": "perezbonalde",
+     "name_es": "Pérez Bonalde"
+    },
+    {
+     "kind": "parada_menor",
+     "id": "plazasucre",
+     "name_es": "Plaza Sucre"
+    },
+    {
+     "kind": "parada_menor",
+     "id": "gatonegro",
+     "name_es": "Gato Negro"
+    },
+    {
+     "kind": "parada_menor",
+     "id": "aguasalud",
+     "name_es": "Agua Salud"
+    }
+   ],
+   "encounters": "enc.tn_propatria__canoamarillo",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.tunnel"
+  },
+  {
+   "id": "tn_sabanagrande__chacaito",
+   "type": "tunnel",
+   "region": "linea1",
+   "name_es": "Túnel sabanagrande–chacaito",
+   "name_en": "Tunnel sabanagrande–chacaito",
+   "tileset": "ts.linea1",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_sabanagrande",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_chacaito",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_sabanagrande__chacaito",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea1.tunnel"
+  },
+  {
+   "id": "tn_tamanaco__chuao",
+   "type": "tunnel",
+   "region": "linea5",
+   "name_es": "Vía muerta tamanaco–chuao",
+   "name_en": "Dead track tamanaco–chuao",
+   "tileset": "ts.fantasma",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "gh_tamanaco",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "gh_chuao",
+     "via": "walk",
+     "gate": null
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_tamanaco__chuao",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea5.tunnel"
+  },
+  {
+   "id": "tn_teatros__nuevocirco",
+   "type": "tunnel",
+   "region": "linea4",
+   "name_es": "Túnel teatros–nuevocirco",
+   "name_en": "Tunnel teatros–nuevocirco",
+   "tileset": "ts.linea4",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_teatros",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_nuevocirco",
+     "via": "walk",
+     "gate": "oficio.demolicion"
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_teatros__nuevocirco",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea4.tunnel"
+  },
+  {
+   "id": "tn_zonarental__bellomonte",
+   "type": "tunnel",
+   "region": "linea5",
+   "name_es": "Túnel zonarental–bellomonte",
+   "name_en": "Tunnel zonarental–bellomonte",
+   "tileset": "ts.fantasma",
+   "dimensions": {
+    "w": 80,
+    "h": 12
+   },
+   "connections": [
+    {
+     "to": "st_zonarental",
+     "via": "walk",
+     "gate": null
+    },
+    {
+     "to": "st_bellomonte",
+     "via": "walk",
+     "gate": "flag.bendicion"
+    },
+    {
+     "to": "st_zonarental",
+     "via": "gate",
+     "gate": "flag.consejo"
+    }
+   ],
+   "features": [],
+   "encounters": "enc.tn_zonarental__bellomonte",
+   "npcs": [],
+   "events": [],
+   "music": "mus.linea5.tunnel"
+  }
+ ]
+}

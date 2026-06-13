@@ -1,0 +1,8 @@
+[LOCKED STYLE ANCHOR — included verbatim in every template below]
+Pixel art in Game Boy Advance era style (Pokemon FireRed generation), flat cel
+shading with at most one shadow and one highlight step, no gradients, no
+anti-aliasing, crisp 1px very dark outline around the subject, limited palette
+of at most 15 colors, strong readable silhouette, Caracas Venezuela magical
+realism: tropical brutalist concrete, metro brand orange, Avila green, golden
+hour haze. Plain solid #FFFFFF background, subject centered with margin, no
+text, no watermark, no signature, no frame.

@@ -1,0 +1,11 @@
+# creature-back v2 (GATE 3 locked; Phase 5 background hardening) — vars: {name}, {design_brief}
+# model: flux_2 pro 1k, aspect 1:1, medias: [front concept job as reference]
+# output feeds postprocess.py --kind battle
+A single die-cut game creature BATTLE BACK SPRITE isolated on a PURE FLAT PLAIN
+#FFFFFF white background — no scenery, no floor, no cast shadow, nothing behind
+the subject, so the subject can be cleanly cut out.
+Same creature as the reference image: {name} ({design_brief}). Seen from behind
+and slightly above, over-the-shoulder player camera, full body, same colors,
+same proportions, same markings as the reference. GBA Pokemon FireRed era style,
+flat cel shading, no gradients, crisp 1px very dark outline, maximum 15 colors.
+No text, no watermark, no frame.

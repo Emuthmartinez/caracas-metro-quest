@@ -1,0 +1,10 @@
+# tileset v1 (LOCKED GATE 3) — vars: {region}, {materials}, {props}
+# model: flux_2 pro 1k, aspect 1:1, medias: [region environment concept as reference]
+# output is hand-cut into 16x16 tiles after postprocess.py --kind tilesheet
+Pixel art game tileset sheet on a strict 16x16 pixel grid, organized in neat
+rows, for the region: {region}. Materials: {materials}. Props: {props}.
+Each tile self-contained and seamlessly tileable with its neighbors variants:
+floor, wall top, wall face, platform edge, rail pair, stairs, two decorations.
+GBA Pokemon FireRed tileset style matching the reference image's palette and
+lighting, flat cel shading, crisp pixels, no gradients, limited palette.
+Plain solid white background between tiles, no text, no watermark.

@@ -1,0 +1,211 @@
+{
+ "schema_version": 1,
+ "notes": "Locked ability list, systems-spec §2.8 (38 + the legendary weather trio). New abilities require a systems-spec amendment first.",
+ "abilities": [
+  {
+   "id": "raizfirme",
+   "name_es": "Raíz Firme",
+   "effect_es": "Tepuy ×1.5 con ⅓ de PS o menos."
+  },
+  {
+   "id": "coroalzao",
+   "name_es": "Coro Alzao",
+   "effect_es": "Rumba ×1.5 con ⅓ de PS o menos."
+  },
+  {
+   "id": "plenacarga",
+   "name_es": "Plena Carga",
+   "effect_es": "Catatumbo ×1.5 con ⅓ de PS o menos."
+  },
+  {
+   "id": "malacara",
+   "name_es": "Mala Cara",
+   "effect_es": "Al entrar, baja 1 nivel el ATQ del rival."
+  },
+  {
+   "id": "estatica",
+   "name_es": "Estática",
+   "effect_es": "30% de paralizar al contacto."
+  },
+  {
+   "id": "brasaviva",
+   "name_es": "Brasa Viva",
+   "effect_es": "30% de quemar al contacto."
+  },
+  {
+   "id": "colmillountado",
+   "name_es": "Colmillo Untado",
+   "effect_es": "30% de envenenar al contacto."
+  },
+  {
+   "id": "pieldelija",
+   "name_es": "Piel de Lija",
+   "effect_es": "Quien lo toca pierde 1/16 de PS."
+  },
+  {
+   "id": "conchadura",
+   "name_es": "Concha Dura",
+   "effect_es": "Sobrevive un golpe letal si tiene los PS llenos."
+  },
+  {
+   "id": "echaopalante",
+   "name_es": "Echao Pa'lante",
+   "effect_es": "ATQ ×1.5 cuando sufre un estado."
+  },
+  {
+   "id": "biencomido",
+   "name_es": "Bien Comido",
+   "effect_es": "Recibe ×0.5 de Sabroso y Caribe."
+  },
+  {
+   "id": "solanero",
+   "name_es": "Solanero",
+   "effect_es": "VEL ×2 bajo sol de esquina."
+  },
+  {
+   "id": "aguaje",
+   "name_es": "Aguaje",
+   "effect_es": "VEL ×2 bajo lluvia."
+  },
+  {
+   "id": "bebelluvia",
+   "name_es": "Bebe Lluvia",
+   "effect_es": "Recupera 1/16 de PS por turno bajo lluvia."
+  },
+  {
+   "id": "buhonero",
+   "name_es": "Buhonero",
+   "effect_es": "10% de encontrar un objeto tras el combate."
+  },
+  {
+   "id": "espantadizo",
+   "name_es": "Espantadizo",
+   "effect_es": "Siempre puede huir de combates salvajes."
+  },
+  {
+   "id": "ojopelao",
+   "name_es": "Ojo Pelao",
+   "effect_es": "Su precisión no puede bajar."
+  },
+  {
+   "id": "brazofirme",
+   "name_es": "Brazo Firme",
+   "effect_es": "Su ATQ no puede bajar."
+  },
+  {
+   "id": "cabezafria",
+   "name_es": "Cabeza Fría",
+   "effect_es": "No puede ser amilanado."
+  },
+  {
+   "id": "trasnochao",
+   "name_es": "Trasnochao",
+   "effect_es": "No puede quedarse dormido."
+  },
+  {
+   "id": "estomagodeacero",
+   "name_es": "Estómago de Acero",
+   "effect_es": "No puede ser envenenado."
+  },
+  {
+   "id": "destrabao",
+   "name_es": "Destrabao",
+   "effect_es": "No puede ser paralizado."
+  },
+  {
+   "id": "pielmojada",
+   "name_es": "Piel Mojada",
+   "effect_es": "No puede ser quemado."
+  },
+  {
+   "id": "asuritmo",
+   "name_es": "A Su Ritmo",
+   "effect_es": "No puede ser mareado."
+  },
+  {
+   "id": "espiritualegre",
+   "name_es": "Espíritu Alegre",
+   "effect_es": "No puede ser empavado."
+  },
+  {
+   "id": "mudadepiel",
+   "name_es": "Muda de Piel",
+   "effect_es": "33% de curarse el estado cada turno."
+  },
+  {
+   "id": "serenodelavila",
+   "name_es": "Sereno del Ávila",
+   "effect_es": "Se cura el estado al salir del combate."
+  },
+  {
+   "id": "presenciapesada",
+   "name_es": "Presencia Pesada",
+   "effect_es": "Los rivales gastan 2 PP por movimiento."
+  },
+  {
+   "id": "faroles",
+   "name_es": "Faroles",
+   "effect_es": "Precisión ×1.3."
+  },
+  {
+   "id": "entreelgentio",
+   "name_es": "Entre el Gentío",
+   "effect_es": "Evasión ×1.2 durante hora pico."
+  },
+  {
+   "id": "pararrayos",
+   "name_es": "Pararrayos",
+   "effect_es": "Absorbe Catatumbo y sube su ATQ ESP."
+  },
+  {
+   "id": "esponja",
+   "name_es": "Esponja",
+   "effect_es": "Absorbe Caribe y recupera 25% de PS."
+  },
+  {
+   "id": "oidosordo",
+   "name_es": "Oído Sordo",
+   "effect_es": "Inmune a movimientos Rumba."
+  },
+  {
+   "id": "flojera",
+   "name_es": "Flojera",
+   "effect_es": "Solo actúa un turno de cada dos."
+  },
+  {
+   "id": "pilaspuestas",
+   "name_es": "Pilas Puestas",
+   "effect_es": "Sube la VEL cada turno."
+  },
+  {
+   "id": "verdor",
+   "name_es": "Verdor",
+   "effect_es": "Monte ×1.5 con ⅓ de PS o menos."
+  },
+  {
+   "id": "nadoaereo",
+   "name_es": "Nado Aéreo",
+   "effect_es": "Inmune a movimientos Tepuy."
+  },
+  {
+   "id": "espirituerrante",
+   "name_es": "Espíritu Errante",
+   "effect_es": "Inmune a movimientos Criollo."
+  },
+  {
+   "id": "niebladensa",
+   "name_es": "Niebla Densa",
+   "effect_es": "Al entrar invoca neblina del Ávila."
+  },
+  {
+   "id": "llamadordeaguas",
+   "name_es": "Llamador de Aguas",
+   "effect_es": "Al entrar invoca lluvia."
+  },
+  {
+   "id": "horacero",
+   "name_es": "Hora Cero",
+   "effect_es": "Al entrar invoca apagón."
+  }
+ ]
+}

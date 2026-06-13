@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Metro Quest map list",
+  "type": "object",
+  "required": ["schema_version", "generated_by", "canon_map", "maps"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "generated_by": { "type": "string" },
+    "canon_map": {
+      "description": "Mapping from new map ids to shipped js/world.js map ids (Act 1 migration).",
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "maps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "region", "name_es", "name_en", "tileset", "dimensions", "connections", "encounters", "npcs", "events", "music"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^(st|tn|sf|in|cb|gh)_[a-z0-9_]+$" },
+          "type": { "enum": ["station", "tunnel", "surface", "interior", "cable", "ghost"] },
+          "region": { "enum": ["linea1", "linea2", "linea3", "linea4", "linea5", "metrocable_sanagustin", "metrocable_mariche", "losteques", "superficie", "avila"] },
+          "name_es": { "type": "string" },
+          "name_en": { "type": "string" },
+          "minor": { "type": "boolean", "description": "Small station: save point + limited services." },
+          "tileset": { "type": "string", "pattern": "^ts\\." },
+          "dimensions": {
+            "type": "object",
+            "required": ["w", "h"],
+            "properties": { "w": { "type": "integer", "minimum": 10 }, "h": { "type": "integer", "minimum": 8 } }
+          },
+          "connections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["to", "via"],
+              "properties": {
+                "to": { "type": "string" },
+                "via": { "enum": ["tunnel", "walk", "warp", "transfer", "cable", "train", "gate"] },
+                "gate": { "type": ["string", "null"], "description": "Oficio or story flag required, e.g. 'oficio.nado', 'fichas>=8', 'flag.consejo'." }
+              }
+            }
+          },
+          "features": {
+            "type": "array",
+            "description": "Paradas menores and landmarks embedded in this map.",
+            "items": {
+              "type": "object",
+              "required": ["kind", "id", "name_es"],
+              "properties": {
+                "kind": { "enum": ["parada_menor", "landmark", "weather_zone", "fishing_spot", "shaft"] },
+                "id": { "type": "string" },
+                "name_es": { "type": "string" },
+                "weather": { "enum": ["lluvia", "sol", "neblina", "apagon", "horapico"] }
+              }
+            }
+          },
+          "encounters": { "type": ["string", "null"], "pattern": "^enc\\." },
+          "npcs": { "type": "array" },
+          "events": { "type": "array" },
+          "music": { "type": "string", "pattern": "^mus\\." }
+        }
+      }
+    }
+  }
+}

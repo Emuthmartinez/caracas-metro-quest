@@ -1,0 +1,13 @@
+# creature-concept v2 (GATE 3 locked; Phase 5 background hardening) — vars: {name}, {design_brief}, {palette_rows}
+# model: flux_2 pro 1k, aspect 1:1 — output feeds postprocess.py --kind battle
+A single die-cut game creature sprite isolated on a PURE FLAT PLAIN #FFFFFF white
+background — no scenery, no floor, no wall, no concrete, no room, no cast shadow
+on the ground, nothing behind the subject, so the subject can be cleanly cut out.
+Front three-quarter view facing slightly left, full body, feet grounded.
+Creature: {name}. Design: {design_brief}.
+Colors strictly from these ramps: {palette_rows}.
+GBA Pokemon FireRed era style, flat cel shading (base + one shadow + one
+highlight), no gradients, no anti-aliasing, crisp 1px very dark outline,
+maximum 15 colors, strong readable silhouette that also reads at 16x16,
+cute-but-dignified proportions, Venezuelan magical realism character design.
+No text, no watermark, no frame.
