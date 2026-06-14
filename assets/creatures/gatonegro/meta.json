@@ -1,0 +1,34 @@
+{
+  "id": "gatonegro",
+  "name": "Gato Negro",
+  "num": 52,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "cd3b1b7f-5a64-46d1-864d-4461e837031b",
+      "seed": 720800,
+      "model": "flux_2 pro 1k",
+      "template": "creature-concept.prompt"
+    },
+    "back": {
+      "job_id": "113f0c80-debe-4b3b-a2ff-3983e2b71e90",
+      "seed": 931195,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "cd3b1b7f-5a64-46d1-864d-4461e837031b"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "6_neon_espiritu",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}

@@ -1,0 +1,34 @@
+{
+  "id": "reyzamuro",
+  "name": "Rey Zamuro",
+  "num": 51,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "6d7d281c-0710-4ef1-a385-32461faf2bac",
+      "seed": 659249,
+      "model": "flux_2 pro 1k",
+      "template": "creature-evolution.prompt"
+    },
+    "back": {
+      "job_id": "f75f3d07-0783-4429-a689-d7b8a6bc4399",
+      "seed": 593850,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "6d7d281c-0710-4ef1-a385-32461faf2bac"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "5_hora_dorada",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}
