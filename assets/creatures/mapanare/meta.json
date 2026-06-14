@@ -1,0 +1,34 @@
+{
+  "id": "mapanare",
+  "name": "Mapanare",
+  "num": 54,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "8d0881fe-5930-41d6-bbec-823d71e69705",
+      "seed": 972867,
+      "model": "flux_2 pro 1k",
+      "template": "creature-evolution.prompt"
+    },
+    "back": {
+      "job_id": "faedc8cf-f2ed-4860-bfa4-bfecf11a20fc",
+      "seed": 648828,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "8d0881fe-5930-41d6-bbec-823d71e69705"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "4_selva_calida",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}
