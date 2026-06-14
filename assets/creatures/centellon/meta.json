@@ -1,0 +1,34 @@
+{
+  "id": "centellon",
+  "name": "Centellón",
+  "num": 9,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "69509a75-7f8c-4258-a25f-9c208fb85c96",
+      "seed": 484136,
+      "model": "flux_2 pro 1k",
+      "template": "creature-evolution.prompt"
+    },
+    "back": {
+      "job_id": "625ca38f-e8f7-4831-ad51-13922bd3d33d",
+      "seed": 139164,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "69509a75-7f8c-4258-a25f-9c208fb85c96"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "5_hora_dorada",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}
