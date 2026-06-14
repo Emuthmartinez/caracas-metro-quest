@@ -1,0 +1,34 @@
+{
+  "id": "araguanote",
+  "name": "Araguanote",
+  "num": 38,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "6351975d-f605-432b-9f87-348911e0a000",
+      "seed": 829070,
+      "model": "flux_2 pro 1k",
+      "template": "creature-evolution.prompt"
+    },
+    "back": {
+      "job_id": "1bfd5a4f-6abb-4788-810a-a8638048085d",
+      "seed": 947461,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "6351975d-f605-432b-9f87-348911e0a000"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "5_hora_dorada",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}

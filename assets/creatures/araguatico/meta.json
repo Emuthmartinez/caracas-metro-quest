@@ -1,0 +1,34 @@
+{
+  "id": "araguatico",
+  "name": "Araguatico",
+  "num": 42,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "54fdf26a-88fe-430f-8406-7a124ad3471b",
+      "seed": 79496,
+      "model": "flux_2 pro 1k",
+      "template": "creature-concept.prompt"
+    },
+    "back": {
+      "job_id": "e208d580-cdb5-4891-98aa-54e194bfbee7",
+      "seed": 403115,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "54fdf26a-88fe-430f-8406-7a124ad3471b"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "5_hora_dorada",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}
