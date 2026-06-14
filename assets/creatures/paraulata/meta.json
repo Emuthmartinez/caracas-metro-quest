@@ -1,0 +1,34 @@
+{
+  "id": "paraulata",
+  "name": "Paraulata",
+  "num": 88,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "5f3052a5-f5b3-468b-bf86-03daf80a41ed",
+      "seed": 315379,
+      "model": "flux_2 pro 1k",
+      "template": "creature-concept.prompt"
+    },
+    "back": {
+      "job_id": "bdb30210-4706-4e75-a5c1-4bfb5ffdab19",
+      "seed": 711286,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "5f3052a5-f5b3-468b-bf86-03daf80a41ed"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "5_hora_dorada",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}

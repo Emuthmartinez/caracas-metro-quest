@@ -1,0 +1,34 @@
+{
+  "id": "sombreruo",
+  "name": "Sombrerúo",
+  "num": 90,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "d6ac2981-2ccb-4f1b-ad01-d38a5b09c981",
+      "seed": 974789,
+      "model": "flux_2 pro 1k",
+      "template": "creature-evolution.prompt"
+    },
+    "back": {
+      "job_id": "1ca00d82-5650-4be0-b056-0f5174e4da20",
+      "seed": 376221,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "d6ac2981-2ccb-4f1b-ad01-d38a5b09c981"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "6_neon_espiritu",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}

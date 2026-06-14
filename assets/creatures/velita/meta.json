@@ -1,0 +1,34 @@
+{
+  "id": "velita",
+  "name": "Velita",
+  "num": 95,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "24d5b9ac-e67c-4e8e-81ce-eea8d09ddceb",
+      "seed": 257741,
+      "model": "flux_2 pro 1k",
+      "template": "creature-concept.prompt"
+    },
+    "back": {
+      "job_id": "4896337c-9d7d-4dc9-9c43-e4a3f967a143",
+      "seed": 383570,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "24d5b9ac-e67c-4e8e-81ce-eea8d09ddceb"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "4_selva_calida",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}
