@@ -1,0 +1,34 @@
+{
+  "id": "caribazo",
+  "name": "Caribazo",
+  "num": 23,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "cb04c068-8fc2-4cab-b8b3-1d6f37adfa30",
+      "seed": 374080,
+      "model": "flux_2 pro 1k",
+      "template": "creature-evolution.prompt"
+    },
+    "back": {
+      "job_id": "ada227e3-ff95-42ef-8018-2bfa0a71945a",
+      "seed": 869331,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "cb04c068-8fc2-4cab-b8b3-1d6f37adfa30"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "7_caribe_vitales",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}

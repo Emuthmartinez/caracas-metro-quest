@@ -1,0 +1,34 @@
+{
+  "id": "guabinota",
+  "name": "Guabinota",
+  "num": 25,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "0446218f-42e8-4862-94ec-77bb33daad3b",
+      "seed": 562669,
+      "model": "flux_2 pro 1k",
+      "template": "creature-evolution.prompt"
+    },
+    "back": {
+      "job_id": "b7c8d73e-8963-4197-ab59-1025016682fb",
+      "seed": 820465,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "0446218f-42e8-4862-94ec-77bb33daad3b"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "7_caribe_vitales",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}

@@ -1,0 +1,34 @@
+{
+  "id": "caribito",
+  "name": "Caribito",
+  "num": 22,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "b600371d-fa57-442d-91c7-f862f6a0b962",
+      "seed": 215785,
+      "model": "flux_2 pro 1k",
+      "template": "creature-concept.prompt"
+    },
+    "back": {
+      "job_id": "189a5077-cf37-40d7-a50b-8e79d85a9a2c",
+      "seed": 816507,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "b600371d-fa57-442d-91c7-f862f6a0b962"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "7_caribe_vitales",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}
