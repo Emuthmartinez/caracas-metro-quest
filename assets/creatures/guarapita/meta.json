@@ -1,0 +1,34 @@
+{
+  "id": "guarapita",
+  "name": "Guarapita",
+  "num": 72,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "388649f4-bfc9-4829-8696-d19bf0055b48",
+      "seed": 854680,
+      "model": "flux_2 pro 1k",
+      "template": "creature-concept.prompt"
+    },
+    "back": {
+      "job_id": "7c16322e-dc79-46c2-9351-59448273a7d9",
+      "seed": 586820,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "388649f4-bfc9-4829-8696-d19bf0055b48"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "7_caribe_vitales",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}
