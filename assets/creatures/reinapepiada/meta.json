@@ -1,0 +1,34 @@
+{
+  "id": "reinapepiada",
+  "name": "Reina Pepiada",
+  "num": 60,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "86ef22da-0cc7-4ede-9987-b35d88aa3939",
+      "seed": 725162,
+      "model": "flux_2 pro 1k",
+      "template": "creature-evolution.prompt"
+    },
+    "back": {
+      "job_id": "a14d6852-63b6-4b5b-8a6c-45055e691513",
+      "seed": 478238,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "86ef22da-0cc7-4ede-9987-b35d88aa3939"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "5_hora_dorada",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}

@@ -1,0 +1,34 @@
+{
+  "id": "mapanarita",
+  "name": "Mapanarita",
+  "num": 53,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "e9733696-1c6e-4b40-a6e7-0ead7d760940",
+      "seed": 406772,
+      "model": "flux_2 pro 1k",
+      "template": "creature-concept.prompt"
+    },
+    "back": {
+      "job_id": "35b17316-eab3-4469-b3a4-b102a3477455",
+      "seed": 520570,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "e9733696-1c6e-4b40-a6e7-0ead7d760940"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "3_verde_avila",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}

@@ -1,0 +1,34 @@
+{
+  "id": "cachicamo",
+  "name": "Cachicamo",
+  "num": 55,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "ff0d861f-598a-46cb-b209-247c980ecc52",
+      "seed": 554260,
+      "model": "flux_2 pro 1k",
+      "template": "creature-concept.prompt"
+    },
+    "back": {
+      "job_id": "589a5a6c-915d-48f4-898e-5fc0e756ad1b",
+      "seed": 987249,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "ff0d861f-598a-46cb-b209-247c980ecc52"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "5_hora_dorada",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}
