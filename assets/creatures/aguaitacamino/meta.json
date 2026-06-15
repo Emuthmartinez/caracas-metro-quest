@@ -1,0 +1,34 @@
+{
+  "id": "aguaitacamino",
+  "name": "Aguaitacamino",
+  "num": 97,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "4ffcac39-9efa-4ba1-902a-78eaf958ebce",
+      "seed": 354760,
+      "model": "flux_2 pro 1k",
+      "template": "creature-concept.prompt"
+    },
+    "back": {
+      "job_id": "2d6aea85-4fbd-4f06-b657-736d44f1ffb6",
+      "seed": 150859,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "4ffcac39-9efa-4ba1-902a-78eaf958ebce"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "3_verde_avila",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}

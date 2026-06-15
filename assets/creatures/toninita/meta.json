@@ -1,0 +1,34 @@
+{
+  "id": "toninita",
+  "name": "Toninita",
+  "num": 103,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "13f50193-2ecc-4cb1-b463-0fec13019b14",
+      "seed": 47906,
+      "model": "flux_2 pro 1k",
+      "template": "creature-concept.prompt"
+    },
+    "back": {
+      "job_id": "46c694a5-cb7e-47d7-abb8-c901ee908cfa",
+      "seed": 741341,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "13f50193-2ecc-4cb1-b463-0fec13019b14"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "7_caribe_vitales",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated. Caribe line base (Toninita -> Tonina). Back initially flagged nsfw false-positive (pink river-dolphin rear view); cleared on first regen with a wholesome-mascot reword (no spec change)."
+}

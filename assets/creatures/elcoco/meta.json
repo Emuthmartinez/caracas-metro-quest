@@ -1,0 +1,34 @@
+{
+  "id": "elcoco",
+  "name": "El Coco",
+  "num": 100,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "cc31ae99-cdba-4fd6-8f5d-68fe6eac043c",
+      "seed": 635803,
+      "model": "flux_2 pro 1k",
+      "template": "creature-concept.prompt"
+    },
+    "back": {
+      "job_id": "cf9f0e3d-509a-49c3-8959-04330805a58f",
+      "seed": 437892,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "cc31ae99-cdba-4fd6-8f5d-68fe6eac043c"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "6_neon_espiritu",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}
