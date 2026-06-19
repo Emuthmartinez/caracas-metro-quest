@@ -1,0 +1,34 @@
+{
+  "id": "sapitolipa",
+  "name": "Sapito Lipa",
+  "num": 107,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "3d236aa9-faa8-4577-acd4-ecdc99279831",
+      "seed": 834634,
+      "model": "flux_2 pro 1k",
+      "template": "creature-concept.prompt"
+    },
+    "back": {
+      "job_id": "adee6c02-c12f-427d-964c-5a8b1dcee3b3",
+      "seed": 254058,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "3d236aa9-faa8-4577-acd4-ecdc99279831"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "7_caribe_vitales",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}

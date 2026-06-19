@@ -1,0 +1,34 @@
+{
+  "id": "fuentecita",
+  "name": "Fuentecita",
+  "num": 111,
+  "model": "flux_2 pro 1k",
+  "jobs": {
+    "front": {
+      "job_id": "f35434a2-0dcd-4e62-b090-8a0b42b9bc0c",
+      "seed": 127852,
+      "model": "flux_2 pro 1k",
+      "template": "creature-concept.prompt"
+    },
+    "back": {
+      "job_id": "9d5703ad-8778-4242-99a5-59b76d40cad6",
+      "seed": 42435,
+      "model": "flux_2 pro 1k",
+      "template": "creature-back.prompt",
+      "reference": "f35434a2-0dcd-4e62-b090-8a0b42b9bc0c"
+    }
+  },
+  "palette": {
+    "colors_front": 15,
+    "tornasol_swapped_row": "7_caribe_vitales",
+    "colors_back": 15
+  },
+  "frames": {
+    "idle": 1,
+    "walk": 0
+  },
+  "anchor_px": {
+    "ground_y": 63
+  },
+  "notes": "Phase 5 generated."
+}
