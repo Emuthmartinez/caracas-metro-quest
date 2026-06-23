@@ -63,6 +63,13 @@
     return true;
   };
 
+  // icono de criatura para los menús (icon 32px → 16, o overworld, o procedural)
+  MQ.drawIcon = (ctx, id, x, y, size = 16) => {
+    if (MQ.drawSprite(ctx, id, 'icon', x, y, size)) return;
+    if (MQ.drawSprite(ctx, id, 'overworld', x, y, size)) return;
+    MQ.drawMon(ctx, id, x, y, size / 16);
+  };
+
   // lienzo auxiliar (navegador o harness headless)
   MQ.makeCanvas = (w, h) => {
     if (typeof OffscreenCanvas !== 'undefined') return new OffscreenCanvas(w, h);

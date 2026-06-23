@@ -558,8 +558,8 @@
       const p = MQ.player;
       if (!p.party.length) { this.menu = null; this.tb.open(MQ.ctx, 'No tienes espantos todavía.'); return; }
       this.menu = new MQ.Menu(
-        p.party.map((m, i) => ({ label: `${MQ.SPECIES[m.id].name} N${m.lvl}`, sub: m.hp <= 0 ? 'K.O.' : `${m.hp}/${m.maxhp}${m.status ? ' ' + MQ.STATUS[m.status].name : ''}`, value: i })),
-        { x: 8, y: 8, w: 200, rows: 6, title: 'EQUIPO',
+        p.party.map((m, i) => ({ label: `${m.shiny ? '★' : ''}${MQ.SPECIES[m.id].name} N${m.lvl}`, sub: m.hp <= 0 ? 'K.O.' : `${m.hp}/${m.maxhp}${m.status ? ' ' + MQ.STATUS[m.status].name : ''}`, value: i, icon: m.id })),
+        { x: 8, y: 8, w: 200, rows: 6, rowH: 18, title: 'EQUIPO',
           onPick: (it) => {
             const i = it.value;
             this.menu = new MQ.Menu([
@@ -587,8 +587,8 @@
             if (item.ball) { this.menu = null; this.tb.open(MQ.ctx, item.desc); return; }
             // elegir objetivo
             this.menu = new MQ.Menu(
-              p.party.map((m, i) => ({ label: `${MQ.SPECIES[m.id].name}`, sub: `${m.hp}/${m.maxhp}`, value: i })),
-              { x: 40, y: 60, w: 180, rows: 6, title: '¿Para quién?',
+              p.party.map((m, i) => ({ label: `${MQ.SPECIES[m.id].name}`, sub: `${m.hp}/${m.maxhp}`, value: i, icon: m.id })),
+              { x: 40, y: 60, w: 180, rows: 6, rowH: 18, title: '¿Para quién?',
                 onPick: (t) => {
                   const m = p.party[t.value];
                   if (item.heal && m.hp > 0 && m.hp < m.maxhp) {
@@ -622,15 +622,15 @@
             if (!p.locker.length) { MQ.audio.sfx('bump'); return; }
             if (p.party.length >= 6) { this.menu = null; this.tb.open(MQ.ctx, 'Tu equipo está full (6). Guarda uno primero.'); return; }
             this.menu = new MQ.Menu(
-              p.locker.map((m, i) => ({ label: `${MQ.SPECIES[m.id].name} N${m.lvl}`, value: i })),
-              { x: 20, y: 40, w: 190, rows: 7, title: 'SACAR',
+              p.locker.map((m, i) => ({ label: `${m.shiny ? '★' : ''}${MQ.SPECIES[m.id].name} N${m.lvl}`, value: i, icon: m.id })),
+              { x: 20, y: 40, w: 190, rows: 7, rowH: 18, title: 'SACAR',
                 onPick: (s) => { p.party.push(p.locker.splice(s.value, 1)[0]); MQ.audio.sfx('sel'); this.openLocker(); },
                 onCancel: () => this.openLocker() });
           } else if (it.label === 'Guardar espanto') {
             if (p.party.length <= 1) { this.menu = null; this.tb.open(MQ.ctx, 'Ni de vaina te quedas solo en la hora fantasma.'); return; }
             this.menu = new MQ.Menu(
-              p.party.map((m, i) => ({ label: `${MQ.SPECIES[m.id].name} N${m.lvl}`, value: i })),
-              { x: 20, y: 40, w: 190, rows: 7, title: 'GUARDAR',
+              p.party.map((m, i) => ({ label: `${m.shiny ? '★' : ''}${MQ.SPECIES[m.id].name} N${m.lvl}`, value: i, icon: m.id })),
+              { x: 20, y: 40, w: 190, rows: 7, rowH: 18, title: 'GUARDAR',
                 onPick: (s) => { p.locker.push(p.party.splice(s.value, 1)[0]); MQ.audio.sfx('sel'); this.openLocker(); },
                 onCancel: () => this.openLocker() });
           } else this.menu = null;
@@ -643,9 +643,9 @@
       this.menu = new MQ.Menu(
         MQ.DEX_ORDER.map((id, i) => {
           const seen = p.dexSeen[id], caught = p.dexCaught[id];
-          return { label: `${String(i + 1).padStart(2, '0')} ${caught ? '●' : seen ? '○' : '—'} ${seen ? MQ.SPECIES[id].name : '???'}`, value: id };
+          return { label: `${String(i + 1).padStart(2, '0')} ${caught ? '●' : seen ? '○' : '—'} ${seen ? MQ.SPECIES[id].name : '???'}`, value: id, icon: seen ? id : null };
         }),
-        { x: 8, y: 8, w: 200, rows: 12, title: 'CUADERNO DE ESPANTOS',
+        { x: 8, y: 8, w: 200, rows: 11, rowH: 18, title: 'CUADERNO DE ESPANTOS',
           onPick: (it) => { if (p.dexSeen[it.value]) { this.dexView = it.value; this.menu = null; MQ.audio.cry(it.value); } else MQ.audio.sfx('bump'); },
           onCancel: () => { this.menu = null; } });
     }
@@ -898,9 +898,9 @@
     drawStatPage(ctx, m) {
       const sp = MQ.SPECIES[m.id];
       MQ.panel(ctx, 8, 8, MQ.W - 16, MQ.H - 16);
-      MQ.drawMon(ctx, m.id, 24, 26, 4);
+      if (!(m.shiny && MQ.drawSprite(ctx, m.id, 'shiny', 24, 26, 64))) MQ.drawMon(ctx, m.id, 24, 26, 4);
       ctx.font = MQ.FONT_B; ctx.textBaseline = 'top'; ctx.fillStyle = '#f5a623';
-      ctx.fillText(`${sp.name}  N${m.lvl}`, 110, 26);
+      ctx.fillText(`${m.shiny ? '★' : ''}${sp.name}  N${m.lvl}`, 110, 26);
       ctx.font = MQ.FONT; ctx.fillStyle = '#e8dfc8';
       ctx.fillText(`PS  ${m.hp}/${m.maxhp}${m.status ? '  · ' + MQ.STATUS[m.status].name : ''}`, 110, 42);
       ctx.fillText(`ATQ ${m.atk}  DEF ${m.def}  VEL ${m.spd}`, 110, 54);
