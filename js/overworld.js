@@ -786,11 +786,15 @@
       ctx.fillStyle = '#08060e'; ctx.fillRect(0, 0, MQ.W, MQ.H);
       const x0 = Math.floor(camX / T), y0 = Math.floor(camY / T);
       const now = performance.now();
+      const peekAt = (gx, gy) => (ddx, ddy) => {
+        const row = m.grid[gy + ddy];
+        return (row && row[gx + ddx]) || '#';
+      };
       for (let y = y0; y <= y0 + MQ.VIEW_H && y < m.grid.length; y++) {
         if (y < 0) continue;
         for (let x = x0; x <= x0 + MQ.VIEW_W && x < m.grid[y].length; x++) {
           if (x < 0) continue;
-          MQ.drawTile(ctx, m.grid[y][x], Math.round(x * T - camX), Math.round(y * T - camY), th, now);
+          MQ.drawTile(ctx, m.grid[y][x], Math.round(x * T - camX), Math.round(y * T - camY), th, now, x, y, peekAt(x, y));
         }
       }
       // el tren de la estación vive su ciclo: entra, espera con las puertas

@@ -198,46 +198,81 @@
 
   MQ.WALKABLE = new Set(['.', '~', 'g', 'M', 'D', ',']);
 
-  MQ.drawTile = (ctx, ch, x, y, th, time) => {
+  MQ.drawTile = (ctx, ch, x, y, th, time, gx = 0, gy = 0, peek = null) => {
     const F = (c, dx = 0, dy = 0, w = T, h = T) => { ctx.fillStyle = c; ctx.fillRect(x + dx, y + dy, w, h); };
+    const checker = ((gx + gy) & 1) === 0;
+    const SOLID = new Set(['#', 'P', '=', 'k', 'm', 'H', 'S']);
+    const up = peek ? peek(0, -1) : '#';
+    const left = peek ? peek(-1, 0) : '#';
+    // sombra ambiental: el piso se oscurece donde toca una pared encima/izquierda
+    const floorAO = () => {
+      if (SOLID.has(up)) F('rgba(0,0,0,0.20)', 0, 0, T, 3);
+      if (SOLID.has(left)) F('rgba(0,0,0,0.12)', 0, 0, 2, T);
+    };
+    // piso embaldosado: junta sutil + mota determinista
+    const floorTile = () => {
+      F(checker ? th.floor : th.floor2);
+      F('rgba(0,0,0,0.09)', 0, 0, T, 1); F('rgba(0,0,0,0.09)', 0, 0, 1, T);
+      F('rgba(255,255,255,0.04)', 1, T - 1, T - 1, 1);
+      if ((gx * 7 + gy * 13) % 5 === 0) F('rgba(0,0,0,0.06)', 5, 9, 2, 2);
+    };
     switch (ch) {
-      case '.': case ',': // piso (',' variante)
-        F(((x / T + y / T) % 2 === 0) ? th.floor : th.floor2);
-        if (ch === ',') { F('rgba(0,0,0,0.08)', 3, 3, 2, 2); F('rgba(0,0,0,0.08)', 10, 9, 2, 2); }
+      case '.': case ',': // piso (',' variante con manchitas)
+        floorTile();
+        if (ch === ',') { F('rgba(0,0,0,0.10)', 3, 4, 2, 2); F('rgba(0,0,0,0.10)', 10, 9, 2, 2); }
+        floorAO();
         break;
-      case '#': // pared
-        F(th.wall); F(th.wallTop, 0, 0, T, 5);
-        F('rgba(0,0,0,0.25)', 0, 5, T, 1);
-        F('rgba(255,255,255,0.05)', 2, 8, 5, 3); F('rgba(0,0,0,0.1)', 9, 10, 5, 3);
+      case '#': { // pared de ladrillo, con tope iluminado solo arriba del bloque
+        F(th.wall);
+        // hiladas de ladrillo con mortero alternado
+        F('rgba(0,0,0,0.13)', 0, 5, T, 1); F('rgba(0,0,0,0.13)', 0, 11, T, 1);
+        F('rgba(255,255,255,0.04)', 0, 6, T, 1); F('rgba(255,255,255,0.04)', 0, 12, T, 1);
+        F('rgba(0,0,0,0.11)', checker ? 6 : 11, 1, 1, 4);
+        F('rgba(0,0,0,0.11)', checker ? 11 : 6, 7, 1, 4);
+        F('rgba(0,0,0,0.11)', checker ? 6 : 11, 13, 1, 3);
+        if (!SOLID.has(up)) { // remate/cornisa del tope del muro
+          F(th.wallTop, 0, 0, T, 5);
+          F('rgba(255,255,255,0.12)', 0, 0, T, 1);
+          F('rgba(0,0,0,0.28)', 0, 5, T, 1);
+        }
         break;
+      }
       case 'T': // vía
         F(th.dark);
-        F('#3a3242', 0, 3, T, 2); F('#3a3242', 0, 11, T, 2);   // rieles
-        F('#55485f', 0, 3, T, 1); F('#55485f', 0, 11, T, 1);
-        F('#2a2433', 2, 0, 2, T); F('#2a2433', 9, 0, 2, T);    // durmientes
+        F('#2a2433', 1, 0, 2, T); F('#2a2433', 8, 0, 2, T); F('#2a2433', 13, 0, 2, T); // durmientes
+        F('#46404f', 3, 3, T, 2); F('#46404f', 3, 11, T, 2);   // rieles
+        F('#6a5d76', 3, 3, T, 1); F('#6a5d76', 3, 11, T, 1);   // brillo del riel
         break;
       case '~': { // zona oscura del túnel: aquí viven los espantos
         F(th.dark);
-        const tw = (Math.sin(time / 400 + x * 0.7 + y) + 1) / 2;
-        F(`rgba(122,90,217,${0.10 + tw * 0.15})`, 4, 4, 3, 3);
-        F(`rgba(122,90,217,${0.06 + (1 - tw) * 0.12})`, 10, 10, 2, 2);
+        const tw = (Math.sin(time / 400 + gx * 0.7 + gy) + 1) / 2;
+        F(`rgba(122,90,217,${(0.10 + tw * 0.15).toFixed(3)})`, 4, 4, 3, 3);
+        F(`rgba(122,90,217,${(0.06 + (1 - tw) * 0.12).toFixed(3)})`, 10, 10, 2, 2);
         break;
       }
-      case 'g': // monte
-        F('#3e6b2e');
-        F('#54883e', 2, 2, 3, 4); F('#54883e', 9, 6, 3, 4); F('#54883e', 5, 10, 3, 4);
-        F('#2e5222', 12, 2, 2, 3); F('#2e5222', 2, 11, 2, 3);
+      case 'g': { // monte: mata de hierba con briznas y alguna flor
+        F('#3e6b2e'); F('#356025', 0, T - 2, T, 2);
+        const g = gx * 5 + gy * 9;
+        const blade = (bx, by, c) => { F(c, bx, by, 1, 3); F(c, bx - 1, by + 1, 1, 2); F(c, bx + 1, by + 1, 1, 2); };
+        blade(3 + (g % 2), 3, '#5a9040'); blade(8 + ((g >> 1) % 2), 6, '#4e8438'); blade(12 - (g % 3), 9, '#5a9040');
+        F('#2e5222', 1, 12, 2, 2); F('#2e5222', 11, 11, 2, 2);
+        if ((gx * 13 + gy * 7) % 11 === 0) { F('#f5d76e', 6, 6, 2, 2); F('#fff6c8', 6, 6, 1, 1); }
         break;
+      }
       case 'W': { // agua (el Guaire, la fuente)
-        const ph = Math.sin(time / 500 + (x + y) / 24);
-        F('#2b5b7c'); F(ph > 0 ? '#3b6b8c' : '#2b5b7c', 0, 4, T, 3);
-        F('rgba(255,255,255,0.18)', (time / 200 + x) % 12, 8, 4, 1);
+        const ph = Math.sin(time / 500 + (gx + gy) / 2);
+        F('#27506e'); F(ph > 0 ? '#356a8c' : '#2b5b7c', 0, 3, T, 5);
+        F('#1f4360', 0, T - 3, T, 3);
+        const sx = (Math.floor(time / 180) + gx * 3) % T;
+        F('rgba(255,255,255,0.28)', sx, 6, 3, 1);
+        F('rgba(255,255,255,0.14)', (sx + 8) % T, 11, 2, 1);
         break;
       }
       case 'P': // columna del andén
-        F(((x / T + y / T) % 2 === 0) ? th.floor : th.floor2);
-        F('#8a7a62', 4, 0, 8, T); F('#a89878', 4, 0, 2, T); F('#6a5a45', 10, 0, 2, T);
-        F('#e85a1a', 4, 6, 8, 3); // franja naranja del Metro
+        floorTile();
+        F('#6a5a45', 3, 0, 9, T); F('#9a8a6e', 4, 0, 7, T);    // fuste con sombra
+        F('#a89878', 4, 0, 2, T); F('#5a4d3a', 10, 0, 2, T);
+        F('#e85a1a', 4, 6, 7, 3); F('#b5430f', 4, 8, 7, 1);    // franja naranja del Metro
         break;
       case 'H': // Módulo de Atención (el Doctorcito)
         F(th.floor); F('#f2ead8', 1, 2, 14, 12); F('#b5300a', 1, 2, 14, 3);
@@ -248,8 +283,9 @@
         F('#f5d76e', 3, 8, 3, 3); F('#7bb05a', 8, 8, 3, 3); F('#4a90d9', 11, 8, 2, 3);
         break;
       case 'M': // borde de andén / puerta del tren
-        F(((x / T + y / T) % 2 === 0) ? th.floor : th.floor2);
-        F('#f5d76e', 0, 0, T, 3); F('#1a1a1a', 0, 3, T, 1); // franja amarilla
+        floorTile();
+        F('#f5d76e', 0, 0, T, 3); F('#caa53a', 0, 2, T, 1); F('#1a1a1a', 0, 3, T, 1); // franja amarilla táctil
+        for (let bx = 1; bx < T; bx += 4) F('#caa53a', bx, 0, 2, 2);
         break;
       case 'D': // escalera / salida
         F(th.dark);
@@ -257,8 +293,9 @@
         F('rgba(0,0,0,0.3)', 0, 0, T, 2);
         break;
       case 'B': // banco
-        F(((x / T + y / T) % 2 === 0) ? th.floor : th.floor2);
-        F('#8a4a2a', 1, 5, 14, 5); F('#6a3a20', 2, 10, 2, 4); F('#6a3a20', 12, 10, 2, 4);
+        floorTile(); floorAO();
+        F('#6a3a20', 2, 10, 2, 4); F('#6a3a20', 12, 10, 2, 4);
+        F('#8a4a2a', 1, 5, 14, 5); F('#a05a32', 1, 5, 14, 2); F('#5a3018', 1, 9, 14, 1);
         break;
       case 'm': // mesa de madera (la mesa de la abuela)
         F(th.floor);
