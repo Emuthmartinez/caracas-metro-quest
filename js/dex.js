@@ -755,9 +755,11 @@
   MQ.movesAtLevel = (id, lvl) =>
     MQ.SPECIES[id].learn.filter(([l]) => l <= lvl).map(([, m]) => m).slice(-4);
 
-  MQ.makeMon = (id, lvl) => {
+  // 1 de cada SHINY_ODDS sale "tornasol" (iridiscente): la variante rara
+  MQ.SHINY_ODDS = 96;
+  MQ.makeMon = (id, lvl, shiny) => {
     const st = MQ.calcStats(id, lvl);
-    const m = { id, lvl, xp: MQ.xpForLevel(lvl), hp: st.hp, maxhp: st.hp, atk: st.atk, def: st.def, spd: st.spd, moves: MQ.movesAtLevel(id, lvl), status: null, pp: {} };
+    const m = { id, lvl, xp: MQ.xpForLevel(lvl), hp: st.hp, maxhp: st.hp, atk: st.atk, def: st.def, spd: st.spd, moves: MQ.movesAtLevel(id, lvl), status: null, pp: {}, shiny: !!shiny };
     MQ.ensurePP(m);
     return m;
   };

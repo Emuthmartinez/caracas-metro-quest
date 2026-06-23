@@ -38,7 +38,7 @@
         this.enemy = this.eteam[0];
         MQ.audio.music(this.trainer.boss ? 'boss' : 'battle');
       } else {
-        this.enemy = MQ.makeMon(opts.wild.id, opts.wild.lvl);
+        this.enemy = MQ.makeMon(opts.wild.id, opts.wild.lvl, opts.wild.shiny ?? (MQ.rand(MQ.SHINY_ODDS) === 0));
         MQ.audio.music(opts.wild.id === 'trenfantasma' ? 'boss' : 'battle');
       }
       p.dexSeen[this.enemy.id] = true;
@@ -57,7 +57,10 @@
         this.say(`${this.trainer.name || this.trainer.cls} saca a ${name(this.enemy)}.`, () => MQ.audio.cry(this.enemy.id));
       } else {
         MQ.audio.cry(this.enemy.id);
-        this.say(`¡Un ${name(this.enemy)} salvaje apareció en la oscuridad!`);
+        if (this.enemy.shiny) MQ.audio.sfx('sparkle');
+        this.say(this.enemy.shiny
+          ? `¡Un ${name(this.enemy)} TORNASOL salvaje apareció! ¡De esos no se ven todos los días!`
+          : `¡Un ${name(this.enemy)} salvaje apareció en la oscuridad!`);
       }
       this.say(`¡Dale, ${name(this.mine)}!`, () => { MQ.audio.cry(this.mine.id); this.toMenu(); });
     }
@@ -238,9 +241,9 @@
     openParty(forced) {
       const p = MQ.player;
       const items = p.party.map((m, i) => ({
-        label: `${name(m)} N${m.lvl}`, sub: m.hp <= 0 ? 'K.O.' : `${m.hp}/${m.maxhp}`, value: i }));
+        label: `${m.shiny ? '★' : ''}${name(m)} N${m.lvl}`, sub: m.hp <= 0 ? 'K.O.' : `${m.hp}/${m.maxhp}`, value: i, icon: m.id }));
       this.phase = 'party';
-      this.menu = new MQ.Menu(items, { x: 6, y: 40, w: 200, rows: 6, title: forced ? '¡ELIGE OTRO!' : 'EQUIPO',
+      this.menu = new MQ.Menu(items, { x: 6, y: 40, w: 200, rows: 6, rowH: 18, title: forced ? '¡ELIGE OTRO!' : 'EQUIPO',
         onPick: (it) => {
           const m = p.party[it.value];
           if (m.hp <= 0) { MQ.audio.sfx('bump'); return; }
@@ -740,10 +743,20 @@
       };
 
       const capByFX = this.cap && this.cap.stage !== 'toss';   // la captura dibuja al enemigo
-      // enemigo (arriba derecha) — sombra + sprite
+      // enemigo (arriba derecha) — sombra + sprite (tornasol si es raro)
       if (!capByFX && this.anim.efall < FALL && (this.enemy.hp > 0 || this.phase === 'msg' || this.anim.efall > 0)) {
         shadow(eCx, eBaseCy, 22, 0.3 * (1 - this.anim.efall / FALL));
-        combatant(this.enemy.id, 'front', E_X + sh + slide, E_Y, this.anim.efall, this.enemy.hp > 0);
+        combatant(this.enemy.id, this.enemy.shiny ? 'shiny' : 'front', E_X + sh + slide, E_Y, this.anim.efall, this.enemy.hp > 0);
+        // destello tornasol al aparecer
+        if (this.enemy.shiny && this.enemy.hp > 0 && this.fc < 60) {
+          const tt = this.fc;
+          ctx.fillStyle = '#bdfcff';
+          for (let i = 0; i < 4; i++) {
+            const a = (i / 4) * Math.PI * 2 + tt * 0.15, d = 10 + (tt % 30);
+            const sx = Math.round(eCx + Math.cos(a) * d), sy = Math.round(eCy + Math.sin(a) * d);
+            ctx.fillRect(sx - 1, sy, 3, 1); ctx.fillRect(sx, sy - 1, 1, 3);
+          }
+        }
       }
       // mío (abajo izquierda) — sprite trasero
       if (this.anim.mfall < FALL && (this.mine.hp > 0 || this.anim.mfall > 0)) {
@@ -763,7 +776,7 @@
       // panel enemigo
       MQ.panel(ctx, 6, 8, 150, 34);
       ctx.fillStyle = '#e8dfc8';
-      ctx.fillText(name(this.enemy) + '  N' + this.enemy.lvl, 14, 15);
+      ctx.fillText((this.enemy.shiny ? '★' : '') + name(this.enemy) + '  N' + this.enemy.lvl, 14, 15);
       this.hpBar(ctx, 14, 28, 120, this.enemy);
       this.statusChip(ctx, this.enemy.status, 112, 14);
       ctx.font = MQ.FONT_B;
@@ -775,7 +788,7 @@
       // panel mío
       MQ.panel(ctx, MQ.W - 166, 156, 160, 44);
       ctx.fillStyle = '#e8dfc8';
-      ctx.fillText(name(this.mine) + '  N' + this.mine.lvl, MQ.W - 158, 163);
+      ctx.fillText((this.mine.shiny ? '★' : '') + name(this.mine) + '  N' + this.mine.lvl, MQ.W - 158, 163);
       this.hpBar(ctx, MQ.W - 158, 176, 130, this.mine);
       ctx.font = MQ.FONT;
       ctx.fillStyle = '#8a8aa0';

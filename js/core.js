@@ -135,6 +135,7 @@
       this.onPick = opts.onPick || (() => {});
       this.onCancel = opts.onCancel || (() => {});
       this.rows = opts.rows ?? 8;   // visibles
+      this.rowH = opts.rowH ?? 13;  // alto de fila (más alto si hay iconos)
       this.top = 0;
     }
     press(k) {
@@ -147,7 +148,7 @@
     }
     draw(ctx) {
       const n = Math.min(this.items.length, this.rows);
-      const h = n * 13 + 16 + (this.title ? 12 : 0);
+      const h = n * this.rowH + 16 + (this.title ? 12 : 0);
       MQ.panel(ctx, this.x, this.y, this.w, h);
       ctx.font = MQ.FONT; ctx.textBaseline = 'top';
       let y = this.y + 9;
@@ -156,13 +157,16 @@
         const idx = this.top + r;
         const it = this.items[idx];
         if (!it) break;
+        const ty = y + (this.rowH - 8) / 2 - 2.5;   // texto centrado en la fila
+        let tx = this.x + 8;
+        if (it.icon && MQ.drawIcon) { MQ.drawIcon(ctx, it.icon, this.x + 16, y, 16); tx = this.x + 34; }
         ctx.fillStyle = idx === this.i ? '#f5a623' : '#e8dfc8';
-        ctx.fillText((idx === this.i ? '▶' : ' ') + it.label, this.x + 8, y);
+        ctx.fillText((idx === this.i ? '▶' : ' ') + it.label, tx, ty);
         if (it.sub) {
           ctx.fillStyle = '#8a8aa0';
-          ctx.fillText(it.sub, this.x + this.w - 8 - ctx.measureText(it.sub).width, y);
+          ctx.fillText(it.sub, this.x + this.w - 8 - ctx.measureText(it.sub).width, ty);
         }
-        y += 13;
+        y += this.rowH;
       }
     }
   };
