@@ -61,8 +61,10 @@ index.html        el juego (carga los scripts en orden)
 css/style.css     marco retro + controles táctiles
 js/core.js        entrada, texto, cajas de diálogo, menús
 js/audio.js       chiptune procedural (WebAudio, sin archivos)
-js/dex.js         tipos, movimientos y los 25 espantos (con su pixel art)
-js/sprites.js     tiles del Metro, gente y criaturas (todo dibujado por código)
+js/dex.js         tipos, movimientos y los 25 espantos (con su pixel art de respaldo)
+js/sprite-manifest.js  qué sprites PNG tiene cada especie (autogenerado)
+js/sprites.js     tiles + gente (procedural) y carga de los sprites 64×64 de las criaturas
+assets/creatures/ sprites pintados a mano: front/back de combate, icono, overworld, tornasol
 js/world.js       Línea 1 completa: estaciones, túneles, NPCs, jefes
 js/battle.js      combate por turnos, fichar, experiencia, evolución
 js/overworld.js   caminar, encuentros, tiendas, tren, menú de pausa

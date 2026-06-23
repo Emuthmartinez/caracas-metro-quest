@@ -3,11 +3,83 @@
   const MQ = (globalThis.MQ = globalThis.MQ || {});
   const T = MQ.TILE;
 
+  // ---- Sprites generados (PNG) ------------------------------------------------
+  // Las criaturas con arte 64×64 hecho a mano (front/back/icon/overworld/shiny)
+  // se cargan de assets/creatures/<id>/. Si una especie no tiene PNG, el motor
+  // cae al pixel-art procedural de dex.js sin que se note el salto.
+  MQ.sprites = {
+    base: 'assets/creatures/',
+    file: { front: 'front.png', back: 'back.png', icon: 'icon.png', overworld: 'overworld.png', shiny: 'front-tornasol.png' },
+    cache: {},
+    has(id, kind) { const m = MQ.SPRITE_ASSETS; return !!(m && m[id] && m[id][kind]); },
+    load(id, kind) {
+      const key = id + '/' + kind;
+      if (key in this.cache) return this.cache[key];
+      if (!this.has(id, kind) || typeof Image === 'undefined') return (this.cache[key] = null);
+      const img = new Image();
+      img.onerror = () => { this.cache[key] = null; };
+      img.src = this.base + id + '/' + this.file[kind];
+      return (this.cache[key] = img);
+    },
+    // devuelve la imagen solo si ya está lista para dibujar; si no, null (→ fallback)
+    ready(id, kind) {
+      const img = this.load(id, kind);
+      if (!img) return null;
+      const w = img.naturalWidth || img.width || 0;
+      const done = img.complete === undefined ? true : img.complete;
+      return (done && w > 0) ? img : null;
+    },
+    preload(ids, kinds) { for (const id of ids) for (const k of kinds) this.load(id, k); },
+  };
+
+  // Dibuja un sprite PNG (con volteo, tinte de silueta y alfa). Devuelve false
+  // si la especie no tiene ese PNG cargado, para que el llamador use el fallback.
+  MQ.drawSprite = (ctx, id, kind, x, y, size, flip = false, tint = null, alpha = 1) => {
+    let img = MQ.sprites.ready(id, kind);
+    // back ausente → usa front; shiny ausente → front; overworld ausente → front
+    if (!img && kind === 'back') img = MQ.sprites.ready(id, 'front'), flip = true;
+    if (!img && kind === 'shiny') img = MQ.sprites.ready(id, 'front');
+    if (!img && kind === 'overworld') img = MQ.sprites.ready(id, 'front');
+    if (!img) return false;
+    if (alpha <= 0) return true;
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    if (alpha !== 1) ctx.globalAlpha *= alpha;
+    let src = img;
+    if (tint) { // tinta toda la silueta (flash de captura) vía lienzo aparte
+      const oc = MQ.sprites._oc || (MQ.sprites._oc = MQ.makeCanvas(64, 64));
+      const octx = oc.getContext('2d');
+      octx.clearRect(0, 0, 64, 64);
+      octx.imageSmoothingEnabled = false;
+      octx.drawImage(img, 0, 0, 64, 64);
+      octx.globalCompositeOperation = 'source-atop';
+      octx.fillStyle = tint; octx.fillRect(0, 0, 64, 64);
+      octx.globalCompositeOperation = 'source-over';
+      src = oc;
+    }
+    if (flip) { ctx.translate(x + size, y); ctx.scale(-1, 1); ctx.drawImage(src, 0, 0, size, size); }
+    else ctx.drawImage(src, x, y, size, size);
+    ctx.restore();
+    return true;
+  };
+
+  // lienzo auxiliar (navegador o harness headless)
+  MQ.makeCanvas = (w, h) => {
+    if (typeof OffscreenCanvas !== 'undefined') return new OffscreenCanvas(w, h);
+    const c = (typeof document !== 'undefined') ? document.createElement('canvas') : { getContext: () => null };
+    c.width = w; c.height = h; return c;
+  };
+
   // ---- Espantos ---------------------------------------------------------------
-  // tint: si se pasa un color, se pinta toda la silueta de ese color (captura)
+  // tint: si se pasa un color, se pinta toda la silueta de ese color (captura).
+  // Prefiere el sprite PNG (≤16px → overworld, mayor → front); si no hay, dibuja
+  // el pixel-art procedural de dex.js como fallback.
   MQ.drawMon = (ctx, id, x, y, scale = 3, flip = false, tint = null) => {
     const sp = MQ.SPECIES[id];
     if (!sp) return;
+    const size = scale * 16;
+    const kind = size <= 16 ? 'overworld' : 'front';
+    if (MQ.drawSprite(ctx, id, kind, x, y, size, flip, tint)) return;
     const art = sp.art, pal = sp.pal;
     for (let r = 0; r < art.length; r++) {
       const row = art[r];
@@ -26,12 +98,15 @@
   MQ.drawMonCentered = (ctx, id, cx, cy, scale = 4, flip = false, mul = 1, tint = null, alpha = 1) => {
     const sp = MQ.SPECIES[id];
     if (!sp) return;
-    const w = sp.art[0].length * scale, h = sp.art.length * scale;
+    const size = scale * 16;
     ctx.save();
-    ctx.globalAlpha = alpha;
     ctx.translate(cx, cy);
     ctx.scale(mul, mul);
-    MQ.drawMon(ctx, id, -w / 2, -h / 2, scale, flip, tint);
+    if (!MQ.drawSprite(ctx, id, 'front', -size / 2, -size / 2, size, flip, tint, alpha)) {
+      const w = sp.art[0].length * scale, h = sp.art.length * scale;
+      ctx.globalAlpha *= alpha;
+      MQ.drawMon(ctx, id, -w / 2, -h / 2, scale, flip, tint);
+    }
     ctx.restore();
   };
 

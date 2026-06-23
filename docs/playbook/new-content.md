@@ -52,7 +52,11 @@ content types whose phases haven't run yet are marked PENDING.
    (`--kind overworld`), tornasol (`--shiny`). Evolved stages use
    `creature-evolution.prompt` with the prior stage's front job as reference.
    Commit raw + processed under `assets/creatures/<id>/` + `meta.json`
-   (job_ids, seeds, palette stats).
+   (job_ids, seeds, palette stats). Then run
+   `python3 scripts/build_sprite_manifest.py` to refresh `js/sprite-manifest.js`
+   — the engine reads it to use the new sprites (front in battle/dex, back for
+   the player's mon, overworld 16×16 for NPC creatures, front-tornasol for
+   shiny) and falls back to dex.js pixel art for any species still missing PNGs.
 5. **Cry:** add to `MQ.CRIES` per `DESIGN.md` (audio spec Phase 8 may supersede).
 6. Validate, commit, open PR.
 

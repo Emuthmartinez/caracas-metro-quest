@@ -46,6 +46,10 @@
       this.mine = p.party[this.mi];
       this.pst = { atk: 0, def: 0, spd: 0 };
       this.est = { atk: 0, def: 0, spd: 0 };
+      // precarga de sprites: rivales (front) y propios (back) para que no haya pop-in
+      const foes = this.eteam ? this.eteam.map((m) => m.id) : [this.enemy.id];
+      MQ.sprites.preload(foes, ['front']);
+      MQ.sprites.preload(p.party.map((m) => m.id), ['front', 'back']);
 
       if (this.trainer) {
         this.say(`¡${this.trainer.cls} ${this.trainer.name || ''} te reta!`.replace('  ', ' '));
@@ -667,14 +671,17 @@
         ctx.restore();
       };
 
-      // dibuja un combatiente con cabeceo en reposo y caída al debilitarse
-      const combatant = (id, tlx, tly, flip, fall, alive) => {
+      // dibuja un combatiente con cabeceo en reposo y caída al debilitarse;
+      // usa el sprite PNG (front del enemigo / back del propio) o el fallback
+      const combatant = (id, kind, tlx, tly, fall, alive) => {
         const bob = (alive && fall === 0 && this.anim.intro === 0) ? Math.round(Math.sin(this.fc / 16) * 1.5) : 0;
         const yOff = fall ? Math.round((fall / FALL) * 22) : 0;
         const alpha = fall ? Math.max(0, 1 - fall / FALL) : 1;
         if (alpha <= 0) return;
-        if (alpha < 1) ctx.save(), ctx.globalAlpha = alpha;
-        MQ.drawMon(ctx, id, tlx, tly + yOff - bob, SC, flip);
+        const yy = tly + yOff - bob, size = SC * 16;
+        if (MQ.drawSprite(ctx, id, kind, tlx, yy, size, false, null, alpha)) return;
+        if (alpha < 1) { ctx.save(); ctx.globalAlpha = alpha; }
+        MQ.drawMon(ctx, id, tlx, yy, SC, kind === 'back');
         if (alpha < 1) ctx.restore();
       };
 
@@ -682,12 +689,12 @@
       // enemigo (arriba derecha) — sombra + sprite
       if (!capByFX && this.anim.efall < FALL && (this.enemy.hp > 0 || this.phase === 'msg' || this.anim.efall > 0)) {
         shadow(eCx, eBaseCy, 22, 0.3 * (1 - this.anim.efall / FALL));
-        combatant(this.enemy.id, E_X + sh + slide, E_Y, false, this.anim.efall, this.enemy.hp > 0);
+        combatant(this.enemy.id, 'front', E_X + sh + slide, E_Y, this.anim.efall, this.enemy.hp > 0);
       }
-      // mío (abajo izquierda, volteado)
+      // mío (abajo izquierda) — sprite trasero
       if (this.anim.mfall < FALL && (this.mine.hp > 0 || this.anim.mfall > 0)) {
         shadow(mCx, mBaseCy, 28, 0.3 * (1 - this.anim.mfall / FALL));
-        combatant(this.mine.id, M_X - sh - slide, M_Y, true, this.anim.mfall, this.mine.hp > 0);
+        combatant(this.mine.id, 'back', M_X - sh - slide, M_Y, this.anim.mfall, this.mine.hp > 0);
       }
 
       // — la ceremonia de la ficha —
