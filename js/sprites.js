@@ -4,7 +4,8 @@
   const T = MQ.TILE;
 
   // ---- Espantos ---------------------------------------------------------------
-  MQ.drawMon = (ctx, id, x, y, scale = 3, flip = false) => {
+  // tint: si se pasa un color, se pinta toda la silueta de ese color (captura)
+  MQ.drawMon = (ctx, id, x, y, scale = 3, flip = false, tint = null) => {
     const sp = MQ.SPECIES[id];
     if (!sp) return;
     const art = sp.art, pal = sp.pal;
@@ -13,11 +14,25 @@
       for (let c = 0; c < row.length; c++) {
         const ch = row[c];
         if (ch === '.' || !pal[ch]) continue;
-        ctx.fillStyle = pal[ch];
+        ctx.fillStyle = tint || pal[ch];
         const cx = flip ? row.length - 1 - c : c;
         ctx.fillRect(x + cx * scale, y + r * scale, scale, scale);
       }
     }
+  };
+
+  // Igual que drawMon pero centrado en (cx,cy), escalable (mul) y con alfa/tinte.
+  // Para la ceremonia de captura: el espanto se encoge y se vuelve blanco al entrar.
+  MQ.drawMonCentered = (ctx, id, cx, cy, scale = 4, flip = false, mul = 1, tint = null, alpha = 1) => {
+    const sp = MQ.SPECIES[id];
+    if (!sp) return;
+    const w = sp.art[0].length * scale, h = sp.art.length * scale;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(cx, cy);
+    ctx.scale(mul, mul);
+    MQ.drawMon(ctx, id, -w / 2, -h / 2, scale, flip, tint);
+    ctx.restore();
   };
 
   // ---- Gente ------------------------------------------------------------------
@@ -28,6 +43,15 @@
     const F = (c, dx, dy, w, h) => { ctx.fillStyle = c; ctx.fillRect(x + dx, y + dy, w, h); };
     const skin = look.skin || '#c98e5a', shirt = look.shirt || '#4a6741';
     const pants = look.pants || '#33334a', hair = look.hair || '#26201a';
+
+    // sombra a los pies, como la gente de verdad bajo las lámparas del andén
+    ctx.save();
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.ellipse(x + 4, y + 16, 5, 1.8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
 
     // cabeza
     F(skin, 0, 2, 8, 4);

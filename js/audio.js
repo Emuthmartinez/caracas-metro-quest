@@ -59,6 +59,11 @@
     victory: () => { [523, 523, 523, 659, 784, 1046].forEach((f, i) => beep(f, i === 5 ? 0.3 : 0.09, 'square', 0.05, i * 0.1)); beep(392, 0.6, 'triangle', 0.04, 0.1); },
     lowhp: () => beep(880, 0.07, 'square', 0.045, 0, -60),
     whistle: () => { beep(1100, 0.5, 'sine', 0.05, 0, 500); beep(1400, 0.5, 'sine', 0.04, 0.55, -600); },
+    toss: () => beep(520, 0.18, 'sine', 0.05, 0, 380),                         // la ficha vuela
+    wobble: () => { beep(300, 0.05, 'square', 0.05); noise(0.03, 0.03, 0.02); }, // el tambaleo de la ficha
+    click: () => { beep(1200, 0.05, 'square', 0.05); beep(1600, 0.06, 'square', 0.04, 0.05); }, // ¡plin! quedó fija
+    sparkle: () => [1318, 1568, 2093].forEach((f, i) => beep(f, 0.08, 'sine', 0.04, i * 0.05)), // estrellitas
+    breakout: () => { noise(0.12, 0.07); beep(220, 0.18, 'sawtooth', 0.05, 0, 180); }, // reventó la ficha
   };
 
   // Pistas: [nota|null, duración en pasos] — paso = semicorchea aprox.

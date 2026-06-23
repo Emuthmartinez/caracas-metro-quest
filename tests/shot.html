@@ -42,6 +42,19 @@ addEventListener('load', () => {
     world();
     MQ.pushScene(new MQ.BattleScene({ wild: { id: 'guacamayo', lvl: 9 } }, () => {}));
     presses(2);
+  } else if (mode === 'capture') {
+    // la ceremonia de la ficha: entra al combate, abre MOCHILA y lanza una ficha
+    world();
+    P.bag = { ficha: 9 };
+    const b = new MQ.BattleScene({ wild: { id: 'vagonima', lvl: 10 } }, () => {});
+    MQ.pushScene(b);
+    b.anim.intro = 0;
+    // saltar mensajes de apertura, abrir MOCHILA, elegir la ficha
+    let t = 0;
+    const tap = (k) => setTimeout(() => b.press(k), (t += 220));
+    for (let i = 0; i < 4; i++) tap('a');   // ¡aparece! / ¡dale!
+    tap('down'); tap('a');                  // MOCHILA
+    tap('a');                               // lanzar la ficha
   } else if (mode === 'boss') {
     P.party = [MQ.makeMon('cantaclaro', 18)];
     world();
