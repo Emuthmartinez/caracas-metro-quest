@@ -77,6 +77,10 @@ imposible ocurre sin que nadie lo comente.
 | El jugador: gorra con visera direccional, **morral verde visto de espaldas**, brazos que se mecen al caminar y postura simétrica en reposo | `drawPerson` |
 | El inicial **se baja de la mesa** al elegirlo, con su grito | `took_<id>` |
 | Cada criatura con su **grito** al aparecer, caer y evolucionar | `MQ.CRIES` |
+| **Discos de andén** (las "bases" clásicas) bajo cada combatiente, con su franja naranja, sombra y cabeceo en reposo | `battle` (`base`, `combatant`, `shadow`) |
+| **Ceremonia de la ficha**: la ficha vuela en arco, el espanto se encoge en blanco hacia adentro, la ficha cae, tambalea según lo cerca que estuvo y se queda quieta con estrellitas — o revienta y el espanto sale de vuelta | `BattleScene.tickCapture` / `drawCapture` |
+| El espanto **se desliza y se desvanece** al debilitarse | `anim.efall`/`anim.mfall` |
+| **Sombra a los pies** de cada persona del andén | `drawPerson` |
 
 ## Audio
 

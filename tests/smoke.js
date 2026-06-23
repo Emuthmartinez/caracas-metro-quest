@@ -31,7 +31,7 @@ const sandbox = {
 sandbox.globalThis = sandbox;
 vm.createContext(sandbox);
 
-for (const f of ['core.js', 'audio.js', 'dex.js', 'sprites.js', 'world.js', 'battle.js', 'overworld.js', 'main.js']) {
+for (const f of ['core.js', 'audio.js', 'dex.js', 'sprite-manifest.js', 'sprites.js', 'world.js', 'battle.js', 'overworld.js', 'main.js']) {
   const code = fs.readFileSync(path.join(__dirname, '..', 'js', f), 'utf8');
   vm.runInContext(code, sandbox, { filename: f });
 }
