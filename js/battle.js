@@ -519,23 +519,75 @@
         const m = evos.shift();
         if (!m) { this.onEnd(result); return; }
         const ev = MQ.SPECIES[m.id].evolve;
+        const from = m.id;
         this.say(`¿¡Qué molleja!? ¡${name(m)} está cambiando de forma!`, () => {
-          const frac = m.hp / m.maxhp;
-          m.id = ev.to;
-          const st = MQ.calcStats(m.id, m.lvl);
-          m.maxhp = st.hp; m.hp = Math.max(1, Math.floor(st.hp * frac));
-          m.atk = st.atk; m.def = st.def; m.spd = st.spd;
-          for (const [l, mv] of MQ.SPECIES[m.id].learn)
-            if (l <= m.lvl && !m.moves.includes(mv) && m.moves.length < 4) m.moves.push(mv);
-          MQ.player.dexCaught[m.id] = true; MQ.player.dexSeen[m.id] = true;
-          MQ.audio.sfx('catch');
-          MQ.audio.cry(m.id);
-          this.say(`¡Evolucionó a ${name(m)}! Caracas lo vio crecer.`, doEvo);
+          MQ.sprites.preload([ev.to], ['front']);
+          MQ.audio.sfx('lvl');
+          this.phase = 'evo';
+          // la metamorfosis ocurre a media animación (apply); luego el remate
+          this.evo = {
+            from, to: ev.to, t: 0, stage: 'flash',
+            apply: () => {
+              const frac = m.hp / m.maxhp;
+              m.id = ev.to;
+              const st = MQ.calcStats(m.id, m.lvl);
+              m.maxhp = st.hp; m.hp = Math.max(1, Math.floor(st.hp * frac));
+              m.atk = st.atk; m.def = st.def; m.spd = st.spd;
+              for (const [l, mv] of MQ.SPECIES[m.id].learn)
+                if (l <= m.lvl && !m.moves.includes(mv) && m.moves.length < 4) m.moves.push(mv);
+              MQ.player.dexCaught[m.id] = true; MQ.player.dexSeen[m.id] = true;
+              MQ.audio.cry(m.id);
+            },
+            after: () => {
+              this.evo = null; this.phase = 'msg';
+              this.say(`¡Evolucionó a ${name(m)}! Caracas lo vio crecer.`, doEvo);
+              this.pump();
+            },
+          };
         });
         this.pump();
       };
       doEvo();
       this.pump();
+    }
+
+    // La metamorfosis: parpadeo blanco que acelera, cambio de forma y estrellitas.
+    tickEvo() {
+      const e = this.evo;
+      e.t++;
+      if (e.stage === 'flash') {
+        if (e.t % 8 === 0) MQ.audio.sfx('blip');
+        if (e.t >= 96) { e.stage = 'burst'; e.t = 0; e.apply(); MQ.audio.sfx('catch'); MQ.audio.sfx('sparkle'); }
+      } else if (e.stage === 'burst') {
+        if (e.t >= 26) { e.stage = 'end'; e.t = 0; }
+      } else if (e.stage === 'end') {
+        if (e.t >= 8) e.after();
+      }
+    }
+
+    drawEvo(ctx) {
+      const e = this.evo, W = MQ.W, H = MQ.H;
+      ctx.fillStyle = '#06040c'; ctx.fillRect(0, 0, W, H);
+      const cx = W / 2, cy = H / 2 - 14, sc = 4;
+      if (e.stage === 'flash') {
+        const p = e.t / 96;                                  // 0..1, acelera
+        const period = Math.max(3, 16 - Math.floor(p * 13));
+        const id = (Math.floor(e.t / period) % 2) ? e.to : e.from;
+        MQ.drawMonCentered(ctx, id, cx, cy, sc);
+        MQ.drawMonCentered(ctx, id, cx, cy, sc, false, 1, '#fdf6e3', (0.25 + 0.6 * p) * ((Math.sin(e.t / 2) + 1) / 2));
+      } else if (e.stage === 'burst') {
+        MQ.drawMonCentered(ctx, e.to, cx, cy, sc);
+        const a = Math.max(0, 1 - e.t / 26);
+        ctx.fillStyle = `rgba(253,246,227,${a.toFixed(2)})`; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#ffe66e';
+        for (let i = 0; i < 6; i++) {
+          const ang = (i / 6) * Math.PI * 2, d = 8 + e.t * 1.6;
+          const sx = Math.round(cx + Math.cos(ang) * d), sy = Math.round(cy + Math.sin(ang) * d);
+          ctx.fillRect(sx - 1, sy, 3, 1); ctx.fillRect(sx, sy - 1, 1, 3);
+        }
+      } else {
+        MQ.drawMonCentered(ctx, e.to, cx, cy, sc);
+      }
     }
 
     // ---- entrada / dibujo --------------------------------------------------------
@@ -551,6 +603,7 @@
       if (this.anim.efall > 0 && this.anim.efall < FALL) this.anim.efall++;
       if (this.anim.mfall > 0 && this.anim.mfall < FALL) this.anim.mfall++;
       if (this.cap) this.tickCapture();
+      if (this.evo) this.tickEvo();
       // las barras de vida se vacían poco a poco, como debe ser
       for (const m of [this.mine, this.enemy]) {
         if (m._disp === undefined) m._disp = m.hp;
@@ -634,6 +687,7 @@
     }
 
     draw(ctx) {
+      if (this.evo) { this.drawEvo(ctx); this.tb.draw(ctx); return; }
       // fondo: pared del túnel arriba, andén de concreto abajo
       const grad = ctx.createLinearGradient(0, 0, 0, MQ.H);
       grad.addColorStop(0, '#14101e'); grad.addColorStop(0.55, '#1e1830'); grad.addColorStop(1, '#2a2238');
