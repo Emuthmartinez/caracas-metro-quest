@@ -8,6 +8,10 @@
     ficha2: 'FICHA DE LA FUENTE',
     ficha3: 'FICHA DEL ESTE',
     ficha4: 'FICHA DEL PUEBLO',
+    ficha5: 'FICHA DEL MONTE',
+    ficha6: 'FICHA DEL RÍO',
+    ficha7: 'FICHA DEL SUR',
+    ficha8: 'FICHA DE LA TORRE',
   };
 
   // ---- estado del jugador ------------------------------------------------------
@@ -23,8 +27,9 @@
 
   MQ.setFlag = (f) => {
     MQ.player.flags[f] = true;
-    if (['ficha1', 'ficha2', 'ficha3', 'ficha4'].every((k) => MQ.player.flags[k]))
-      MQ.player.flags.fichas4 = true;
+    // banderas derivadas: cuántas Fichas Doradas llevas (rejas de la red)
+    const owned = Object.keys(MQ.FICHAS).filter((k) => MQ.player.flags[k]).length;
+    for (const n of [4, 5, 7, 8]) if (owned >= n) MQ.player.flags['fichas' + n] = true;
   };
 
   MQ.save = (silent) => {

@@ -10,7 +10,10 @@
       this.from = fromId;
       this.to = toId;
       this.onArrive = onArrive;
-      const stops = MQ.TRAIN_STOPS;
+      // la línea que comparte origen y destino (la red creció más allá de la 1)
+      const stops = (MQ.LINES
+        ? (Object.values(MQ.LINES).map((l) => l.stops).find((s) => s.includes(fromId) && s.includes(toId)) || MQ.TRAIN_STOPS)
+        : MQ.TRAIN_STOPS);
       const a = stops.indexOf(fromId), b = stops.indexOf(toId);
       // estaciones intermedias que se ven pasar por la ventana
       this.passing = stops.slice(Math.min(a, b) + 1, Math.max(a, b));
@@ -410,18 +413,25 @@
 
     openTrain() {
       const p = MQ.player;
-      // a las estaciones que ya conoces, más la siguiente de la línea:
-      // el tren de la hora fantasma sabe pa' dónde vas aunque tú no
+      // a las estaciones que ya conoces (de todas las líneas que pasan por aquí);
+      // en la Línea 1, la cortesía canon: también la siguiente parada
       const EAST_GATE = { capitolio: 'ficha1' }; // la Doña no se brinca ni en tren
-      const idx = MQ.TRAIN_STOPS.indexOf(p.map);
-      const known = new Set(MQ.TRAIN_STOPS.filter((s) => p.visited[s]));
-      if (idx >= 0) {
-        const next = MQ.TRAIN_STOPS[idx + 1];
-        if (next && (!EAST_GATE[p.map] || p.flags[EAST_GATE[p.map]])) known.add(next);
-        if (idx > 0) known.add(MQ.TRAIN_STOPS[idx - 1]);
+      const lines = MQ.linesAt ? MQ.linesAt(p.map) : [{ stops: MQ.TRAIN_STOPS }];
+      const known = new Set();
+      const stops = [];
+      for (const line of lines) {
+        for (const s of line.stops) if (p.visited[s]) known.add(s);
+        if (!MQ.LINES || line === MQ.LINES.linea1) {
+          const idx = line.stops.indexOf(p.map);
+          const next = line.stops[idx + 1];
+          if (next && (!EAST_GATE[p.map] || p.flags[EAST_GATE[p.map]])) known.add(next);
+          if (idx > 0) known.add(line.stops[idx - 1]);
+        }
       }
       known.delete(p.map);
-      const stops = MQ.TRAIN_STOPS.filter((s) => known.has(s));
+      for (const line of lines)
+        for (const s of line.stops)
+          if (known.has(s) && !stops.includes(s)) stops.push(s);
       if (!stops.length) {
         this.tb.open(MQ.ctx, 'El tren de la hora fantasma solo para en estaciones que ya conoces. Camina los túneles primero. Cuando vuelvas, párate aquí en la franja del andén y listo.', null, 'Voz del Metro');
         return;
@@ -434,7 +444,8 @@
             this.menu = null; this.mapBehind = false;
             if (!it.value) return;
             MQ.pushScene(new MQ.RideScene(p.map, it.value, () => {
-              MQ.player.x = 13; MQ.player.y = 3; MQ.player.dir = 'down';
+              const ts = MQ.MAPS[it.value].trainSpawn || { x: 13, y: 3 };
+              MQ.player.x = ts.x; MQ.player.y = ts.y; MQ.player.dir = 'down';
               this.enterMap(it.value);
               this.tb.open(MQ.ctx, `«Estación ${MQ.MAPS[it.value].name.replace('Estación ', '')}. Recuerde: deje salir antes de entrar.»`, null, 'Voz del Metro');
             }));

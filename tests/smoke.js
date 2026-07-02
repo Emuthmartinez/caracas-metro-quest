@@ -31,7 +31,7 @@ const sandbox = {
 sandbox.globalThis = sandbox;
 vm.createContext(sandbox);
 
-for (const f of ['core.js', 'audio.js', 'gamedata.js', 'art.js', 'dex.js', 'sprite-manifest.js', 'sprites.js', 'world.js', 'battle.js', 'overworld.js', 'main.js']) {
+for (const f of ['core.js', 'audio.js', 'gamedata.js', 'art.js', 'dex.js', 'sprite-manifest.js', 'sprites.js', 'world.js', 'world2.js', 'battle.js', 'overworld.js', 'main.js']) {
   const code = fs.readFileSync(path.join(__dirname, '..', 'js', f), 'utf8');
   vm.runInContext(code, sandbox, { filename: f });
 }
@@ -553,6 +553,65 @@ section('Overworld');
   w.draw(ctxStub);
   w.press('b');
   ok(w.mapView === false, 'el mapa se cierra con B');
+}
+
+// ---- 5b. la red completa (world2: 88 mapas del world bible) ----
+section('Red');
+{
+  ok(Object.keys(MQ.MAPS).length >= 90, `la red completa está montada (${Object.keys(MQ.MAPS).length} mapas)`);
+  // regiones representadas
+  for (const mid of ['st_elsilencio', 'st_zoologico', 'st_larinconada', 'st_zonarental', 'gh_miranda_l5', 'sf_cumbre', 'cb_sanagustin', 'st_sanantonio'])
+    ok(MQ.MAPS[mid], `mapa ${mid} existe`);
+  // toda reja usa una bandera conocida
+  const KNOWN_FLAGS = new Set(['starter', 'ficha1', 'ficha2', 'ficha3', 'ficha4', 'ficha5', 'ficha6', 'ficha7', 'ficha8',
+    'fichas4', 'fichas5', 'fichas7', 'fichas8', 'tren', 'fichaoro', 'consejo', 'ending',
+    'oficio_machete', 'oficio_nado', 'oficio_demolicion', 'oficio_teleferico']);
+  for (const [mid, m] of Object.entries(MQ.MAPS))
+    for (const w of m.warps || [])
+      if (w.requires) ok(KNOWN_FLAGS.has(w.requires), `${mid}: reja usa bandera conocida (${w.requires})`);
+  // las líneas del tren: cada parada es una estación real
+  ok(MQ.LINES && Object.keys(MQ.LINES).length >= 6, 'las 6 líneas del tren existen');
+  for (const [lid, line] of Object.entries(MQ.LINES))
+    for (const s of line.stops) ok(MQ.MAPS[s] && MQ.MAPS[s].station, `línea ${lid}: parada ${s} es estación`);
+  // banderas derivadas de fichas
+  MQ.player = MQ.newPlayer('T', 'player');
+  ['ficha1', 'ficha2', 'ficha3', 'ficha4', 'ficha5', 'ficha6', 'ficha7', 'ficha8'].forEach((f) => MQ.setFlag(f));
+  ok(MQ.player.flags.fichas4 && MQ.player.flags.fichas5 && MQ.player.flags.fichas7 && MQ.player.flags.fichas8,
+    'las 8 fichas derivan fichas4/5/7/8');
+  // el transfer Capitolio -> El Silencio se cruza a pie con 4 fichas
+  MQ.player = MQ.newPlayer('T', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 20)];
+  MQ.player.flags.starter = true;
+  ['ficha1', 'ficha2', 'ficha3', 'ficha4'].forEach((f) => MQ.setFlag(f));
+  MQ.player.map = 'capitolio'; MQ.player.x = 18; MQ.player.y = 9; MQ.player.dir = 'down';
+  MQ.scenes.length = 0;
+  const w2 = new MQ.WorldScene();
+  MQ.pushScene(w2);
+  MQ.input.held.down = true;
+  for (let i = 0; i < 300 && MQ.player.map === 'capitolio'; i++) w2.update();
+  MQ.input.held.down = false;
+  ok(MQ.player.map === 'st_elsilencio', `transfer a El Silencio funciona (=${MQ.player.map})`);
+  // el tren de la Línea 2 ofrece destinos visitados
+  MQ.player.visited.st_elsilencio = true; MQ.player.visited.st_capuchinos = true;
+  const ts = MQ.MAPS.st_elsilencio.trainSpawn;
+  MQ.player.x = ts.x; MQ.player.y = ts.y;
+  w2.openTrain();
+  ok(!!w2.menu && w2.menu.items.some((it) => it.value === 'st_capuchinos'), 'el tren de la Línea 2 ofrece Capuchinos');
+  w2.press('b');
+  // el módulo de atención de una estación generada cura
+  MQ.player.map = 'st_elsilencio';
+  w2.enterMap('st_elsilencio');
+  MQ.player.x = 3; MQ.player.y = 7; MQ.player.dir = 'up';
+  MQ.player.party[0].hp = 1;
+  w2.interact();
+  for (let i = 0; i < 60 && (w2.tb.active || w2.script); i++) { w2.update(); if (w2.tb.active) w2.press('a'); }
+  ok(MQ.player.party[0].hp === MQ.player.party[0].maxhp, 'el Doctorcito de El Silencio cura');
+  // una reja de oficio niega el paso
+  MQ.player.map = 'st_altamira' in MQ.MAPS ? MQ.player.map : MQ.player.map;
+  MQ.player.map = 'altamira';
+  w2.enterMap('altamira');
+  const door = MQ.MAPS.altamira.warps.find((w) => w.to === 'sf_puertaavila');
+  ok(door && door.requires === 'oficio_machete', 'la Puerta del Ávila pide el machete');
 }
 
 // scripts de historia existen y devuelven listas

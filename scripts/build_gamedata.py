@@ -18,6 +18,7 @@ creatures = load("creatures/creatures.json")
 moves = load("moves/moves.json")
 abilities = load("abilities/abilities.json")
 encounters = load("encounters/encounters.json")
+maps = load("maps/maps.json")
 
 data = {
     "creatures": creatures["creatures"],
@@ -28,6 +29,20 @@ data = {
         "static": encounters["static"],
         "gifts": encounters["gifts"],
         "roaming": encounters["roaming"],
+    },
+    "maps": {
+        "canon_map": maps["canon_map"],
+        "list": [
+            {
+                "id": m["id"], "type": m["type"], "region": m["region"],
+                "name_es": m["name_es"], "name_en": m["name_en"],
+                "dims": m["dimensions"],
+                "connections": m["connections"],
+                "features": m["features"],
+                "encounters": m["encounters"],
+            }
+            for m in maps["maps"]
+        ],
     },
 }
 
@@ -43,4 +58,4 @@ with open(out, "w", encoding="utf-8") as f:
 size = os.path.getsize(out)
 print(f"wrote js/gamedata.js ({size//1024} KB): "
       f"{len(data['creatures'])} creatures, {len(data['moves'])} moves, "
-      f"{len(data['abilities'])} abilities, {len(data['encounters']['tables'])} tables")
+      f"{len(data['abilities'])} abilities, {len(data['encounters']['tables'])} tables, {len(data['maps']['list'])} maps")
