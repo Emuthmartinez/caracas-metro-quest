@@ -374,4 +374,144 @@
         win: 'Está bien, está bien... Pasa. Total, últimamente el jefe ni mira las botellas.',
         lose: 'Sin recibo no hay reclamo, chamo.' } },
     { x: 12, y: 6, look: 'senora', dir: 'down', name: 'el Coleccionista', showIf: 't_bachaq1', script: 'coleccionista' });
+
+  // ---- el post-juego (world bible §7-8) --------------------------------------------
+  // La Torre (Independencia): tres duelos seguidos, sin curarse entre medio.
+  Object.assign(MQ.SCRIPTS, {
+    'torre:reto': () => [
+      { say: ['la Relojera', 'Bienvenido a LA TORRE. Tres retadores, uno detrás del otro, sin Doctorcito entre medio. El reloj de arriba lleva la cuenta desde 1953.'] },
+      { choice: { title: '¿Aceptar el reto?', options: [
+        { label: '¡Que suene el reloj!', script: [
+          { battle: { trainer: { id: 'torre1', cls: 'Retador de la Torre', name: 'Ávido', money: 0,
+            team: [['reyzamuro', 60], ['cablebra', 60], ['hallacon', 61]],
+            intro: 'Piso uno. Sin calentamiento.', win: 'Sube.', lose: 'El reloj no espera.' } },
+            winScript: [
+              { battle: { trainer: { id: 'torre2', cls: 'Retadora de la Torre', name: 'Milagros', money: 0,
+                team: [['guacamayon', 62], ['elpabellon', 62], ['dientona', 63]],
+                intro: 'Piso dos. Aquí se acaban los turistas.', win: 'El último piso es tuyo.', lose: 'Hasta aquí llegó tu cuerda.' } },
+                winScript: [
+                  { battle: { trainer: { id: 'torre3', cls: 'Guardián del Reloj', name: 'el Puntual', money: 3000,
+                    team: [['rabipelado', 64], ['matapalo', 64], ['arpaviva', 65], ['waraira', 66, 'tajadaplatano']],
+                    intro: 'Piso tres. Yo le doy cuerda al reloj desde antes del Metro. A ver si llegas puntual a tu propia victoria.',
+                    win: 'Puntual. La Torre te reconoce: llévate esto.', lose: 'Llegaste tarde. Como casi todos.' } },
+                    winScript: [
+                      { give: { item: 'estampa', n: 3 } },
+                      { give: { item: 'cariaquitodoble', n: 2 } },
+                      { give: { item: 'morocota', n: 1 } },
+                      { sfx: 'victory' },
+                      { say: ['la Relojera', 'Tres pisos, cero excusas. Vuelve cuando quieras: el reloj siempre tiene cuerda pa\' otra ronda.'] },
+                      { healParty: true },
+                      { fn: () => MQ.save(true) },
+                    ] },
+                ] },
+            ] },
+        ] },
+        { label: 'Hoy no', script: [{ say: ['la Relojera', 'El reloj sabe esperar. Es lo único que sabe hacer.'] }] },
+      ] } },
+    ],
+    // la Tía que Cuida (Caricuao): deja un espanto y ella lo cría con los pasos
+    'tia:cuida': () => {
+      const p = MQ.player;
+      if (p.daycare) {
+        const gained = Math.min(Math.floor((p.steps - p.daycare.steps) / 256), 100 - p.daycare.mon.lvl);
+        const cost = 100 + gained * 100;
+        const name = MQ.SPECIES[p.daycare.mon.id].name;
+        return [
+          { say: ['la Tía', `¡Llegaste! ${name} está ${gained > 0 ? `más grande: subió ${gained} nivel${gained === 1 ? '' : 'es'} caminando conmigo` : 'igualito, pero bien comido'}. Son ${cost} bolos de cariño.`] },
+          { choice: { title: `¿Recogerlo (${cost}b)?`, options: [
+            { label: 'Sí, gracias Tía', script: [
+              { fn: () => {
+                if (p.money < cost) return;
+                p.money -= cost;
+                const m = p.daycare.mon;
+                m.lvl = Math.min(100, m.lvl + gained);
+                m.xp = MQ.xpForLevel(m.lvl, MQ.xpGroupOf(m.id));
+                MQ.recalcStats(m);
+                if (p.party.length < 6) p.party.push(m); else p.locker.push(m);
+                p.daycare = null;
+                MQ.save(true);
+              } },
+              { say: ['la Tía', 'Pórtense bien los dos. Y coman, que andan en los huesos.'] },
+            ] },
+            { label: 'Todavía no', script: [{ say: ['la Tía', 'Aquí lo sigo cuidando. Este ya es de la familia.'] }] },
+          ] } },
+        ];
+      }
+      if (MQ.player.party.length < 2) return [
+        { say: ['la Tía', 'Yo te cuido un espanto con gusto, mijo... pero no te vas a quedar solo en la hora fantasma. Trae compañía primero.'] },
+      ];
+      return [
+        { say: ['la Tía', 'Yo crié a siete muchachos y a doce espantos. Déjame uno: yo lo camino, lo consiento y me lo engordo a nivel puro.'] },
+        { choice: { title: '¿Dejar al primero del equipo?', options: [
+          { label: 'Cuídemelo, Tía', script: [
+            { fn: () => {
+              const m = MQ.player.party.shift();
+              MQ.player.daycare = { mon: m, steps: MQ.player.steps || 0 };
+              MQ.save(true);
+            } },
+            { say: ['la Tía', 'Ya está en buenas manos. Camina bastante, que cada paso tuyo también lo cría.'] },
+          ] },
+          { label: 'Mejor no', script: [{ say: ['la Tía', 'Cuando quieras. La puerta de la Tía no tiene candado.'] }] },
+        ] } },
+      ];
+    },
+    // Cheo, ya quedado, entrena contigo en San Antonio cada vez que subas
+    rival5: () => {
+      const counter = { frontinito: 'caribazo', turpialin: 'centellon', cocuyin: 'chiguiral' }[starterOf()] || 'caribazo';
+      return [
+        { say: ['Cheo', 'Primo. Ahora que me quedé, subo aquí los fines de semana a entrenar con la niebla. ¿Le damos?'] },
+        { battle: { trainer: { id: 'cheorematch', cls: 'Tu primo', name: 'Cheo', boss: true, money: 5000,
+          team: [['palomota', 62], ['vagonima', 63, 'cintamorada'], ['reyzamuro', 63], ['elpabellon', 64, 'ajidulce'], ['guacamayon', 65], [counter, 66, 'azabachepulsera']],
+          intro: 'Sin llorar. Ya lloramos aquella vez.',
+          win: 'Cada vez que me ganas, más seguro estoy de que hice bien en quedarme.',
+          lose: 'Hoy gané yo. El páramo me tiene fuerte, primo.' } },
+          winScript: [{ healParty: true }, { fn: () => MQ.save(true) }] },
+      ];
+    },
+  });
+  npcsOf('in_latorre').push({ x: 10, y: 11, look: 'vieja', dir: 'down', name: 'la Relojera', script: 'torre:reto' });
+  npcsOf('st_caricuao').push({ x: 26, y: 8, look: 'senora', dir: 'down', name: 'la Tía que Cuida', script: 'tia:cuida' });
+  npcsOf('st_sanantonio').push({ x: 20, y: 8, look: 'rival', dir: 'down', name: 'Cheo', showIf: 'ending', script: 'rival5' });
+
+  // ---- la gente de las estaciones nuevas (world bible §2-8, una voz por identidad) -----
+  const say = (id, x, look, name, lines) => npcsOf(id).push({ x, y: 8, look, dir: 'down', name, text: lines });
+  say('st_elsilencio', 6, 'senora', 'Señora de las Arcadas',
+    ['Estas torres gemelas fueron las primeras en mirar la ciudad desde arriba. Ahora miran la hora fantasma, que es más entretenida.',
+     'El oeste empieza aquí, mijo. De aquí pa\'llá, el monte se va comiendo las fábricas con paciencia de abuela.']);
+  say('st_capuchinos', 6, 'vieja', 'Beata de la Capilla',
+    ['¿Oyes ese silencio? Es la capilla de arriba, que se cuela por la rejilla. Hasta los espantos bajan la voz.',
+     'Por ese túnel se va a los Teatros... cuando la Línea 4 quiera abrirte. Las puertas de esta ciudad tienen su genio.']);
+  say('st_caricuao', 10, 'chamo', 'Chamo del Parque',
+    ['Caricuao es puro parque y familia. Hasta los rabipelados saludan.',
+     'La Tía que Cuida cría espantos ajenos como propios. El mío volvió gordo y con mejor carácter que yo.']);
+  say('st_ciudaduniversitaria', 6, 'chama', 'Estudiante de Letras',
+    ['La UCV es Patrimonio de la Humanidad, ¿sabías? Las nubes de Calder están ahí arriba, flotando en el Aula Magna.',
+     'Dicen que el Estudiante Eterno sigue inscrito desde el 87. Lo he visto en la cola del comedor. Nunca avanza.']);
+  say('st_labandera', 6, 'buhonero', 'Maletero del Terminal',
+    ['¡La Bandera! De aquí salen los buses a todo el país. El andén de la hora fantasma es el más apretado de la red: hasta los espantos viajan con maleta.',
+     '¿Pa\' dónde va tanta gente? Pa\' donde se pueda, mijo. Y algunos, de vuelta.']);
+  say('st_teatros', 6, 'musico', 'Acomodadora del Municipal',
+    ['El Teatro Municipal guarda su terciopelo a oscuras. La acústica de este andén es un regalo suyo.',
+     'La hermana de la Coplera enseña por aquí los movimientos definitivos de los iniciales. Solo a quien de verdad canta con su espanto.']);
+  say('st_nuevocirco', 6, 'obrero', 'Cronista del Redondel',
+    ['El Nuevo Circo fue plaza de toros, terminal, refugio... Ahora es de los bachaqueros de recuerdos. Toda ruina consigue inquilino.',
+     'Dicen que el jefe de ellos ni vende ya. Solo colecciona. Eso es peor.']);
+  say('st_parquecentral', 12, 'chama', 'Vecina de las Torres',
+    ['Vivo en el piso 40. Cuando hay apagón, la Ingeniera sube por las escaleras a encender la ciudad a mano.',
+     'Del techo sale el Metrocable a San Agustín: la cuna de la salsa, mijo. Arriba se rumbea hasta en la niebla.']);
+  say('st_bellomonte', 6, 'operador', 'Operador de Medio Turno',
+    ['Bello Monte: la estación que quedó a medio hacer. Las luces prenden, los trenes no llegan. Casi.',
+     'De aquí pa\'bajo ya no es Metro: es memoria con rieles. Persígnate o silba, lo que te salga primero.']);
+  say('st_aliprimera', 6, 'musico', 'Cantor del Páramo',
+    ['Alí decía que los que mueren por la vida no pueden llamarse muertos. Por eso esta línea canta bajito.',
+     'De aquí subiendo, la niebla cuenta a los que pasan. No te asustes si te saluda por tu nombre.']);
+  say('st_independencia', 10, 'vieja', 'Portera de la Torre',
+    ['La Torre del reloj lleva la cuenta de todo: las horas, los retos y los que se fueron sin despedirse.',
+     'Tres pisos, tres retadores. El de arriba le da cuerda al tiempo. Literal.']);
+  say('st_zoologico', 26, 'chamo', 'Niño del Safari',
+    ['¡En el safari vi un güío ASÍ de grande! Bueno, era una manguera. Pero AL LADO había un güío.',
+     'El Baquiano deja entrar a la hora fantasma porque dice que los animales prefieren visitas que no griten.']);
+  say('gh_lasmercedes', 8, 'senora', 'la que Cocina',
+    ['Esta cocina la dejó una familia entera cuando se fue. Yo le mantengo el fuego bajito, por si vuelven.',
+     'El Tren pasa cada noche y deja el olor a hallaca recién hecha. Nadie la ve, pero todos la olemos.']);
 })();

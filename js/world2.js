@@ -142,6 +142,12 @@
   // ---- construcción -------------------------------------------------------------
   const THEME = { station: 'metro', tunnel: 'tunel', surface: 'calle', cable: 'calle', ghost: 'ghost', interior: 'casa' };
   const MUSIC = { station: 'town', tunnel: 'tunnel', surface: 'calle', cable: 'calle', ghost: 'ghost', interior: 'town' };
+  // cada región suena distinto (Fase 8-lite): pista propia por línea/zona
+  const REGION_MUSIC = {
+    linea2: 'oeste', linea3: 'sur', linea4: 'teatros', linea5: 'ghost',
+    losteques: 'paramo', avila: 'avila',
+    metrocable_sanagustin: 'cable', metrocable_mariche: 'cable',
+  };
   const NEW_SHOP = ['ficha', 'fichaferia', 'fichaplus', 'ficharayada', 'fichamadrugadora', 'malta', 'cafe', 'golfeado', 'aguacoco', 'cocada', 'sancocho', 'azabachedoble', 'contrafirmada'];
 
   // conexiones por mapa, deduplicadas por destino quedándose con la reja definida
@@ -198,7 +204,8 @@
 
     const featWeather = m.features.find((f) => f.kind === 'weather_zone');
     generated[m.id] = {
-      id: m.id, name: m.name_es, theme: THEME[m.type], music: MUSIC[m.type],
+      id: m.id, name: m.name_es, theme: THEME[m.type],
+      music: REGION_MUSIC[m.region] || MUSIC[m.type],
       station: m.type === 'station', region: m.region, kind: m.type,
       grid: g, npcs: [], triggers: [], warps: [],
       enc: null, encRef: m.encounters || undefined,

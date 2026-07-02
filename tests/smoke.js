@@ -734,7 +734,45 @@ section('Gente');
 }
 
 // scripts de historia existen y devuelven listas
-for (const k of ['intro', 'abuela', 'heal', 'rival1', 'rival2', 'rival3', 'rival4', 'altar', 'trenfantasma', 'trenpasa', 'coleccionista']) {
+// la Tía que Cuida: dejar, caminar y recoger más grande
+{
+  MQ.player = MQ.newPlayer('T', 'player');
+  MQ.player.party = [MQ.makeMon('chigui', 20), MQ.makeMon('frontinito', 18)];
+  MQ.player.flags.starter = true;
+  MQ.player.money = 2000;
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  w.enterMap('st_caricuao');
+  const tia = MQ.MAPS.st_caricuao.npcs.find((n) => n.script === 'tia:cuida');
+  const talk = () => {
+    MQ.player.x = tia.x; MQ.player.y = tia.y + 1; MQ.player.dir = 'up';
+    w.interact();
+    for (let i = 0; i < 200 && (w.tb.active || w.script || w.menu); i++) {
+      w.update();
+      if (w.tb.active) { w.press('a'); continue; }
+      if (w.menu) { w.press('a'); continue; }
+    }
+  };
+  talk();
+  ok(!!MQ.player.daycare && MQ.player.party.length === 1, 'la Tía recibe al espanto');
+  MQ.player.steps = (MQ.player.steps || 0) + 1024; // cuatro niveles de caminata
+  talk();
+  ok(!MQ.player.daycare && MQ.player.party.length === 2, 'la Tía lo devuelve');
+  ok(MQ.player.party[1].lvl === 24, `el espanto creció con los pasos (N${MQ.player.party[1].lvl})`);
+  // el Carretón ronda Los Teques tras el final
+  MQ.player.flags.ending = true;
+  const lt = MQ.MAPS['tn_independencia__carrizal'];
+  ok(lt.region === 'losteques', 'los túneles del páramo conocen su región');
+  // la Torre y el rematch de Cheo están en su sitio
+  ok(MQ.MAPS.in_latorre.npcs.some((n) => n.script === 'torre:reto'), 'la Relojera espera en la Torre');
+  ok(MQ.MAPS.st_sanantonio.npcs.some((n) => n.script === 'rival5' && n.showIf === 'ending'), 'Cheo entrena en San Antonio tras el final');
+  // pistas musicales por región
+  for (const [mid, track] of [['st_elsilencio', 'oeste'], ['st_labandera', 'sur'], ['st_teatros', 'teatros'], ['st_carrizal', 'paramo'], ['cb_laceiba', 'cable'], ['sf_neblina', 'avila']])
+    ok(MQ.MAPS[mid].music === track, `${mid} suena a ${track} (=${MQ.MAPS[mid].music})`);
+}
+
+for (const k of ['intro', 'abuela', 'heal', 'rival1', 'rival2', 'rival3', 'rival4', 'rival5', 'altar', 'trenfantasma', 'trenpasa', 'coleccionista', 'torre:reto', 'tia:cuida']) {
   MQ.player = MQ.newPlayer('T', 'player');
   MQ.player.party = [MQ.makeMon('frontinito', 5)];
   const s = MQ.SCRIPTS[k]();

@@ -453,80 +453,125 @@
           onCancel: () => { this.menu = null; this.mapBehind = false; } });
     }
 
-    // ---- el mapa del Metro (como el Town Map de los clásicos) -----------------------
+    // ---- el mapa de la RED (como el Town Map de los clásicos, pero criollo) ---------
     drawMetroMap(ctx) {
       const p = MQ.player;
-      const stops = MQ.TRAIN_STOPS;
-      const SHORT = {
-        propatria: 'Propatria', canoamarillo: 'C. Amarillo', capitolio: 'Capitolio',
-        bellasartes: 'B. Artes', plazavenezuela: 'Pza. Vzla', sabanagrande: 'S. Grande',
-        chacaito: 'Chacaíto', altamira: 'Altamira', petare: 'Petare',
-      };
       MQ.panel(ctx, 8, 8, MQ.W - 16, MQ.H - 16);
       ctx.font = MQ.FONT_B; ctx.textBaseline = 'top';
       ctx.fillStyle = '#f5a623';
-      ctx.fillText('METRO DE CARACAS · LÍNEA 1', 24, 22);
-      ctx.fillStyle = '#3a3242'; ctx.fillRect(24, 33, MQ.W - 48, 2);
+      ctx.fillText('RED DEL METRO · HORA FANTASMA', 24, 20);
+      ctx.fillStyle = '#3a3242'; ctx.fillRect(24, 31, MQ.W - 48, 2);
 
-      const x0 = 34, x1 = MQ.W - 46, ly = 122;
-      const sx = (i) => x0 + ((x1 - x0) * i) / (stops.length - 1);
-      // la línea 1, naranja como la franja de los vagones
-      ctx.fillStyle = '#e85a1a'; ctx.fillRect(x0, ly - 2, x1 - x0, 4);
-      // ramales a pie (lugares arriba/abajo de cada estación)
-      const SPURS = [
-        { at: 0, dy: -22, label: '⌂', maps: ['casa'] },
-        { at: 1, dy: -22, label: 'Calvario', maps: ['calvario'] },
-        { at: 4, dy: 26, label: 'Fuente', maps: ['fuente'] },
-        { at: 8, dy: -22, label: 'Mercado', maps: ['mercado'] },
-      ];
-      ctx.font = MQ.FONT;
-      for (const s of SPURS) {
-        const x = sx(s.at);
-        ctx.strokeStyle = '#5a5a72'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(x, ly); ctx.lineTo(x, ly + s.dy); ctx.stroke();
-        ctx.fillStyle = s.maps.includes(p.map) ? '#f5d76e' : '#8a8aa0';
-        const lw = ctx.measureText(s.label).width;
-        ctx.fillText(s.label, Math.min(x - 4, MQ.W - 28 - lw), ly + s.dy + (s.dy < 0 ? -9 : 3));
-      }
-      // la Línea Fantasma, punteada y verdosa (solo si ya sabes de ella)
-      if (p.flags.fichas4 || p.flags.tren) {
-        const x = sx(4);
-        ctx.strokeStyle = '#7affc9'; ctx.lineWidth = 2;
-        ctx.setLineDash([3, 4]);
-        ctx.beginPath(); ctx.moveTo(x, ly); ctx.lineTo(x, ly + 52); ctx.stroke();
+      // — esquema de la red: cada línea con su color de plano de pared —
+      const L1 = MQ.LINES ? MQ.LINES.linea1.stops : MQ.TRAIN_STOPS;
+      const x0 = 32, x1 = MQ.W - 40, l1y = 66;
+      const sx = (i) => x0 + ((x1 - x0) * i) / (L1.length - 1);
+      const POS = {};
+      L1.forEach((s, i) => { POS[s] = [sx(i), l1y]; });
+      const capX = POS.capitolio[0], pvX = POS.plazavenezuela[0];
+      // L2 baja del Capitolio y corre al oeste
+      const l2y = 150;
+      const L2 = ['st_elsilencio', 'st_capuchinos', 'st_layaguara', 'st_caricuao', 'st_lasadjuntas'];
+      L2.forEach((s, i) => { POS[s] = [capX - 4 - i * 26, l2y]; });
+      POS.st_zoologico = [POS.st_caricuao[0], l2y + 30];
+      // L3 baja de Plaza Venezuela
+      const L3 = ['st_ciudaduniversitaria', 'st_labandera', 'st_elvalle', 'st_larinconada'];
+      L3.forEach((s, i) => { POS[s] = [pvX + 4, l1y + 34 + i * 26]; });
+      // L4 corre al este desde Capuchinos
+      const L4 = ['st_teatros', 'st_nuevocirco', 'st_parquecentral', 'st_zonarental'];
+      L4.forEach((s, i) => { POS[s] = [POS.st_capuchinos[0] + 34 + i * 40, l2y + 46] });
+      // L5 fantasma, en diagonal desde Zona Rental
+      const L5 = ['st_bellomonte', 'gh_lasmercedes', 'gh_tamanaco', 'gh_chuao', 'gh_bellocampo', 'gh_miranda_l5'];
+      L5.forEach((s, i) => { POS[s] = [POS.st_zonarental[0] + 14 + i * 13, l2y + 60 - i * 4]; });
+      // Los Teques se va del valle desde Las Adjuntas
+      const LT = ['st_aliprimera', 'st_guaicaipuro', 'st_independencia', 'st_carrizal', 'st_sanantonio'];
+      LT.forEach((s, i) => { POS[s] = [POS.st_lasadjuntas[0] - 6 - i * 11, l2y + 24 + i * 12]; });
+
+      const line = (pts, color, dash) => {
+        ctx.strokeStyle = color; ctx.lineWidth = 3;
+        if (dash) ctx.setLineDash(dash);
+        ctx.beginPath();
+        pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+        ctx.stroke();
         ctx.setLineDash([]);
-        ctx.fillStyle = ['zonarental', 'lineafantasma'].includes(p.map) ? '#7affc9' : '#3a8a6a';
-        ctx.fillText('Línea 5', x + 6, ly + 46);
-      }
-      // estaciones
-      const now = performance.now();
-      stops.forEach((s, i) => {
-        const x = sx(i);
+      };
+      // trazos
+      line([[x0, l1y], [x1, l1y]], '#e85a1a');
+      line([[capX, l1y], [capX, l2y], [POS.st_lasadjuntas[0], l2y]], '#5e8b3f');
+      line([[POS.st_caricuao[0], l2y], POS.st_zoologico], '#5e8b3f');
+      line([[pvX, l1y], [pvX + 4, POS.st_larinconada[1]]], '#4a90d9');
+      line([[POS.st_capuchinos[0], l2y], [POS.st_capuchinos[0], l2y + 46], [POS.st_zonarental[0], l2y + 46]], '#9a5ad9');
+      if (p.flags.fichas4 || p.flags.consejo || p.flags.tren)
+        line([POS.st_zonarental, POS.gh_miranda_l5], '#7affc9', [3, 4]);
+      if (p.flags.tren)
+        line([POS.st_lasadjuntas, POS.st_sanantonio], '#8a8aa0', [2, 3]);
+      // el Ávila vigila el norte
+      ctx.strokeStyle = '#3a5a3f'; ctx.lineWidth = 2;
+      const avX = POS.altamira[0];
+      ctx.beginPath();
+      ctx.moveTo(avX - 26, 52); ctx.lineTo(avX - 8, 40); ctx.lineTo(avX + 6, 50);
+      ctx.lineTo(avX + 18, 42); ctx.lineTo(avX + 32, 52);
+      ctx.stroke();
+
+      // — estaciones: cuadrito brillante si la conoces —
+      ctx.font = MQ.FONT;
+      for (const [s, [x, y]] of Object.entries(POS)) {
         const seen = p.visited[s];
-        ctx.fillStyle = '#101020'; ctx.fillRect(x - 5, ly - 5, 10, 10);
+        ctx.fillStyle = '#101020'; ctx.fillRect(x - 4, y - 4, 8, 8);
         ctx.fillStyle = seen ? '#f2ead8' : '#2a2438';
-        ctx.fillRect(x - 3, ly - 3, 6, 6);
-        // nombre en diagonal, como los mapas de pared
+        ctx.fillRect(x - 2, y - 2, 4, 4);
+      }
+      // nombres de la Línea 1 en diagonal, como los planos de pared
+      const SHORT = {
+        propatria: 'Propatria', canoamarillo: 'C.Amarillo', capitolio: 'Capitolio',
+        bellasartes: 'B.Artes', plazavenezuela: 'Pza.Vzla', sabanagrande: 'S.Grande',
+        chacaito: 'Chacaíto', altamira: 'Altamira', petare: 'Petare', st_paloverde: 'P.Verde',
+      };
+      L1.forEach((s, i) => {
+        const [x] = POS[s];
         ctx.save();
-        ctx.translate(x + 2, ly - (i % 2 ? 34 : 14));
+        ctx.translate(x + 2, l1y - (i % 2 ? 26 : 10));
         ctx.rotate(-0.7);
-        ctx.fillStyle = seen ? '#e8dfc8' : '#5a5a72';
-        ctx.fillText(seen ? SHORT[s] : '???', 0, 0);
+        ctx.fillStyle = p.visited[s] ? '#e8dfc8' : '#5a5a72';
+        ctx.fillText(p.visited[s] ? SHORT[s] : '???', 0, 0);
         ctx.restore();
       });
-      // ¿dónde estás? (estación, ramal o túnel intermedio)
-      let here = stops.indexOf(p.map);
-      if (here < 0) {
-        const spur = SPURS.find((s) => s.maps.includes(p.map));
-        if (spur) here = spur.at;
+      // etiquetas de línea
+      ctx.fillStyle = '#5e8b3f'; ctx.fillText('L2', x0 - 4, l2y - 12);
+      ctx.fillText('Zoo', POS.st_zoologico[0] + 6, POS.st_zoologico[1] - 3);
+      ctx.fillStyle = '#4a90d9'; ctx.fillText('L3', pvX + 10, POS.st_larinconada[1] - 6);
+      ctx.fillStyle = '#9a5ad9'; ctx.fillText('L4', POS.st_zonarental[0] - 8, l2y + 50);
+      if (p.flags.fichas4 || p.flags.consejo || p.flags.tren) {
+        ctx.fillStyle = '#7affc9'; ctx.fillText('L5', POS.gh_miranda_l5[0] - 4, POS.gh_miranda_l5[1] + 8);
       }
-      let hx = here >= 0 ? sx(here) : null;
-      const tn = /^tunel(\d+)$/.exec(p.map);
-      if (tn) hx = (sx(tn[1] - 1) + sx(+tn[1])) / 2;
-      if (p.map === 'zonarental' || p.map === 'lineafantasma') hx = sx(4);
+      if (p.flags.tren) {
+        ctx.fillStyle = '#8a8aa0'; ctx.fillText('Los Teques', POS.st_sanantonio[0] - 18, POS.st_sanantonio[1] + 8);
+      }
+
+      // — ¿dónde estás? —
+      let hx = null, hy = null;
+      if (POS[p.map]) { [hx, hy] = POS[p.map]; }
+      else {
+        const tn = /^tunel(\d+)$/.exec(p.map);
+        if (tn) { hx = (POS[L1[tn[1] - 1]][0] + POS[L1[+tn[1]]][0]) / 2; hy = l1y; }
+        else if (p.map === 'casa') { [hx, hy] = POS.propatria; }
+        else if (p.map === 'calvario') { [hx, hy] = POS.canoamarillo; }
+        else if (p.map === 'fuente' || p.map === 'zonarental' || p.map === 'lineafantasma') { [hx, hy] = POS.plazavenezuela; }
+        else if (p.map === 'mercado') { [hx, hy] = POS.petare; }
+        else {
+          // aproxima por la región del mapa generado
+          const m = MQ.MAPS[p.map] || {};
+          const R = { linea2: POS.st_layaguara, linea3: POS.st_labandera, linea4: POS.st_nuevocirco,
+            linea5: POS.gh_chuao, losteques: POS.st_independencia, avila: [avX, 46],
+            metrocable_sanagustin: POS.st_parquecentral, metrocable_mariche: POS.st_paloverde,
+            superficie: POS[p.map === 'sf_bulevar' ? 'sabanagrande' : 'bellasartes'] };
+          if (m.region && R[m.region]) { [hx, hy] = R[m.region]; }
+        }
+      }
+      const now = performance.now();
       if (hx !== null && (now / 400 | 0) % 2) {
         ctx.fillStyle = '#f5d76e'; ctx.font = MQ.FONT_B;
-        ctx.fillText('▼', hx - 4, ly - 14);
+        ctx.fillText('▼', hx - 4, hy - 13);
       }
       // leyenda
       ctx.font = MQ.FONT;
@@ -816,6 +861,14 @@
       // encuentro salvaje: la pantalla parpadea y arranca la música antes del combate.
       // Tablas nuevas (data/encounters vía encRef) o las clásicas del mapa (enc).
       if (ch !== '~' && ch !== 'g') return;
+      // el Carretón ronda Los Teques en el post-juego: se oye antes de verse
+      if (this.map.region === 'losteques' && p.flags.ending && !p.dexCaught.carreton && Math.random() < 0.05) {
+        MQ.audio.sfx('whistle');
+        this.encFlash = 22;
+        this.pendingEnc = { id: 'carreton', lvl: 65 };
+        MQ.audio.music('boss');
+        return;
+      }
       const table = this.map.encRef && MQ.DATA && MQ.DATA.encounters.tables[this.map.encRef];
       const enc = this.map.enc;
       let picked = null;
