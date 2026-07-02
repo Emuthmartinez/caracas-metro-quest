@@ -472,7 +472,7 @@
       // L2 baja del Capitolio y corre al oeste
       const l2y = 150;
       const L2 = ['st_elsilencio', 'st_capuchinos', 'st_layaguara', 'st_caricuao', 'st_lasadjuntas'];
-      L2.forEach((s, i) => { POS[s] = [capX - 4 - i * 26, l2y]; });
+      L2.forEach((s, i) => { POS[s] = [capX - 4 - i * 15, l2y]; });
       POS.st_zoologico = [POS.st_caricuao[0], l2y + 30];
       // L3 baja de Plaza Venezuela
       const L3 = ['st_ciudaduniversitaria', 'st_labandera', 'st_elvalle', 'st_larinconada'];
@@ -485,7 +485,7 @@
       L5.forEach((s, i) => { POS[s] = [POS.st_zonarental[0] + 14 + i * 13, l2y + 60 - i * 4]; });
       // Los Teques se va del valle desde Las Adjuntas
       const LT = ['st_aliprimera', 'st_guaicaipuro', 'st_independencia', 'st_carrizal', 'st_sanantonio'];
-      LT.forEach((s, i) => { POS[s] = [POS.st_lasadjuntas[0] - 6 - i * 11, l2y + 24 + i * 12]; });
+      LT.forEach((s, i) => { POS[s] = [Math.max(14, POS.st_lasadjuntas[0] - 2 - i * 3), l2y + 22 + i * 11]; });
 
       const line = (pts, color, dash) => {
         ctx.strokeStyle = color; ctx.lineWidth = 3;
@@ -537,7 +537,7 @@
         ctx.restore();
       });
       // etiquetas de línea
-      ctx.fillStyle = '#5e8b3f'; ctx.fillText('L2', x0 - 4, l2y - 12);
+      ctx.fillStyle = '#5e8b3f'; ctx.fillText('L2', POS.st_lasadjuntas[0] - 6, l2y - 14);
       ctx.fillText('Zoo', POS.st_zoologico[0] + 6, POS.st_zoologico[1] - 3);
       ctx.fillStyle = '#4a90d9'; ctx.fillText('L3', pvX + 10, POS.st_larinconada[1] - 6);
       ctx.fillStyle = '#9a5ad9'; ctx.fillText('L4', POS.st_zonarental[0] - 8, l2y + 50);
@@ -545,7 +545,7 @@
         ctx.fillStyle = '#7affc9'; ctx.fillText('L5', POS.gh_miranda_l5[0] - 4, POS.gh_miranda_l5[1] + 8);
       }
       if (p.flags.tren) {
-        ctx.fillStyle = '#8a8aa0'; ctx.fillText('Los Teques', POS.st_sanantonio[0] - 18, POS.st_sanantonio[1] + 8);
+        ctx.fillStyle = '#8a8aa0'; ctx.fillText('Los Teques', POS.st_sanantonio[0] + 8, POS.st_sanantonio[1] - 3);
       }
 
       // — ¿dónde estás? —
