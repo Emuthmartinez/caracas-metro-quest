@@ -36,8 +36,16 @@ cómo se llama aquí), y guía para extender el mundo sin romper nada.
 | Tornasol (shiny) | 1/4096 (probabilidad moderna, spec §1.4), paleta franja-naranja | ✅ |
 | Repelentes / esencias | Esencia de Azabache (100/200/300 pasos) | ✅ |
 | Intro cinematográfica | `assets/intro.webm/.mp4`, saltable (A: sonido, B: saltar) | ✅ |
-| Red completa (Líneas 2–6, superficie, Ávila) | 88 mapas del world bible | 🔜 M2 |
-| Oficios (HMs), casetes (TMs), Bíper, Torre | specs §2.11/§1.6/§1.7 | 🔜 M2/M3 |
+| Red completa (Líneas 2–6, superficie, Ávila, Metrocables, Los Teques) | 88 mapas del world bible generados de data/maps (js/world2.js), tren multi-línea, mapa de red en pausa | ✅ |
+| 8 medallas + Liga | Jefes 5–8 + el Consejo de la Hora Fantasma + Cheo final (js/world3.js) | ✅ |
+| Oficios (HMs) | 6 tutores con bandera de reja + movimiento de campo | ✅ |
+| Casetes (TMs) | 8 casetes de un solo uso con menú de olvido | ✅ |
+| Recordadora / borrador / name rater | la Coplera · el Olvidadizo · el Padrino | ✅ |
+| Vs Seeker / pesca / bici / safari / guardería | el Bíper · 3 anzuelos · la Patineta · safari de 500 pasos · la Tía que Cuida | ✅ |
+| Premios del dex | el Cronista: 50/100 (Tornasol Bendito 1/1365)/150 fichados | ✅ |
+| Post-game | La Torre, el Carretón errante, estáticos legendarios, Cheo semanal | ✅ |
+| Música por región | 6 pistas nuevas (oeste, sur, teatros, Ávila, cable, páramo) | ✅ |
+| Localización EN | entradas del Cuaderno ES+EN (MENÚ alterna); UI en español por canon (Q12A) | ✅ parcial |
 
 ## Cómo extender el mundo
 
