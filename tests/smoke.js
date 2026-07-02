@@ -772,7 +772,75 @@ section('Gente');
     ok(MQ.MAPS[mid].music === track, `${mid} suena a ${track} (=${MQ.MAPS[mid].music})`);
 }
 
-for (const k of ['intro', 'abuela', 'heal', 'rival1', 'rival2', 'rival3', 'rival4', 'rival5', 'altar', 'trenfantasma', 'trenpasa', 'coleccionista', 'torre:reto', 'tia:cuida']) {
+// ---- 5d. el kit FireRed: casetes, anzuelos, patineta, safari ----
+section('Kit');
+{
+  MQ.player = MQ.newPlayer('T', 'player');
+  MQ.player.party = [MQ.makeMon('chigui', 12)]; // 3 movimientos: hay campo pa'l casete
+  MQ.player.flags.starter = true;
+  MQ.player.bag = { casete01: 1, anzuelobueno: 1, patineta: 1 };
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  const drain = () => { for (let i = 0; i < 30 && w.tb.active; i++) w.press('a'); };
+  // casete: enseña Trancón desde la mochila
+  w.enterMap('propatria');
+  w.openBag();
+  w.press('a'); // casete01
+  w.press('a'); // chigui
+  if (w.menu) w.press('a'); // (por si abre el menú de olvido)
+  drain();
+  w.menu = null;
+  ok(MQ.player.party[0].moves.includes('trancon'), 'el casete enseña Trancón');
+  ok(!MQ.player.bag.casete01, 'la cinta se gasta (un solo uso)');
+  // pesca en Los Caobos (enc.sf_caobos tiene tabla de anzuelos)
+  w.enterMap('sf_caobos');
+  const g = MQ.MAPS.sf_caobos.grid;
+  let spot = null;
+  outer: for (let y = 1; y < g.length - 1; y++)
+    for (let x = 1; x < g[y].length - 1; x++)
+      if ((g[y][x] === 'W' || g[y][x] === 'f') && MQ.WALKABLE.has(g[y + 1][x])) { spot = [x, y]; break outer; }
+  if (!spot) { // el generador no puso agua: siembra una fuente para pescar
+    MQ.MAPS.sf_caobos.grid[10] = g[10].slice(0, 10) + 'f' + g[10].slice(11);
+    spot = [10, 10];
+    MQ.MAPS.sf_caobos.grid[11] = g[11].slice(0, 10) + '.' + g[11].slice(11);
+  }
+  MQ.player.x = spot[0]; MQ.player.y = spot[1] + 1; MQ.player.dir = 'up';
+  drain();
+  w.openBag();
+  {
+    const idx = w.menu.items.findIndex((it) => it.value === 'anzuelobueno');
+    for (let k = 0; k < idx; k++) w.press('down');
+    w.press('a');
+  }
+  ok(w.encFlash > 0 && w.pendingEnc, `el anzuelo engancha algo (${w.pendingEnc && w.pendingEnc.id})`);
+  w.encFlash = 0; w.pendingEnc = null;
+  // patineta: acelera fuera de estaciones
+  w.enterMap('tunel1');
+  drain();
+  w.openBag();
+  {
+    const idx = w.menu.items.findIndex((it) => it.value === 'patineta');
+    for (let k = 0; k < idx; k++) w.press('down');
+    w.press('a');
+  }
+  drain();
+  ok(MQ.player.skating === true, 'la patineta rueda en el túnel');
+  // safari: los pasos se agotan y te devuelven a la taquilla
+  MQ.player.skating = false;
+  MQ.player.safariSteps = 2;
+  w.enterMap('in_safari');
+  MQ.player.x = 5; MQ.player.y = 6;
+  w.arrived();
+  w.arrived();
+  ok(MQ.player.map === 'st_zoologico', `el safari te devuelve al agotar pasos (=${MQ.player.map})`);
+  // la Coplera y el Olvidadizo están en su andén
+  ok(MQ.MAPS.canoamarillo.npcs.some((n) => n.script === 'coplera'), 'la Coplera canta en Caño Amarillo');
+  ok(MQ.MAPS.bellasartes.npcs.some((n) => n.script === 'olvidadizo'), 'el Olvidadizo olvida en Bellas Artes');
+  ok(MQ.MAPS.sabanagrande.npcs.some((n) => n.script === 'regalo:patineta'), 'la patineta se regala en el bulevar');
+}
+
+for (const k of ['intro', 'abuela', 'heal', 'rival1', 'rival2', 'rival3', 'rival4', 'rival5', 'altar', 'trenfantasma', 'trenpasa', 'coleccionista', 'torre:reto', 'tia:cuida', 'coplera', 'olvidadizo', 'padrino', 'regalo:patineta']) {
   MQ.player = MQ.newPlayer('T', 'player');
   MQ.player.party = [MQ.makeMon('frontinito', 5)];
   const s = MQ.SCRIPTS[k]();

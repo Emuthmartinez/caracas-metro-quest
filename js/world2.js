@@ -148,7 +148,7 @@
     losteques: 'paramo', avila: 'avila',
     metrocable_sanagustin: 'cable', metrocable_mariche: 'cable',
   };
-  const NEW_SHOP = ['ficha', 'fichaferia', 'fichaplus', 'ficharayada', 'fichamadrugadora', 'malta', 'cafe', 'golfeado', 'aguacoco', 'cocada', 'sancocho', 'azabachedoble', 'contrafirmada'];
+  const NEW_SHOP = ['ficha', 'fichaferia', 'fichaplus', 'ficharayada', 'fichamadrugadora', 'malta', 'cafe', 'golfeado', 'aguacoco', 'cocada', 'sancocho', 'azabachedoble', 'contrafirmada', 'casete01', 'casete02', 'casete06', 'anzuelobueno'];
 
   // conexiones por mapa, deduplicadas por destino quedándose con la reja definida
   const consOf = (m) => {

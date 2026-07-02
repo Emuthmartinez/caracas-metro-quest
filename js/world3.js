@@ -290,6 +290,7 @@
           { label: '¡De una!', script: [
             { money: -500 },
             { give: { item: 'fichaferia', n: 15 } },
+            { fn: () => { MQ.player.safariSteps = 500; } },
             { sfx: 'catch' },
             { say: [null, 'TAQUILLA: Sus fichas. Recuerde: adentro no se pelea con espantos ajenos y el mango de los tapires no se toca.'] },
           ] },
@@ -511,6 +512,104 @@
   say('st_zoologico', 26, 'chamo', 'Niño del Safari',
     ['¡En el safari vi un güío ASÍ de grande! Bueno, era una manguera. Pero AL LADO había un güío.',
      'El Baquiano deja entrar a la hora fantasma porque dice que los animales prefieren visitas que no griten.']);
+  // ---- la Coplera (recuerda movimientos), el Olvidadizo (los borra) y el Padrino ----
+  Object.assign(MQ.SCRIPTS, {
+    coplera: () => {
+      const p = MQ.player;
+      const options = [];
+      for (let i = 0; i < p.party.length && options.length < 3; i++) {
+        const m = p.party[i];
+        MQ.migrateMon(m);
+        const known = new Set(m.moves);
+        const forgotten = MQ.SPECIES[m.id].learn
+          .filter(([l, mv]) => l <= m.lvl && !known.has(mv))
+          .map(([, mv]) => mv);
+        if (!forgotten.length) continue;
+        options.push({ label: MQ.SPECIES[m.id].name.slice(0, 12), script: [
+          { choice: { title: '¿Qué copla recuerda?', options: forgotten.slice(0, 3).map((mv) => ({
+            label: MQ.MOVES[mv].name.slice(0, 16), script: [
+              { fn: () => {
+                if ((p.bag.cocada || 0) < 1) return;
+                p.bag.cocada--;
+                if (m.moves.length >= 4) m.moves.shift();
+                m.moves.push(mv);
+                m.pp[mv] = MQ.MOVES[mv].pp;
+              } },
+              { sfx: 'lvl' },
+              { say: ['la Coplera', (p.bag.cocada ?? 0) >= 0 ? 'La copla vuelve donde siempre vivió. Dulce el trato: la cocada me la como yo.' : 'Sin cocada no hay copla, mi amor.'] },
+            ] })) } },
+        ] });
+      }
+      if (!(p.bag.cocada > 0)) return [
+        { say: ['la Coplera', 'Yo le recuerdo a tu espanto cualquier copla que haya olvidado... por una COCADA. La memoria trabaja mejor con azúcar.'] },
+      ];
+      if (!options.length) return [
+        { say: ['la Coplera', 'Tus espantos se saben todas sus coplas. Qué orgullo y qué aburrimiento.'] },
+      ];
+      return [
+        { say: ['la Coplera', 'Una cocada, una copla olvidada. ¿A quién le canto?'] },
+        { choice: { title: '¿A quién?', options } },
+      ];
+    },
+    olvidadizo: () => {
+      const p = MQ.player;
+      const options = [];
+      for (let i = 0; i < p.party.length && options.length < 3; i++) {
+        const m = p.party[i];
+        if (m.moves.length < 2) continue;
+        options.push({ label: MQ.SPECIES[m.id].name.slice(0, 12), script: [
+          { choice: { title: '¿Olvidar cuál?', options: m.moves.slice(0, 3).map((mv, mi) => ({
+            label: MQ.MOVES[mv].name.slice(0, 16), script: [
+              { fn: () => { const idx = m.moves.indexOf(mv); if (idx >= 0 && m.moves.length > 1) m.moves.splice(idx, 1); } },
+              { sfx: 'weak' },
+              { say: ['el Olvidadizo', '¿Qué era lo que iba a olvidar? Ah, ya. Ya está. ¿Qué era lo que ya está?'] },
+            ] })) } },
+        ] });
+      }
+      if (!options.length) return [
+        { say: ['el Olvidadizo', 'Un movimiento solo no se olvida, chamo. Eso ya sería negligencia.'] },
+      ];
+      return [
+        { say: ['el Olvidadizo', 'Yo olvido por encargo. Oficios, coplas, deudas... bueno, deudas no. ¿Quién quiere olvidar?'] },
+        { choice: { title: '¿De quién?', options } },
+      ];
+    },
+    padrino: () => {
+      const p = MQ.player;
+      const m = p.party[0];
+      if (!m) return [{ say: ['el Padrino', 'Tráeme un espanto y te lo bautizo como Dios manda.'] }];
+      if ((m.confianza || 0) >= 200) return [
+        { say: ['el Padrino', `${MQ.SPECIES[m.id].name} ya viene bautizado y rebautizado. Ese nombre le queda como anillo.`] },
+      ];
+      return [
+        { say: ['el Padrino', `A ver, a ver... ${MQ.SPECIES[m.id].name}. Buen porte, buena pinta. Yo lo bautizo de nuevo con padrino y todo: eso da suerte.`] },
+        { sfx: 'sparkle' },
+        { fn: () => { m.confianza = Math.min(255, (m.confianza || 70) + 15); MQ.save(true); } },
+        { say: ['el Padrino', '¡Bautizado! Va a andar más seguro de sí mismo. El nombre es el mismo, pero ahora lo lleva con padrino.'] },
+      ];
+    },
+    'regalo:patineta': () => {
+      if (MQ.player.bag.patineta || MQ.player.flags.patineta) return [
+        { say: ['Chamo del Bulevar', '¿Qué tal rueda? Cuídala: esa tabla aprendió sola a esquivar huecos.'] },
+      ];
+      return [
+        { say: ['Chamo del Bulevar', '¡Épale! Te vi caminando toda la Línea 1 a pie. Toma mi patineta vieja: yo ya me compré la nueva.'] },
+        { give: { item: 'patineta', n: 1 } },
+        { flag: 'patineta' },
+        { sfx: 'catch' },
+        { say: ['Chamo del Bulevar', 'Úsala desde la MOCHILA. En los andenes no, que el operador nos regaña a los dos.'] },
+      ];
+    },
+  });
+  MQ.MAPS.canoamarillo.npcs.push({ x: 14, y: 8, look: 'chama', dir: 'down', name: 'la Coplera', script: 'coplera' });
+  MQ.MAPS.bellasartes.npcs.push({ x: 6, y: 8, look: 'vieja', dir: 'down', name: 'el Olvidadizo', script: 'olvidadizo' });
+  MQ.MAPS.capitolio.npcs.push({ x: 10, y: 8, look: 'senora', dir: 'down', name: 'el Padrino', script: 'padrino' });
+  MQ.MAPS.sabanagrande.npcs.push({ x: 12, y: 8, look: 'chamo', dir: 'down', name: 'Chamo del Bulevar', script: 'regalo:patineta' });
+  npcsOf('st_elsilencio').push({ x: 14, y: 8, look: 'buhonero', dir: 'down', name: 'el Chismógrafo',
+    text: ['*hojea un cuaderno grasiento* Doña Bárbara ensaya su mirada en el espejo del torniquete. La Ingeniera duerme con un multímetro bajo la almohada.',
+           'El Pescador guarda todo lo que saca del Guaire en un galpón... menos una cosa, que devolvió sin abrir. La Amazona apuesta contra sus propios caballos y SIEMPRE pierde. Adrede.',
+           '¿El Baquiano? Los animales le hacen la fiesta de cumpleaños ELLOS a ÉL. Todito lo sé, chamo. El chisme es el archivo histórico del pueblo.'] });
+
   say('gh_lasmercedes', 8, 'senora', 'la que Cocina',
     ['Esta cocina la dejó una familia entera cuando se fue. Yo le mantengo el fuego bajito, por si vuelven.',
      'El Tren pasa cada noche y deja el olor a hallaca recién hecha. Nadie la ve, pero todos la olemos.']);

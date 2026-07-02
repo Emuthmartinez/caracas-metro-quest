@@ -409,5 +409,20 @@
     parchita:  { name: 'Parchita',          price: 60, desc: 'Equipada: se la come para quitarse la pava de encima.', hold: 'fruta', cures: 'pav' },
     lechosapicada: { name: 'Lechosa Picada', price: 60, desc: 'Equipada: se la come para que se le pase el mareo.', hold: 'fruta', cures: 'mareo' },
     merey:     { name: 'Merey',             price: 60, desc: 'Equipada: se lo come al estar grave y recupera 10 PS.', hold: 'fruta', heals: 10 },
+    // — casetes (TMs de un solo uso, spec §1.6: "casetes quemados del bulevar") —
+    casete01:  { name: 'Casete 01 · Trancón', price: 400, desc: 'Enseña TRANCÓN (Criollo, atrapa al rival). Un solo uso, como todo casete pirata.', casete: 'trancon' },
+    casete02:  { name: 'Casete 02 · Sablazo', price: 450, desc: 'Enseña SABLAZO (Criollo, drena la mitad del daño). Grabado en vivo.', casete: 'sablazo' },
+    casete03:  { name: 'Casete 03 · Aguante', price: 500, desc: 'Enseña AGUANTE (se restea y bloquea el golpe). Lado B rayado.', casete: 'aguante' },
+    casete04:  { name: 'Casete 04 · La Vaca', price: 600, desc: 'Enseña LA VACA (dobla los bolos del duelo). El favorito del buhonero.', casete: 'lavaca' },
+    casete05:  { name: 'Casete 05 · Salto Ángel', price: 900, desc: 'Enseña SALTO ÁNGEL (Tepuy, se eleva y cae al turno siguiente). Épico.', casete: 'saltoangel' },
+    casete06:  { name: 'Casete 06 · Cardonal', price: 550, desc: 'Enseña CARDONAL (siembra púas en el andén rival). Con espinas y todo.', casete: 'cardonal' },
+    casete07:  { name: 'Casete 07 · Velorio', price: 700, desc: 'Enseña VELORIO (Espanto: paga vida y señala al rival). No apto pa\' pavosos.', casete: 'velorio' },
+    casete08:  { name: 'Casete 08 · Madrugón', price: 400, desc: 'Enseña MADRUGÓN (Criollo, pega primero al amanecer del turno).', casete: 'madrugon' },
+    // — anzuelos (spec §1.8: fuentes, pozos y el Guaire) —
+    anzueloviejo: { name: 'Anzuelo Viejo',  price: 150, desc: 'Pesca en fuentes y pozos. Oxidado pero digno: pica lo común.', rod: 'viejo' },
+    anzuelobueno: { name: 'Anzuelo Bueno',  price: 400, desc: 'Pesca mejor: lo raro del agua se asoma.', rod: 'bueno' },
+    anzuelosuper: { name: 'Anzuelo Súper',  price: 900, desc: 'El anzuelo de los cuentos. Lo que pique, respétalo.', rod: 'super' },
+    // — la patineta (la "bici" criolla, regalo de Sabana Grande) —
+    patineta:  { name: 'La Patineta',       price: 0, desc: 'Rueda al doble de velocidad. En los andenes de estación el operador la mira feo.', patineta: true },
   };
 })();

@@ -649,6 +649,31 @@
           onPick: (it) => {
             const item = MQ.ITEMS[it.value];
             if (item.ball || item.battleStage) { this.menu = null; this.tb.open(MQ.ctx, item.desc); return; }
+            if (item.patineta) {
+              this.menu = null;
+              if (this.map.station || this.map.theme === 'casa') { this.tb.open(MQ.ctx, 'OPERADOR: ¡Aquí no, chamo! La patineta se rueda en túneles y en la calle.'); return; }
+              p.skating = !p.skating;
+              MQ.audio.sfx('sel');
+              this.tb.open(MQ.ctx, p.skating ? 'Te montas en la patineta. El eco del túnel aplaude.' : 'Te bajas de la patineta y la guardas bajo el brazo.');
+              return;
+            }
+            if (item.rod) {
+              this.menu = null;
+              const [fdx, fdy] = DIRS[p.dir];
+              const facing = this.tile(p.x + fdx, p.y + fdy);
+              const table = this.map.encRef && MQ.DATA.encounters.tables[this.map.encRef];
+              const pool = table && table.fishing && table.fishing[item.rod];
+              if (facing !== 'W' && facing !== 'f') { this.tb.open(MQ.ctx, 'Aquí no hay dónde lanzar el anzuelo. Busca agua de verdad.'); return; }
+              if (!pool || !pool.length) { this.tb.open(MQ.ctx, 'Lanzas el anzuelo... nada pica. Esta agua guarda silencio.'); return; }
+              let fr = Math.random() * 100;
+              let sl = pool[0];
+              for (const s of pool) { fr -= s.w; if (fr <= 0) { sl = s; break; } }
+              MQ.audio.sfx('toss');
+              this.encFlash = 22;
+              this.pendingEnc = { id: sl.id, lvl: sl.min + MQ.rand(sl.max - sl.min + 1) };
+              MQ.audio.music('battle');
+              return;
+            }
             if (item.repel) {
               if (p.repelSteps > 0) { this.menu = null; this.tb.open(MQ.ctx, 'Ya llevas una esencia encima. No abuses de la protección.'); return; }
               p.bag[it.value]--; p.repelSteps = item.repel;
@@ -663,6 +688,27 @@
                 onPick: (t) => {
                   const m = p.party[t.value];
                   MQ.migrateMon(m);
+                  if (item.casete) {
+                    const mv = item.casete;
+                    if (m.moves.includes(mv)) { MQ.audio.sfx('bump'); this.menu = null; this.tb.open(MQ.ctx, `${MQ.SPECIES[m.id].name} ya se sabe ${MQ.MOVES[mv].name} de memoria.`); return; }
+                    const teach = () => {
+                      m.pp[mv] = MQ.MOVES[mv].pp; p.bag[it.value]--;
+                      MQ.audio.sfx('lvl'); this.menu = null;
+                      this.tb.open(MQ.ctx, `¡${MQ.SPECIES[m.id].name} aprendió ${MQ.MOVES[mv].name}! La cinta quedó gastada, como manda la piratería.`);
+                    };
+                    if (m.moves.length < 4) { m.moves.push(mv); teach(); return; }
+                    this.menu = new MQ.Menu(
+                      m.moves.map((old, mi) => ({ label: 'Olvidar ' + MQ.MOVES[old].name.slice(0, 14), value: mi }))
+                        .concat([{ label: 'Mejor no', value: -1 }]),
+                      { x: 50, y: 70, w: 170, rows: 5, title: '¿OLVIDAR CUÁL?',
+                        onPick: (s) => {
+                          if (s.value < 0) { this.openBag(); return; }
+                          m.moves[s.value] = mv;
+                          teach();
+                        },
+                        onCancel: () => this.openBag() });
+                    return;
+                  }
                   if (item.hold) {
                     // equipar: si ya carga algo, se intercambia a la mochila
                     p.bag[it.value]--;
@@ -806,7 +852,7 @@
 
       const p = MQ.player;
       if (this.moving > 0) {
-        this.moving -= 2;
+        this.moving -= (MQ.player.skating && !this.map.station ? 4 : 2);
         if (this.moving <= 0) { this.moving = 0; this.arrived(); }
         return;
       }
@@ -826,6 +872,18 @@
     arrived() {
       const p = MQ.player;
       const ch = this.tile(p.x, p.y);
+      // el safari se camina con pasos contados (spec §1.5)
+      if (this.map.id === 'in_safari') {
+        p.safariSteps = (p.safariSteps ?? 500) - 1;
+        if (p.safariSteps <= 0) {
+          p.safariSteps = 0;
+          const back = MQ.MAPS.st_zoologico.warps.find((w) => w.to === 'in_safari');
+          p.x = back ? back.x : 20; p.y = back ? Math.max(1, back.y - 1) : 8;
+          this.enterMap('st_zoologico');
+          this.tb.open(MQ.ctx, 'TAQUILLA: ¡Se acabaron los pasos del safari, mijo! Los animales también descansan. Vuelve cuando quieras.');
+          return;
+        }
+      }
       // la esencia protectora se gasta paso a paso
       if (p.repelSteps > 0) {
         p.repelSteps--;

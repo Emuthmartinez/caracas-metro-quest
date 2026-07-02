@@ -208,7 +208,7 @@
     west: { to: 'tunel2', tx: 28, ty: 4 },
     east: { to: 'tunel3', tx: 1, ty: 4, requires: 'ficha1',
       denied: 'OPERADOR JEFE: Pasando Capitolio la vaina se pone seria, chamo. Sin la Ficha del Centro no te puedo dejar pasar. Habla con la Doña: ella manda aquí.' },
-    shopStock: ['ficha', 'malta', 'cafe'],
+    shopStock: ['ficha', 'malta', 'cafe', 'anzueloviejo'],
     npcs: [
       { x: 13, y: 7, look: 'barbara', dir: 'down', name: 'Doña Bárbara', boss: true,
         trainer: { id: 'boss1', cls: 'Jefa de Estación', boss: true, money: 600, reward: 'ficha1',
@@ -348,7 +348,7 @@
     id: 'sabanagrande', name: 'Estación Sabana Grande', shop: true,
     west: { to: 'tunel5', tx: 28, ty: 4 },
     east: { to: 'tunel6', tx: 1, ty: 4 },
-    shopStock: ['ficha', 'fichaferia', 'fichaplus', 'malta', 'cafe', 'aguacoco', 'golfeado', 'azabache', 'mamon', 'tamarindo'],
+    shopStock: ['ficha', 'fichaferia', 'fichaplus', 'malta', 'cafe', 'aguacoco', 'golfeado', 'azabache', 'mamon', 'tamarindo', 'casete01', 'casete03', 'anzueloviejo'],
     npcs: [
       { x: 8, y: 5, look: 'vieja', dir: 'down', name: 'Ajedrecista Margot',
         text: ['En el bulevar jugamos ajedrez desde antes de que tú nacieras. Una vez La Sayona se sentó a jugar. Le gané. No volvió... creo que por eso penan más por aquí.',
@@ -380,7 +380,7 @@
     id: 'chacaito', name: 'Estación Chacaíto', shop: true,
     west: { to: 'tunel6', tx: 28, ty: 4 },
     east: { to: 'tunel7', tx: 1, ty: 4 },
-    shopStock: ['ficha', 'fichaferia', 'fichaplus', 'ficharayada', 'fichamadrugadora', 'malta', 'cafe', 'aguacoco', 'golfeado', 'cocada', 'azabachedoble', 'sancocho'],
+    shopStock: ['ficha', 'fichaferia', 'fichaplus', 'ficharayada', 'fichamadrugadora', 'malta', 'cafe', 'aguacoco', 'golfeado', 'cocada', 'azabachedoble', 'sancocho', 'casete04', 'casete05', 'casete07', 'casete08', 'anzuelosuper'],
     npcs: [
       { x: 13, y: 7, look: 'sifrina', dir: 'down', name: 'Valentina', boss: true,
         trainer: { id: 'boss3', cls: 'Jefa de Estación', boss: true, money: 1000, reward: 'ficha3',
@@ -451,7 +451,7 @@
     id: 'petare', name: 'Estación Petare', shop: true,
     west: { to: 'tunel8', tx: 32, ty: 4 },
     streets: [{ x: 13, to: 'mercado', tx: 8, ty: 9 }],
-    shopStock: ['ficha', 'fichaferia', 'fichaplus', 'ficharayada', 'fichamadrugadora', 'malta', 'cafe', 'aguacoco', 'golfeado', 'cocada', 'azabachedoble', 'sancocho'],
+    shopStock: ['ficha', 'fichaferia', 'fichaplus', 'ficharayada', 'fichamadrugadora', 'malta', 'cafe', 'aguacoco', 'golfeado', 'cocada', 'azabachedoble', 'sancocho', 'casete04', 'casete05', 'casete07', 'casete08', 'anzuelosuper'],
     npcs: [
       { x: 8, y: 5, look: 'senora', dir: 'down', name: 'Vendedora Maigualida',
         text: ['¡Empanada, empanada, café con leche, teléfono, recargaaa! Petare madruga antes que el sol, mi amor, y se acuesta después que los espantos.',
@@ -480,7 +480,7 @@
       '########D#######',
     ],
     warps: [{ x: 8, y: 10, to: 'petare', tx: 13, ty: 9 }],
-    shopStock: ['ficha', 'fichaferia', 'fichaplus', 'ficharayada', 'fichamadrugadora', 'malta', 'cafe', 'aguacoco', 'golfeado', 'cocada', 'azabachedoble', 'sancocho'],
+    shopStock: ['ficha', 'fichaferia', 'fichaplus', 'ficharayada', 'fichamadrugadora', 'malta', 'cafe', 'aguacoco', 'golfeado', 'cocada', 'azabachedoble', 'sancocho', 'casete04', 'casete05', 'casete07', 'casete08', 'anzuelosuper'],
     enc: null,
     npcs: [
       { x: 7, y: 5, look: 'senora', dir: 'down', name: 'Doña Petra del Mercado', boss: true,
