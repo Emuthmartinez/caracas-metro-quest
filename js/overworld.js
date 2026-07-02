@@ -562,12 +562,20 @@
         { x: 8, y: 8, w: 200, rows: 6, rowH: 18, title: 'EQUIPO',
           onPick: (it) => {
             const i = it.value;
-            this.menu = new MQ.Menu([
-              { label: 'Ver ficha' }, { label: 'Poner de primero' }, { label: 'Atrás' },
-            ], { x: 60, y: 70, w: 150, rows: 3,
+            const sub = [{ label: 'Ver ficha' }, { label: 'Poner de primero' }];
+            if (p.party[i].item) sub.push({ label: 'Quitar objeto' });
+            sub.push({ label: 'Atrás' });
+            this.menu = new MQ.Menu(sub, { x: 60, y: 70, w: 150, rows: sub.length,
               onPick: (s) => {
                 if (s.label === 'Ver ficha') { this.statView = p.party[i]; this.menu = null; }
                 else if (s.label === 'Poner de primero') { p.party.unshift(p.party.splice(i, 1)[0]); this.openParty(); }
+                else if (s.label === 'Quitar objeto') {
+                  const m = p.party[i];
+                  p.bag[m.item] = (p.bag[m.item] || 0) + 1;
+                  this.menu = null;
+                  this.tb.open(MQ.ctx, `Le quitas ${MQ.ITEMS[m.item].name} a ${MQ.SPECIES[m.id].name} y lo guardas.`);
+                  m.item = null;
+                }
                 else this.openParty();
               },
               onCancel: () => this.openParty() });
@@ -584,23 +592,47 @@
         { x: 8, y: 8, w: 200, rows: 7, title: 'MOCHILA',
           onPick: (it) => {
             const item = MQ.ITEMS[it.value];
-            if (item.ball) { this.menu = null; this.tb.open(MQ.ctx, item.desc); return; }
+            if (item.ball || item.battleStage) { this.menu = null; this.tb.open(MQ.ctx, item.desc); return; }
+            if (item.repel) {
+              if (p.repelSteps > 0) { this.menu = null; this.tb.open(MQ.ctx, 'Ya llevas una esencia encima. No abuses de la protección.'); return; }
+              p.bag[it.value]--; p.repelSteps = item.repel;
+              MQ.audio.sfx('heal'); this.menu = null;
+              this.tb.open(MQ.ctx, `Te untas la ${item.name}. Los espantos débiles no se te acercarán por ${item.repel} pasos.`);
+              return;
+            }
             // elegir objetivo
             this.menu = new MQ.Menu(
-              p.party.map((m, i) => ({ label: `${MQ.SPECIES[m.id].name}`, sub: `${m.hp}/${m.maxhp}`, value: i, icon: m.id })),
+              p.party.map((m, i) => ({ label: `${MQ.SPECIES[m.id].name}`, sub: `${m.hp}/${m.maxhp}${m.item ? ' ◆' : ''}`, value: i, icon: m.id })),
               { x: 40, y: 60, w: 180, rows: 6, rowH: 18, title: '¿Para quién?',
                 onPick: (t) => {
                   const m = p.party[t.value];
-                  if (item.heal && m.hp > 0 && m.hp < m.maxhp) {
+                  MQ.migrateMon(m);
+                  if (item.hold) {
+                    // equipar: si ya carga algo, se intercambia a la mochila
+                    p.bag[it.value]--;
+                    if (m.item) p.bag[m.item] = (p.bag[m.item] || 0) + 1;
+                    m.item = it.value;
+                    MQ.audio.sfx('sel'); this.menu = null;
+                    this.tb.open(MQ.ctx, `${MQ.SPECIES[m.id].name} ahora carga ${item.name}.`);
+                  } else if (item.ev && m.hp > 0) {
+                    m.evs = m.evs || MQ.zeroEVs();
+                    const total = Object.values(m.evs).reduce((a, b) => a + b, 0);
+                    if (m.evs[item.ev] >= 100 || total >= 510) { MQ.audio.sfx('bump'); this.menu = null; this.tb.open(MQ.ctx, `${MQ.SPECIES[m.id].name} ya no le saca más a eso. La calle tiene su límite.`); return; }
+                    m.evs[item.ev] = Math.min(100, m.evs[item.ev] + 10); p.bag[it.value]--;
+                    MQ.recalcStats(m);
+                    MQ.audio.sfx('heal'); this.menu = null;
+                    this.tb.open(MQ.ctx, `¡${MQ.SPECIES[m.id].name} agarra calle! Su ${MQ.STAT_NAMES[item.ev]} mejora.`);
+                  } else if (item.heal && m.hp > 0 && m.hp < m.maxhp) {
                     m.hp = Math.min(m.maxhp, m.hp + item.heal); p.bag[it.value]--;
+                    if (item.cure) { m.status = null; m.psn2T = 0; }
                     MQ.audio.sfx('heal'); this.menu = null;
                     this.tb.open(MQ.ctx, `${MQ.SPECIES[m.id].name} se siente como nuevo. ¡Gracias a la maltica de la patria!`);
                   } else if (item.cure && m.status && m.hp > 0) {
-                    m.status = null; p.bag[it.value]--;
+                    m.status = null; m.psn2T = 0; p.bag[it.value]--;
                     MQ.audio.sfx('heal'); this.menu = null;
                     this.tb.open(MQ.ctx, `El agua de coco obra el milagro: ¡${MQ.SPECIES[m.id].name} quedó como nuevo!`);
                   } else if (item.revive && m.hp <= 0) {
-                    m.hp = Math.floor(m.maxhp * item.revive); p.bag[it.value]--;
+                    m.hp = Math.max(1, Math.floor(m.maxhp * item.revive)); p.bag[it.value]--;
                     MQ.audio.sfx('heal'); this.menu = null;
                     this.tb.open(MQ.ctx, `¡${MQ.SPECIES[m.id].name} volvió en sí! La cocada no falla.`);
                   } else MQ.audio.sfx('bump');
@@ -698,7 +730,9 @@
         if (this.encFlash === 0) {
           const e = this.pendingEnc;
           this.pendingEnc = null;
-          MQ.pushScene(new MQ.BattleScene({ wild: e }, (res) => {
+          MQ.pushScene(new MQ.BattleScene({ wild: e,
+            dark: this.map.theme === 'tunel' || this.map.theme === 'ghost',
+            weather: this.map.weather }, (res) => {
             MQ.popScene();
             MQ.audio.music(this.map.music || 'town');
             if (res === 'lose') MQ.respawn(this);
@@ -736,6 +770,21 @@
     arrived() {
       const p = MQ.player;
       const ch = this.tile(p.x, p.y);
+      // la esencia protectora se gasta paso a paso
+      if (p.repelSteps > 0) {
+        p.repelSteps--;
+        if (p.repelSteps === 0) this.banner = { text: 'La esencia se desvaneció...', t: 90 };
+      }
+      // el veneno gotea al caminar (estilo clásico: se detiene en 1 PS)
+      p.steps = (p.steps || 0) + 1;
+      if (p.steps % 4 === 0) {
+        for (const m of p.party) {
+          if ((m.status === 'psn' || m.status === 'psn2') && m.hp > 1) {
+            m.hp = Math.max(1, m.hp - 1);
+            if (m.hp === 1) { m.status = null; m.psn2T = 0; this.banner = { text: `${MQ.SPECIES[m.id].name} resiste el veneno a pura vergüenza...`, t: 90 }; }
+          }
+        }
+      }
       // warp
       const w = (this.map.warps || []).find((w) => w.x === p.x && w.y === p.y);
       if (w) {
@@ -753,19 +802,36 @@
       }
       if (ch === 'M') { this.openTrain(); return; } // pisar la franja del andén = tomar el tren
       if (this.checkTrigger()) return;
-      // encuentro salvaje: la pantalla parpadea y arranca la música antes del combate
+      // encuentro salvaje: la pantalla parpadea y arranca la música antes del combate.
+      // Tablas nuevas (data/encounters vía encRef) o las clásicas del mapa (enc).
+      if (ch !== '~' && ch !== 'g') return;
+      const table = this.map.encRef && MQ.DATA && MQ.DATA.encounters.tables[this.map.encRef];
       const enc = this.map.enc;
-      if (enc && (ch === '~' || ch === 'g') && Math.random() < enc.rate) {
+      let picked = null;
+      if (table) {
+        const RATES = { oscura: 1 / 8, matorral: 1 / 10, anden: 1 / 12, sendero: 1 / 10, azotea: 1 / 10, tableau: 1 / 8 };
+        if (Math.random() < (RATES[table.kind] || 1 / 9)) {
+          const pool = table.slots.filter((s) => s.w > 0);
+          let r = Math.random() * 100;
+          let sl = pool[0];
+          for (const s of pool) { r -= s.w; if (r <= 0) { sl = s; break; } }
+          picked = { id: sl.id, lvl: sl.min + MQ.rand(sl.max - sl.min + 1) };
+        }
+      } else if (enc && Math.random() < enc.rate) {
         const pool = enc.mons.filter((m) => !m[4] || p.flags[m[4]]);
         const total = pool.reduce((s, m) => s + m[1], 0);
         let r = Math.random() * total;
         let pickd = pool[0];
         for (const m of pool) { r -= m[1]; if (r <= 0) { pickd = m; break; } }
-        const lvl = pickd[2] + MQ.rand(pickd[3] - pickd[2] + 1);
-        this.encFlash = 22;
-        this.pendingEnc = { id: pickd[0], lvl };
-        MQ.audio.music(pickd[0] === 'trenfantasma' ? 'boss' : 'battle');
+        picked = { id: pickd[0], lvl: pickd[2] + MQ.rand(pickd[3] - pickd[2] + 1) };
       }
+      if (!picked) return;
+      // la esencia de azabache espanta a los débiles
+      const lead = p.party.find((m) => m.hp > 0);
+      if (p.repelSteps > 0 && lead && picked.lvl < lead.lvl) return;
+      this.encFlash = 22;
+      this.pendingEnc = picked;
+      MQ.audio.music(picked.id === 'trenfantasma' ? 'boss' : 'battle');
     }
 
     // ---- dibujo ---------------------------------------------------------------------
@@ -904,13 +970,18 @@
       MQ.panel(ctx, 8, 8, MQ.W - 16, MQ.H - 16);
       if (!(m.shiny && MQ.drawSprite(ctx, m.id, 'shiny', 24, 26, 64))) MQ.drawMon(ctx, m.id, 24, 26, 4);
       ctx.font = MQ.FONT_B; ctx.textBaseline = 'top'; ctx.fillStyle = '#f5a623';
-      ctx.fillText(`${m.shiny ? '★' : ''}${sp.name}  N${m.lvl}`, 110, 26);
+      MQ.migrateMon(m);
+      const gen = m.gender === 'm' ? '♂' : m.gender === 'f' ? '♀' : '';
+      ctx.fillText(`${m.shiny ? '★' : ''}${sp.name}${gen}  N${m.lvl}`, 110, 26);
       ctx.font = MQ.FONT; ctx.fillStyle = '#e8dfc8';
       ctx.fillText(`PS  ${m.hp}/${m.maxhp}${m.status ? '  · ' + MQ.STATUS[m.status].name : ''}`, 110, 42);
-      ctx.fillText(`ATQ ${m.atk}  DEF ${m.def}  VEL ${m.spd}`, 110, 54);
-      const nxt = MQ.xpForLevel(m.lvl + 1) - m.xp;
+      ctx.fillText(`ATQ ${m.atk}  DEF ${m.def}  VEL ${m.spe}`, 110, 54);
+      ctx.fillText(`A.E ${m.spa}  D.E ${m.spd}`, 110, 66);
       ctx.fillStyle = '#8a8aa0';
-      ctx.fillText(`Faltan ${Math.max(0, nxt)} EXP para nivel ${m.lvl + 1}`, 110, 66);
+      ctx.fillText(`${MQ.NATURE_NAMES[m.nature] || ''} · ${m.ability ? MQ.ABILITIES[m.ability].name : ''}`, 110, 78);
+      if (m.item) ctx.fillText(`Lleva: ${MQ.ITEMS[m.item].name}`, 110, 88);
+      const nxt = MQ.xpForLevel(m.lvl + 1, MQ.xpGroupOf(m.id)) - m.xp;
+      ctx.fillText(`Faltan ${Math.max(0, nxt)} EXP para nivel ${m.lvl + 1}`, 110, m.item ? 98 : 88);
       ctx.fillStyle = '#f5a623';
       ctx.fillText('MOVIMIENTOS · PP', 24, 108);
       ctx.fillStyle = '#e8dfc8';

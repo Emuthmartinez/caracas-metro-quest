@@ -31,7 +31,7 @@ const sandbox = {
 sandbox.globalThis = sandbox;
 vm.createContext(sandbox);
 
-for (const f of ['core.js', 'audio.js', 'dex.js', 'sprite-manifest.js', 'sprites.js', 'world.js', 'battle.js', 'overworld.js', 'main.js']) {
+for (const f of ['core.js', 'audio.js', 'gamedata.js', 'art.js', 'dex.js', 'sprite-manifest.js', 'sprites.js', 'world.js', 'battle.js', 'overworld.js', 'main.js']) {
   const code = fs.readFileSync(path.join(__dirname, '..', 'js', f), 'utf8');
   vm.runInContext(code, sandbox, { filename: f });
 }
@@ -39,37 +39,76 @@ const MQ = sandbox.MQ;
 MQ.ctx = ctxStub;
 ok(MQ && MQ.SPECIES && MQ.MAPS, 'MQ cargó con especies y mapas');
 
-// ---- 1. integridad del dex ----
+// ---- 1. integridad del dex (150 especies, 204 movimientos, Gen 3) ----
 section('Dex');
+ok(MQ.DEX_ORDER.length === 150, `el bestiario completo está vivo (${MQ.DEX_ORDER.length}/150)`);
 ok(MQ.DEX_ORDER.length === Object.keys(MQ.SPECIES).length, 'DEX_ORDER cubre todas las especies');
+ok(MQ.SPECIES[MQ.DEX_ORDER[149]] && MQ.DEX_ORDER[149] === 'trenfantasma', 'el Tren Fantasma cierra el dex (#150)');
+const BUDGETS = { s1: [300, 340], s2: [400, 440], s3: [500, 540], leg: [570, 600] };
+const EV_TOTAL = { s1: 1, s2: 2, s3: 3, leg: 3 };
 for (const id of MQ.DEX_ORDER) {
   const sp = MQ.SPECIES[id];
   ok(sp, `especie ${id} existe`);
   ok(sp.types.every((t) => MQ.TYPES[t]), `${id}: tipos válidos (${sp.types})`);
+  // seis estadísticas base dentro de su presupuesto de poder
+  ok(MQ.STATS6.every((s) => Number.isInteger(sp.base[s]) && sp.base[s] > 0), `${id}: 6 stats base positivas`);
+  const bst = MQ.STATS6.reduce((a, s) => a + sp.base[s], 0);
+  const [lo, hi] = BUDGETS[sp.budget] || [0, 9999];
+  ok(bst >= lo && bst <= hi, `${id}: BST ${bst} dentro del presupuesto ${sp.budget}`);
+  ok(MQ.XP_GROUPS[sp.exp_group], `${id}: grupo de experiencia válido (${sp.exp_group})`);
+  // habilidades registradas
+  ok(sp.abilities && MQ.ABILITIES[sp.abilities.primary], `${id}: habilidad primaria existe`);
+  if (sp.abilities.secondary) ok(MQ.ABILITIES[sp.abilities.secondary], `${id}: habilidad secundaria existe`);
+  if (sp.abilities.hidden) ok(MQ.ABILITIES[sp.abilities.hidden], `${id}: habilidad oculta existe`);
+  // calle (EV yield) acorde al porte
+  const evTotal = Object.values(sp.ev_yield || {}).reduce((a, b) => a + b, 0);
+  ok(evTotal === EV_TOTAL[sp.budget], `${id}: calle otorgada ${evTotal} = ${EV_TOTAL[sp.budget]}`);
   ok(sp.learn.length > 0, `${id}: tiene movimientos`);
   for (const [lvl, mv] of sp.learn) ok(MQ.MOVES[mv], `${id}: movimiento ${mv} existe`);
   ok(sp.learn.some(([l]) => l === 1), `${id}: tiene movimiento de nivel 1`);
-  if (sp.evolve) ok(MQ.SPECIES[sp.evolve.to], `${id}: evolución ${sp.evolve.to} existe`);
+  if (sp.evolve) {
+    ok(MQ.SPECIES[sp.evolve.to], `${id}: evolución ${sp.evolve.to} existe`);
+    ok(sp.evolve.method === 'level' ? sp.evolve.lvl > 1 : sp.evolve.method === 'confianza',
+      `${id}: método de evolución válido (${sp.evolve.method})`);
+  }
   ok(sp.dex && sp.dex.length > 20, `${id}: tiene entrada de dex`);
+  ok(sp.dex_en && sp.dex_en.length > 10, `${id}: tiene entrada de dex en inglés`);
   ok(sp.catch > 0 && sp.catch <= 255, `${id}: catch rate válido`);
   const cry = MQ.CRIES[id];
   ok(Array.isArray(cry) && cry.length > 0, `${id}: tiene grito`);
   for (const s of cry || [])
     ok(s[0] === 'n' ? s.length === 4 : s.length === 7 && s[1] > 0 && s[2] > 0, `${id}: paso de grito válido (${s[0]})`);
-  // arte: todos los caracteres en paleta
+  // arte: todos los caracteres en paleta (pintado a mano o silueta generada)
+  ok(Array.isArray(sp.art) && sp.art.length > 0 && sp.pal, `${id}: tiene arte de respaldo`);
   for (const row of sp.art) {
     ok(row.length <= 17, `${id}: fila de arte <= 17 chars (${row.length})`);
     for (const ch of row) if (ch !== '.') ok(sp.pal[ch], `${id}: color '${ch}' en paleta`);
   }
 }
+// movimientos: esquema Gen 3 (categoría por tipo, efectos de la taxonomía §2.7)
+ok(Object.keys(MQ.MOVES).length === 204, `los 204 movimientos cargaron (${Object.keys(MQ.MOVES).length})`);
+const FX_KINDS = new Set(['status', 'stage', 'heal', 'drain', 'recoil', 'multi', 'flinch',
+  'crit', 'weather', 'trap', 'hazard', 'charge', 'protect', 'endure', 'counter',
+  'recharge', 'switch', 'noescape', 'money', 'curse', 'leech', 'cantmiss-under']);
 for (const [id, mv] of Object.entries(MQ.MOVES)) {
   ok(MQ.TYPES[mv.type], `mov ${id}: tipo válido`);
-  ok(mv.pow > 0 || mv.fx, `mov ${id}: tiene poder o efecto`);
+  ok(['physical', 'special', 'status'].includes(mv.category), `mov ${id}: categoría válida`);
+  if (mv.pow > 0 && !mv.effects.some((e) => e.kind === 'counter'))
+    ok(mv.category === MQ.CATEGORY[mv.type], `mov ${id}: categoría acorde al tipo (${mv.category})`);
+  ok(mv.pow > 0 || mv.effects.length > 0, `mov ${id}: tiene poder o efecto`);
   ok(mv.pp > 0 && mv.pp <= 99, `mov ${id}: PP válidos (${mv.pp})`);
-  if (mv.fx && mv.fx.status) ok(MQ.STATUS[mv.fx.status], `mov ${id}: estado '${mv.fx.status}' existe`);
+  ok(mv.acc === null || (mv.acc > 0 && mv.acc <= 100), `mov ${id}: precisión válida (${mv.acc})`);
+  for (const fx of mv.effects) {
+    ok(FX_KINDS.has(fx.kind), `mov ${id}: efecto '${fx.kind}' reconocido`);
+    if (fx.kind === 'status') ok(MQ.STATUS[fx.status] || fx.status === 'mareo', `mov ${id}: estado '${fx.status}' existe`);
+    if (fx.kind === 'stage') ok(['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva'].includes(fx.stat), `mov ${id}: stat de etapa válida`);
+    if (fx.kind === 'weather') ok(MQ.WEATHER[fx.weather], `mov ${id}: clima '${fx.weather}' existe`);
+  }
 }
-ok(MQ.MOVES.forcejeo && MQ.MOVES.forcejeo.recoil > 0, 'Forcejeo existe con retroceso');
-ok(MQ.MOVES.arrullo && MQ.MOVES.arrullo.fx.status === 'slp', 'Arrullo duerme');
+ok(MQ.MOVES.forcejeo && MQ.MOVES.forcejeo.effects.some((e) => e.kind === 'recoil'), 'Forcejeo existe con retroceso');
+ok(MQ.MOVES.arrullo && MQ.MOVES.arrullo.effects.some((e) => e.kind === 'status' && e.status === 'slp'), 'Arrullo duerme');
+ok(Object.keys(MQ.NATURES).length === 25, 'las 25 naturalezas están');
+ok(Object.keys(MQ.ABILITIES).length === 41, 'las 41 habilidades están');
 for (const [atk, row] of Object.entries(MQ.CHART))
   for (const def of Object.keys(row)) ok(MQ.TYPES[def], `tabla de tipos: ${atk}->${def} válido`);
 
@@ -254,6 +293,85 @@ ok(MQ.player.money === 300, `dinero del entrenador pagado (${MQ.player.money})`)
   ok(m.lvl >= 16, `subió de nivel (${m.lvl})`);
   ok(m.id === 'ucumari', `evolucionó a ucumari (=${m.id})`);
 }
+
+// ---- 4b. fuzz: combates aleatorios por todo el bestiario ----
+// Ejercita el motor Gen-3 entero (los 204 movimientos, habilidades, estados,
+// clima) con combates auto-jugados: nada debe reventar ni colgarse.
+section('Fuzz Gen-3');
+{
+  const WEATHERS = [null, 'lluvia', 'sol', 'neblina', 'apagon', 'horapico'];
+  let stalls = 0, errors = 0;
+  for (let t = 0; t < 60; t++) {
+    const pid = MQ.DEX_ORDER[Math.floor(Math.random() * 150)];
+    const eid = MQ.DEX_ORDER[Math.floor(Math.random() * 150)];
+    const lvl = 5 + Math.floor(Math.random() * 50);
+    MQ.player = MQ.newPlayer('Fuzz', 'player');
+    MQ.player.party = [MQ.makeMon(pid, lvl + 3), MQ.makeMon(MQ.DEX_ORDER[Math.floor(Math.random() * 150)], lvl)];
+    // a veces con objeto equipado
+    const holds = ['tajadaplatano', 'garracunaguaro', 'monedalocha', 'campanavagon', 'azabachepulsera', 'polvomariposa', 'franelabarrio', 'mamon', 'merey', null];
+    MQ.player.party[0].item = holds[Math.floor(Math.random() * holds.length)];
+    MQ.player.bag = { ficha: 3, fichaferia: 2, ficharayada: 2, fichamadrugadora: 2, malta: 2, xarrechera: 1 };
+    let result = null;
+    let b;
+    try {
+      b = new MQ.BattleScene({ wild: { id: eid, lvl },
+        weather: WEATHERS[Math.floor(Math.random() * WEATHERS.length)],
+        dark: Math.random() < 0.5 }, (r) => { result = r; });
+      for (let i = 0; i < 4000 && !result; i++) {
+        b.update();
+        if (b.tb.active) { b.press('a'); continue; }
+        if (b.phase === 'menu') {
+          // mezcla acciones: pelear, mochila (fichas/x-items), huir a veces
+          const roll = Math.random();
+          if (roll < 0.6) b.press('a');
+          else if (roll < 0.85) { b.press('down'); b.press('a'); }
+          else { b.press('down'); b.press('down'); b.press('down'); b.press('a'); }
+          continue;
+        }
+        if (b.phase === 'moves') { for (let k = 0; k < Math.floor(Math.random() * 4); k++) b.press('down'); b.press('a'); continue; }
+        if (b.phase === 'party' || b.phase === 'bag' || b.phase === 'learn') {
+          if (Math.random() < 0.3) b.press('down');
+          b.press('a');
+          continue;
+        }
+      }
+    } catch (e) {
+      errors++;
+      ok(false, `fuzz ${t}: ${pid}@${lvl + 3} vs ${eid}@${lvl} revienta: ${e.message}`);
+      continue;
+    }
+    if (!result) {
+      stalls++;
+      ok(false, `fuzz ${t}: ${pid}@${lvl + 3} vs ${eid}@${lvl} se cuelga (phase=${b.phase} q=${b.queue.length} tb=${b.tb.active})`);
+    }
+  }
+  ok(stalls === 0 && errors === 0, `fuzz: 60 combates aleatorios sin cuelgues ni errores (${stalls} cuelgues, ${errors} errores)`);
+}
+
+// migración de partidas v1: espanto de 4 stats gana chispa, calle y naturaleza
+{
+  const legacy = { id: 'chigui', lvl: 12, xp: 1728, hp: 20, maxhp: 34, atk: 15, def: 17, spd: 12, moves: ['trancazo', 'aguacerito'], status: null, pp: {}, shiny: false };
+  MQ.migrateMon(legacy);
+  ok(legacy.ivs && MQ.STATS6.every((s) => legacy.ivs[s] >= 0 && legacy.ivs[s] <= 31), 'migración: IVs 0-31');
+  ok(legacy.spe > 0 && legacy.spa > 0 && legacy.spd > 0, 'migración: seis stats presentes');
+  ok(MQ.NATURES[legacy.nature], 'migración: naturaleza válida');
+  ok(legacy.hp > 0 && legacy.hp <= legacy.maxhp, 'migración: PS conservan proporción');
+  ok(legacy.ability && MQ.ABILITIES[legacy.ability], 'migración: habilidad asignada');
+}
+
+// las estadísticas Gen 3: IVs/EVs/naturaleza mueven el resultado
+{
+  const base = MQ.calcStats('frontinito', 50, null, null, 'chevere');
+  const full = MQ.calcStats('frontinito', 50, { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, { atk: 252 }, 'guapo');
+  ok(full.atk > base.atk, `IVs+EVs+naturaleza suben el ataque (${base.atk} -> ${full.atk})`);
+  ok(full.hp > base.hp, 'IVs suben los PS');
+  const minus = MQ.calcStats('frontinito', 50, null, null, 'conchudo');
+  ok(minus.atk < base.atk, 'naturaleza -ATQ baja el ataque');
+}
+
+// curva de experiencia por grupo
+ok(MQ.xpForLevel(20, 'rapido') < MQ.xpForLevel(20, 'parejo'), 'grupo rápido requiere menos XP');
+ok(MQ.xpForLevel(20, 'lento') > MQ.xpForLevel(20, 'pausado'), 'grupo lento requiere más XP');
 
 // ---- 5. mundo: caminar, warp, scripts ----
 section('Overworld');

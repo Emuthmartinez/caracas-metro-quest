@@ -9,38 +9,52 @@ cómo se llama aquí), y guía para extender el mundo sin romper nada.
 |---|---|---|
 | Tipos + tabla de efectividad | 8 tipos criollos (`MQ.CHART`), x2 / x0.5 | ✅ |
 | STAB (bonus por tipo propio) | x1.5 si el movimiento comparte tipo | ✅ |
-| Fórmula de daño (gen 1) | `((2·nivel/5+2)·poder·ATQ/DEF)/50+2`, azar 0.85–1.0 | ✅ |
-| Golpes críticos | 1/16 de probabilidad, x1.5, sacudida más fuerte | ✅ |
-| Etapas de stats (±) | ATQ/DEF/VEL, −4..+4, multiplicador 2/(2−s) | ✅ |
-| Precisión por movimiento | `acc`; el Silbido Lejano (acc 1000) nunca falla | ✅ |
-| PP por movimiento | `pp` por movimiento; sin PP → **Forcejeo** (con retroceso) | ✅ |
-| Estados alterados | **ENV** veneno (1/8 por ronda), **PAR** parálisis (VEL ÷2, 25% pierde turno), **DRM** sueño (1–3 turnos) | ✅ |
-| Curación de estados | Agua de Coco, Módulo de Atención, abuela, derrota | ✅ |
-| Captura | catch rate (0–255) · vida restante · ficha · **bonus de estado** (DRM x2, PAR/ENV x1.5) | ✅ |
-| Huir | probabilidad por diferencia de VEL; jefes/tren bloquean | ✅ |
+| Fórmula de daño (Gen 3) | `((2·nivel/5+2)·poder·A/D)/50+2` con A/D **físico o especial según el tipo** (spec §2.2), azar 0.85–1.0 | ✅ |
+| Físico/Especial separados | por tipo, estilo Gen 3 (GATE 0/Q3B): Criollo/Sabroso/Monte/Tepuy físicos; Rumba/Espanto/Catatumbo/Caribe especiales | ✅ |
+| Seis estadísticas + IVs/EVs/naturalezas | PS/ATQ/DEF/A.E/D.E/VEL con fórmula Gen 3 textual; **la chispa** (IVs 0–31), **la calle** (EVs 510/252, vitaminas +10), 25 naturalezas criollas ±10% | ✅ |
+| Golpes críticos | etapas Gen 3 (1/16→1/2 con Afinación/Estampa), x1.5 canon, ignora etapas adversas | ✅ |
+| Etapas de stats (±) | ATQ/DEF/A.E/D.E/VEL/PUN/EVA, −6..+6 (Gen 3) | ✅ |
+| Precisión por movimiento | `acc` (null = no falla jamás), etapas de puntería/evasión, clima y habilidades la modifican | ✅ |
+| PP por movimiento | `pp` por movimiento; sin PP → **Forcejeo** (con retroceso); Presencia Pesada cobra doble | ✅ |
+| Estados alterados | **ENV** veneno · **ENV+** veneno de mapanare (escala) · **PAR** parálisis · **DRM** sueño · **QUE** quemado (mitad de daño físico) · **PAV** empavado (lo cura un golpe de Rumba) · **MAREO** (volátil, 1–4 rondas) | ✅ |
+| Curación de estados | Agua de Coco, Sancocho, frutas equipadas, Módulo, abuela, derrota | ✅ |
+| Captura | **fórmula Gen 3 exacta** (spec §1.5) con 4 chequeos de tambaleo; 6 fichas: Metro x1 · Feria x1.5 · Dorada x2 · Rayada x3 con estado · Madrugadora x4 en oscuridad · de Oro garantizada | ✅ |
+| Habilidades | 41 habilidades criollas (spec §2.8): Mala Cara, Estática, Concha Dura, Echao Pa'lante, Flojera, Pararrayos, Espíritu Errante... | ✅ |
+| Objetos equipados | 22 + frutas (spec §2.9): Tajada de Plátano, Garra de Cunaguaro, Morocota, potenciadores por tipo, frutas que auto-curan | ✅ |
+| Clima de combate | 5 condiciones criollas (spec §2.4): palo de agua, sol de esquina, neblina del Ávila, apagón, hora pico | ✅ |
+| Efectos de movimiento | taxonomía completa §2.7: multigolpe, drenaje, retroceso, amedrentar, carga/semi-invulnerable, restearse/aguantar, contragolpes, trampas, cardonal, velorio, enredadera, Voz del Andén... | ✅ |
+| Huir | fórmula Gen 3 (`VEL·128/VEL_rival + 30·intentos`); trampas y jefes bloquean | ✅ |
 | 4 movimientos + olvidar | menú de olvido al aprender el quinto | ✅ |
-| Evolución | por nivel al terminar combate (no al perder) | ✅ |
-| Curva de XP | cúbica (`n³`), bonus x1.5 contra entrenadores | ✅ |
+| Evolución | por nivel o por **confianza** al terminar combate (no al perder) | ✅ |
+| Curva de XP | 4 grupos cúbicos (rápido 0.8n³ · parejo n³ · pausado 1.15n³ · lento 1.3n³); bonus x1.5 entrenadores, Huevo de Guacharaca x1.5 | ✅ |
 | Equipo de 6 + almacenamiento | el LOCKER de estación | ✅ |
-| Dex visto/capturado | Cuaderno de Espantos, entrada al fichar | ✅ |
-| Medallas / gimnasios | 4 Fichas Doradas de los Jefes de Estación | ✅ |
+| Dex visto/capturado | Cuaderno de Espantos, entrada al fichar; **150 especies** (data/creatures) | ✅ |
+| Medallas / gimnasios | 4 Fichas Doradas de los Jefes de Estación (→ 8 con la expansión de red) | ✅ |
 | Rival recurrente | Cheo, 3 combates, equipo que contra-pica tu inicial | ✅ |
 | Legendarios / post-game | Silbón (raro), Catatumbo (post-final), Tren Fantasma (jefe) | ✅ |
-| Gritos por especie | `MQ.CRIES`: chiptune por criatura, al aparecer/caer/evolucionar | ✅ |
+| Gritos por especie | `MQ.CRIES`: chiptune por criatura (29 afinados a mano + 121 generados por motivo) | ✅ |
+| Tornasol (shiny) | 1/4096 (probabilidad moderna, spec §1.4), paleta franja-naranja | ✅ |
+| Repelentes / esencias | Esencia de Azabache (100/200/300 pasos) | ✅ |
 | Intro cinematográfica | `assets/intro.webm/.mp4`, saltable (A: sonido, B: saltar) | ✅ |
-| Físico/Especial separados | un solo ATQ/DEF (estilo gen 1 simplificado) | ✗ a propósito |
-| Objetos equipados, habilidades, climas | — | 🔜 candidatos |
+| Red completa (Líneas 2–6, superficie, Ávila) | 88 mapas del world bible | 🔜 M2 |
+| Oficios (HMs), casetes (TMs), Bíper, Torre | specs §2.11/§1.6/§1.7 | 🔜 M2/M3 |
 
 ## Cómo extender el mundo
 
-**Nueva criatura** (`js/dex.js`): agrega la especie a `MQ.SPECIES` (tipos, `base`,
-`catch`, `learn`, `dex` en clave realismo mágico, `pal`+`art` de ≤16 columnas),
-su grito en `MQ.CRIES`, y el id en `MQ.DEX_ORDER`. Colócala en una tabla `enc` de
-algún mapa. `tests/smoke.js` valida todo lo demás (paleta, movimientos, grito).
+**Nueva criatura** (`data/creatures/creatures.json`): agrega la especie con el
+esquema del bestiario (tipos, `base` de 6 stats, `catch`, `exp_group`, `gender`,
+`abilities`, `ev_yield`, `learnset`, `evolves_to`, `dex_es/dex_en`), corre
+`python3 scripts/validate_bestiario.py` y `python3 scripts/build_gamedata.py`
+(regenera `js/gamedata.js`). El grito y la silueta de respaldo se generan solos;
+un grito afinado a mano puede ir en `js/art.js` (`MQ.CRIES_CANON`). Colócala en
+una tabla de `data/encounters/encounters.json`. `tests/smoke.js` valida el resto.
 
-**Nuevo movimiento**: en `MQ.MOVES` con `pow/acc/pp` y opcional `fx`
-(`{heal}`, `{stage:[stat,±1,'self'|'foe']}`, `{status:'psn'|'par'|'slp', chance}`)
-o `recoil`. Referencia desde algún `learn`.
+**Nuevo movimiento**: en `data/moves/moves.json` con el esquema del spec §2.7
+(`power/accuracy/pp/priority/contact/category` + `effects[]` de la taxonomía:
+`status`, `stage`, `heal`, `drain`, `recoil`, `multi`, `flinch`, `crit`,
+`weather`, `trap`, `hazard`, `charge`, `protect`, `endure`, `counter`,
+`recharge`, `switch`, `noescape`, `money`, `curse`, `leech`, `cantmiss-under`).
+Regenera `js/gamedata.js` y referencia el id desde algún `learnset`.
 
 **Nuevo mapa**: en `js/world.js` usa los constructores `station(...)` / `tunnel(...)`
 o un grid a mano. Conecta con `warps` (el smoke test verifica ida/vuelta, ancho de

@@ -285,7 +285,7 @@
       { x: 17, to: 'zonarental', tx: 9, ty: 2, requires: 'fichas4',
         denied: 'GUARDIA DE LA LÍNEA FANTASMA: ¿Pa\' la Línea 5, chamo? Esa línea no existe... oficialmente. Tráeme las CUATRO Fichas Doradas y hablamos de lo que no existe.' },
     ],
-    shopStock: ['ficha', 'fichaplus', 'malta', 'cafe', 'aguacoco', 'cocada'],
+    shopStock: ['ficha', 'fichaferia', 'fichaplus', 'malta', 'cafe', 'aguacoco', 'cocada', 'azabache'],
     npcs: [
       { x: 13, y: 5, look: 'rumbero', dir: 'down', name: 'El Rumbero Mayor', boss: true,
         trainer: { id: 'boss2', cls: 'Jefe de Estación', boss: true, money: 800, reward: 'ficha2',
@@ -348,7 +348,7 @@
     id: 'sabanagrande', name: 'Estación Sabana Grande', shop: true,
     west: { to: 'tunel5', tx: 28, ty: 4 },
     east: { to: 'tunel6', tx: 1, ty: 4 },
-    shopStock: ['ficha', 'fichaplus', 'malta', 'cafe', 'aguacoco', 'golfeado'],
+    shopStock: ['ficha', 'fichaferia', 'fichaplus', 'malta', 'cafe', 'aguacoco', 'golfeado', 'azabache', 'mamon', 'tamarindo'],
     npcs: [
       { x: 8, y: 5, look: 'vieja', dir: 'down', name: 'Ajedrecista Margot',
         text: ['En el bulevar jugamos ajedrez desde antes de que tú nacieras. Una vez La Sayona se sentó a jugar. Le gané. No volvió... creo que por eso penan más por aquí.',
@@ -380,7 +380,7 @@
     id: 'chacaito', name: 'Estación Chacaíto', shop: true,
     west: { to: 'tunel6', tx: 28, ty: 4 },
     east: { to: 'tunel7', tx: 1, ty: 4 },
-    shopStock: ['ficha', 'fichaplus', 'malta', 'cafe', 'aguacoco', 'golfeado', 'cocada'],
+    shopStock: ['ficha', 'fichaferia', 'fichaplus', 'ficharayada', 'fichamadrugadora', 'malta', 'cafe', 'aguacoco', 'golfeado', 'cocada', 'azabachedoble', 'sancocho'],
     npcs: [
       { x: 13, y: 7, look: 'sifrina', dir: 'down', name: 'Valentina', boss: true,
         trainer: { id: 'boss3', cls: 'Jefa de Estación', boss: true, money: 1000, reward: 'ficha3',
@@ -451,7 +451,7 @@
     id: 'petare', name: 'Estación Petare', shop: true,
     west: { to: 'tunel8', tx: 32, ty: 4 },
     streets: [{ x: 13, to: 'mercado', tx: 8, ty: 9 }],
-    shopStock: ['ficha', 'fichaplus', 'malta', 'cafe', 'aguacoco', 'golfeado', 'cocada'],
+    shopStock: ['ficha', 'fichaferia', 'fichaplus', 'ficharayada', 'fichamadrugadora', 'malta', 'cafe', 'aguacoco', 'golfeado', 'cocada', 'azabachedoble', 'sancocho'],
     npcs: [
       { x: 8, y: 5, look: 'senora', dir: 'down', name: 'Vendedora Maigualida',
         text: ['¡Empanada, empanada, café con leche, teléfono, recargaaa! Petare madruga antes que el sol, mi amor, y se acuesta después que los espantos.',
@@ -480,7 +480,7 @@
       '########D#######',
     ],
     warps: [{ x: 8, y: 10, to: 'petare', tx: 13, ty: 9 }],
-    shopStock: ['ficha', 'fichaplus', 'malta', 'cafe', 'aguacoco', 'golfeado', 'cocada'],
+    shopStock: ['ficha', 'fichaferia', 'fichaplus', 'ficharayada', 'fichamadrugadora', 'malta', 'cafe', 'aguacoco', 'golfeado', 'cocada', 'azabachedoble', 'sancocho'],
     enc: null,
     npcs: [
       { x: 7, y: 5, look: 'senora', dir: 'down', name: 'Doña Petra del Mercado', boss: true,
@@ -555,6 +555,22 @@
   };
 
   MQ.MAPS = MAPS;
+
+  // ---- Tablas de encuentros del bestiario (data/encounters vía gamedata) --------
+  // Los túneles de la Línea 1 usan las tablas nuevas (con los 150 en juego);
+  // el motor cae a la tabla `enc` clásica del mapa cuando no hay referencia.
+  const ENC_REFS = {
+    tunel1: 'enc.tn_propatria__canoamarillo',
+    tunel2: 'enc.tn_canoamarillo__capitolio',
+    tunel3: 'enc.tn_capitolio__bellasartes',
+    tunel4: 'enc.tn_bellasartes__plazavenezuela',
+    tunel5: 'enc.tn_plazavenezuela__sabanagrande',
+    tunel6: 'enc.tn_sabanagrande__chacaito',
+    tunel7: 'enc.tn_chacaito__altamira',
+    tunel8: 'enc.tn_altamira__petare',
+  };
+  for (const [mid, ref] of Object.entries(ENC_REFS))
+    if (MAPS[mid] && MQ.DATA && MQ.DATA.encounters.tables[ref]) MAPS[mid].encRef = ref;
 
   // ---- Orden de estaciones para el tren ----------------------------------------
   MQ.TRAIN_STOPS = ['propatria', 'canoamarillo', 'capitolio', 'bellasartes', 'plazavenezuela', 'sabanagrande', 'chacaito', 'altamira', 'petare'];

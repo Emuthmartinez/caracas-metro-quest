@@ -31,16 +31,29 @@
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(MQ.player)); } catch (e) {}
   };
   MQ.loadSave = () => {
-    try { const s = localStorage.getItem(SAVE_KEY); return s ? JSON.parse(s) : null; } catch (e) { return null; }
+    try {
+      const s = localStorage.getItem(SAVE_KEY);
+      return s ? MQ.migrateSave(JSON.parse(s)) : null;
+    } catch (e) { return null; }
+  };
+
+  // Migración de partidas v1 al motor Gen-3: a cada espanto guardado se le da
+  // chispa (IVs), calle (EVs) y naturaleza, y el jugador estrena campos nuevos.
+  MQ.migrateSave = (p) => {
+    if (!p) return p;
+    for (const m of [...(p.party || []), ...(p.locker || [])]) MQ.migrateMon(m);
+    p.repelSteps = p.repelSteps || 0;
+    p.steps = p.steps || 0;
+    return p;
   };
 
   MQ.respawn = (world) => {
     const p = MQ.player;
-    p.money = Math.floor(p.money / 2);
+    p.money = Math.floor(p.money * 0.75); // spec §1.1: el susto cuesta 25%, más amable que el clásico
     p.party.forEach(MQ.fullHeal);
     p.x = p.respawn.x; p.y = p.respawn.y;
     world.enterMap(p.respawn.map);
-    world.tb.open(MQ.ctx, 'Te fuiste en blanco... El Doctorcito te recogió del andén, te sanó el equipo y te cobró la mitad de los bolos "por concepto de susto".');
+    world.tb.open(MQ.ctx, 'Te fuiste en blanco... El Doctorcito te recogió del andén, te sanó el equipo y te cobró la cuarta parte de los bolos "por concepto de susto".');
   };
 
   // ---- guiones de historia --------------------------------------------------------
@@ -211,8 +224,8 @@
   };
 
   const firstStarter = () => {
-    for (const id of ['frontinito', 'ucumari']) if (hasLine(id)) return 'frontinito';
-    for (const id of ['turpialin', 'cantaclaro']) if (hasLine(id)) return 'turpialin';
+    for (const id of ['frontinito', 'ucumari', 'waraira']) if (hasLine(id)) return 'frontinito';
+    for (const id of ['turpialin', 'cantaclaro', 'florentin']) if (hasLine(id)) return 'turpialin';
     return 'cocuyin';
   };
   const hasLine = (id) => MQ.player.party.concat(MQ.player.locker).some((m) => m.id === id) || MQ.player.dexCaught[id];
