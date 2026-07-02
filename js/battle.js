@@ -45,7 +45,7 @@
       p.party.forEach(MQ.ensurePP); // migra partidas viejas
       this.trainer = opts.trainer || null;
       if (this.trainer) {
-        this.eteam = this.trainer.team.map(([id, lvl]) => MQ.makeMon(id, lvl));
+        this.eteam = this.trainer.team.map(([id, lvl, item]) => MQ.makeMon(id, lvl, { item }));
         this.ei = 0;
         this.enemy = this.eteam[0];
         MQ.audio.music(this.trainer.boss ? 'boss' : 'battle');

@@ -278,7 +278,7 @@
       return g[y][x];
     }
     npcAt(x, y) {
-      return (this.map.npcs || []).find((n) => n.x === x && n.y === y && !(n.hideIf && MQ.player.flags[n.hideIf]));
+      return (this.map.npcs || []).find((n) => n.x === x && n.y === y && !(n.hideIf && MQ.player.flags[n.hideIf]) && (!n.showIf || MQ.player.flags[n.showIf]));
     }
     walkable(x, y) {
       return MQ.WALKABLE.has(this.tile(x, y)) && !this.npcAt(x, y);
@@ -755,7 +755,7 @@
 
       // la gente del andén mira alrededor, como la gente de verdad
       if (this.frame % 70 === 0 && Math.random() < 0.6) {
-        const idlers = (this.map.npcs || []).filter((n) => !n.mon && !(n.hideIf && MQ.player.flags[n.hideIf]));
+        const idlers = (this.map.npcs || []).filter((n) => !n.mon && !(n.hideIf && MQ.player.flags[n.hideIf]) && (!n.showIf || MQ.player.flags[n.showIf]));
         if (idlers.length) MQ.pick(idlers).dir = MQ.pick(['up', 'down', 'left', 'right']);
       }
 
@@ -899,6 +899,7 @@
       // NPCs
       for (const n of m.npcs || []) {
         if (n.hideIf && p.flags[n.hideIf]) continue;
+        if (n.showIf && !p.flags[n.showIf]) continue;
         const nx = Math.round(n.x * T - camX), ny = Math.round(n.y * T - camY);
         if (nx < -T || ny < -T || nx > MQ.W || ny > MQ.H) continue;
         if (n.mon) MQ.drawMon(ctx, n.mon, nx, ny, 1);

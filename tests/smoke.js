@@ -31,7 +31,7 @@ const sandbox = {
 sandbox.globalThis = sandbox;
 vm.createContext(sandbox);
 
-for (const f of ['core.js', 'audio.js', 'gamedata.js', 'art.js', 'dex.js', 'sprite-manifest.js', 'sprites.js', 'world.js', 'world2.js', 'battle.js', 'overworld.js', 'main.js']) {
+for (const f of ['core.js', 'audio.js', 'gamedata.js', 'art.js', 'dex.js', 'sprite-manifest.js', 'sprites.js', 'world.js', 'world2.js', 'battle.js', 'overworld.js', 'main.js', 'world3.js']) {
   const code = fs.readFileSync(path.join(__dirname, '..', 'js', f), 'utf8');
   vm.runInContext(code, sandbox, { filename: f });
 }
@@ -139,7 +139,7 @@ for (const [mid, m] of Object.entries(MQ.MAPS)) {
     if (n.trainer) {
       for (const [sid, lvl] of n.trainer.team) {
         ok(MQ.SPECIES[sid], `${mid}: trainer ${n.trainer.id} usa especie válida ${sid}`);
-        ok(lvl >= 1 && lvl <= 60, `${mid}: trainer ${n.trainer.id} nivel razonable`);
+        ok(lvl >= 1 && lvl <= 70, `${mid}: trainer ${n.trainer.id} nivel razonable`);
       }
     }
   }
@@ -211,9 +211,11 @@ ok(MQ.effect('Monte', MQ.SPECIES.frontinito.types) === 2, 'triángulo: Turpialí
 
 // ---- 4. simulación de combate completo ----
 section('Combate');
-// presiona A en todo, pero en el menú de movimientos elige uno con daño
+// presiona A en todo, pero en el menú de movimientos elige uno con daño y PP
 const pickDamage = (b) => {
-  const i = b.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0);
+  let i = b.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (b.mine.pp[m] ?? 0) > 0);
+  if (i < 0) i = b.mine.moves.findIndex((m) => (b.mine.pp[m] ?? 0) > 0);
+  if (i < 0) { b.press('b'); return; } // sin PP: vuelve al menú y PELEAR fuerza el Forcejeo
   for (let k = 0; k < Math.max(0, i); k++) b.press('down');
   b.press('a');
 };
@@ -328,7 +330,11 @@ section('Fuzz Gen-3');
           else { b.press('down'); b.press('down'); b.press('down'); b.press('a'); }
           continue;
         }
-        if (b.phase === 'moves') { for (let k = 0; k < Math.floor(Math.random() * 4); k++) b.press('down'); b.press('a'); continue; }
+        if (b.phase === 'moves') {
+          if (!b.mine.moves.some((m) => (b.mine.pp[m] ?? 0) > 0)) { b.press('b'); continue; }
+          for (let k = 0; k < Math.floor(Math.random() * 4); k++) b.press('down');
+          b.press('a'); continue;
+        }
         if (b.phase === 'party' || b.phase === 'bag' || b.phase === 'learn') {
           if (Math.random() < 0.3) b.press('down');
           b.press('a');
@@ -612,6 +618,76 @@ section('Red');
   w2.enterMap('altamira');
   const door = MQ.MAPS.altamira.warps.find((w) => w.to === 'sf_puertaavila');
   ok(door && door.requires === 'oficio_machete', 'la Puerta del Ávila pide el machete');
+}
+
+// ---- 5c. la gente de la red (world3: jefes, tutores, estáticos, consejo) ----
+section('Gente');
+{
+  // los 4 jefes nuevos existen con su recompensa
+  const bosses = { boss5: ['st_zoologico', 'ficha5'], boss6: ['st_layaguara', 'ficha6'],
+    boss7: ['st_larinconada', 'ficha7'], boss8: ['st_parquecentral', 'ficha8'] };
+  for (const [bid, [mid, reward]] of Object.entries(bosses)) {
+    const npc = (MQ.MAPS[mid].npcs || []).find((n) => n.trainer && n.trainer.id === bid);
+    ok(npc, `jefe ${bid} vive en ${mid}`);
+    ok(npc && npc.trainer.reward === reward, `jefe ${bid} entrega ${reward}`);
+    ok(npc && npc.trainer.team.length >= 4, `jefe ${bid} tiene equipo serio (${npc && npc.trainer.team.length})`);
+  }
+  // jefes 7-8 con equipo de 6 (regla del spec §3)
+  ok(MQ.MAPS.st_larinconada.npcs.find((n) => n.trainer && n.trainer.id === 'boss7').trainer.team.length === 6, 'la Amazona lleva 6');
+  ok(MQ.MAPS.st_parquecentral.npcs.find((n) => n.trainer && n.trainer.id === 'boss8').trainer.team.length === 6, 'la Ingeniera lleva 6');
+  // el Consejo: 4 ánimas encadenadas por showIf + el cierre
+  const zr = MQ.MAPS.st_zonarental.npcs || [];
+  for (let i = 1; i <= 4; i++) ok(zr.find((n) => n.trainer && n.trainer.id === 'consejo' + i), `ánima ${i} del Consejo existe`);
+  ok(zr.find((n) => n.script === 'consejo:cierre'), 'la voz del Consejo cierra el rito');
+  // tutor de oficio funciona: enseña la bandera y abre la reja
+  MQ.player = MQ.newPlayer('T', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 20)];
+  MQ.player.flags.starter = true;
+  MQ.scenes.length = 0;
+  const w3 = new MQ.WorldScene();
+  MQ.pushScene(w3);
+  w3.enterMap('calvario');
+  const tutor = MQ.MAPS.calvario.npcs.find((n) => n.script === 'tutor:machete');
+  ok(tutor, 'el Viejo Machetero está en el Calvario');
+  MQ.player.x = tutor.x; MQ.player.y = tutor.y + 1; MQ.player.dir = 'up';
+  w3.interact();
+  for (let i = 0; i < 120 && (w3.tb.active || w3.script || w3.menu); i++) {
+    w3.update();
+    if (w3.tb.active) { w3.press('a'); continue; }
+    if (w3.menu) { w3.press('a'); continue; }
+  }
+  ok(MQ.player.flags.oficio_machete, 'el tutor enseña el oficio del machete');
+  // el jefe 5 se puede vencer y entrega la Ficha del Monte
+  MQ.player = MQ.newPlayer('T', 'player');
+  MQ.player.party = [MQ.makeMon('waraira', 60), MQ.makeMon('florentin', 60)];
+  MQ.player.flags.starter = true;
+  MQ.scenes.length = 0;
+  const w4 = new MQ.WorldScene();
+  MQ.pushScene(w4);
+  w4.enterMap('st_zoologico');
+  const jefe = MQ.MAPS.st_zoologico.npcs.find((n) => n.trainer && n.trainer.id === 'boss5');
+  MQ.player.x = jefe.x; MQ.player.y = jefe.y + 1; MQ.player.dir = 'up';
+  w4.interact();
+  let guard = 0;
+  while ((w4.tb.active || w4.script || MQ.scenes.length > 1) && guard++ < 8000) {
+    const t = MQ.scenes[MQ.scenes.length - 1];
+    t.update && t.update();
+    if (t.tb && t.tb.active) { t.press('a'); continue; }
+    if (t.phase === 'menu') { t.press('a'); continue; }
+    if (t.phase === 'moves') {
+      let idx = t.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (t.mine.pp[m] ?? 0) > 0);
+      if (idx < 0) idx = t.mine.moves.findIndex((m) => (t.mine.pp[m] ?? 0) > 0);
+      if (idx < 0) { t.press('b'); continue; }
+      for (let k = 0; k < Math.max(0, idx); k++) t.press('down');
+      t.press('a'); continue;
+    }
+    if (t.phase === 'party' || t.phase === 'bag' || t.phase === 'learn') { t.press('a'); continue; }
+  }
+  ok(MQ.player.flags.ficha5, `el Baquiano entrega la Ficha del Monte (guard=${guard})`);
+  ok(MQ.player.flags.t_boss5, 'el jefe queda vencido');
+  // el estático del Silbón aparece solo con su reja y se esfuma al ficharlo
+  const sil = MQ.MAPS['tn_capuchinos__teatros'].npcs.find((n) => n.mon === 'silbon');
+  ok(sil && sil.showIf === 'fichas7' && sil.hideIf === 'static_silbon', 'el Silbón estático respeta sus rejas');
 }
 
 // scripts de historia existen y devuelven listas
