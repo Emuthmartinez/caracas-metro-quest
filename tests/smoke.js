@@ -230,7 +230,8 @@ function autoBattle(opts, presses = 3000) {
     if (b.tb.active) { b.press('a'); continue; }
     if (b.phase === 'menu') { b.press('a'); continue; }           // PELEAR
     if (b.phase === 'moves') { pickDamage(b); continue; }
-    if (b.phase === 'party' || b.phase === 'bag' || b.phase === 'learn') { b.press('a'); continue; }
+    if (b.phase === 'party') { if (Math.random() < 0.5) b.press('down'); b.press('a'); continue; }
+    if (b.phase === 'bag' || b.phase === 'learn') { b.press('a'); continue; }
   }
   return result;
 }
@@ -451,21 +452,62 @@ section('Overworld');
   ok(MQ.player.flags.fichaoro, 'altar otorga la ficha de oro');
   ok(MQ.player.bag.fichaoro === 1, 'ficha de oro en mochila');
 
-  // disparo del tren fantasma: caminar al tile (42,4)
+  // la vieja entrada de Plaza Venezuela: el Tren pasa de largo (Q6A), sin combate
   MQ.player.x = 42; MQ.player.y = 4;
   w.checkTrigger();
-  let steps = 0;
-  while ((w.tb.active || w.script || MQ.scenes.length > 1) && steps++ < 6000) {
-    const t = MQ.scenes[MQ.scenes.length - 1];
-    t.update && t.update();
-    if (t.tb && t.tb.active) { t.press('a'); continue; }
-    if (t.phase === 'menu') { t.press('down'); t.press('a'); continue; } // MOCHILA
-    if (t.phase === 'bag') { t.press('a'); continue; }                    // ficha de oro
-    if (t.pages) { t.press('a'); continue; }                              // EndScene
-  }
-  ok(MQ.player.flags.tren, 'el Tren Fantasma fue enfrentado y fichado');
-  ok(MQ.player.dexCaught.trenfantasma, 'tren fantasma en el dex');
-  ok(MQ.player.flags.ending || MQ.scenes.length >= 1, 'el final corre sin romperse');
+  for (let i = 0; i < 200 && (w.tb.active || w.script); i++) { w.update(); if (w.tb.active) w.press('a'); }
+  ok(!MQ.player.flags.tren, 'el Tren ya no se enfrenta en la entrada vieja');
+  ok(MQ.scenes.length === 1, 'el pase de largo no deja escenas colgadas');
+}
+
+// el final de verdad: el andén de Miranda (Línea Fantasma, tras Consejo + bendición)
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  // Tepuy pega 4x al Espanto/Catatumbo del Tren y resiste su STAB a 0.25x
+  MQ.player.party = [MQ.makeMon('waraira', 72), MQ.makeMon('tepuyon', 70)];
+  MQ.player.flags.starter = true;
+  ['ficha1', 'ficha2', 'ficha3', 'ficha4', 'ficha5', 'ficha6', 'ficha7', 'ficha8'].forEach((f) => MQ.setFlag(f));
+  MQ.setFlag('consejo'); MQ.setFlag('fichaoro');
+  MQ.player.map = 'gh_miranda_l5';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  w.enterMap('gh_miranda_l5');
+  const drive = (label) => {
+    let steps = 0;
+    while ((w.tb.active || w.script || MQ.scenes.length > 1) && steps++ < 8000) {
+      const t = MQ.scenes[MQ.scenes.length - 1];
+      t.update && t.update();
+      if (t.tb && t.tb.active) { t.press('a'); continue; }
+      if (t.phase === 'menu') {
+        // primera vuelta: pelea; segunda vuelta: mochila (ficha de oro)
+        if (label === 'catch') { t.press('down'); t.press('a'); } else t.press('a');
+        continue;
+      }
+      if (t.phase === 'moves') {
+        let idx = t.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (t.mine.pp[m] ?? 0) > 0);
+        if (idx < 0) idx = 0;
+        for (let k = 0; k < Math.max(0, idx); k++) t.press('down');
+        t.press('a'); continue;
+      }
+      if (t.phase === 'party') { if (Math.random() < 0.5) t.press('down'); t.press('a'); continue; }
+      if (t.phase === 'bag' || t.phase === 'learn') { t.press('a'); continue; }
+      if (t.pages) { t.press('a'); continue; } // EndScene
+    }
+  };
+  MQ.player.x = 16; MQ.player.y = 5;
+  w.checkTrigger();
+  drive('fight');
+  ok(MQ.player.flags.tren, 'el Tren Fantasma fue ayudado en Miranda');
+  ok(MQ.player.flags.ending, 'el final corre (EndScene)');
+  ok(!MQ.player.dexCaught.trenfantasma, 'la primera vuelta no lo ficha (canon: sin villano)');
+  // la segunda vuelta: ahora sí decide viajar contigo
+  MQ.player.party.forEach(MQ.fullHeal);
+  MQ.player.bag = { fichaoro: 1 };
+  MQ.player.x = 16; MQ.player.y = 5;
+  w.checkTrigger();
+  drive('catch');
+  ok(MQ.player.dexCaught.trenfantasma, 'la segunda vuelta lo ficha: el dex se puede completar (150/150)');
 }
 
 // guion de inicio (starter)
@@ -681,7 +723,8 @@ section('Gente');
       for (let k = 0; k < Math.max(0, idx); k++) t.press('down');
       t.press('a'); continue;
     }
-    if (t.phase === 'party' || t.phase === 'bag' || t.phase === 'learn') { t.press('a'); continue; }
+    if (t.phase === 'party') { if (Math.random() < 0.5) t.press('down'); t.press('a'); continue; }
+    if (t.phase === 'bag' || t.phase === 'learn') { t.press('a'); continue; }
   }
   ok(MQ.player.flags.ficha5, `el Baquiano entrega la Ficha del Monte (guard=${guard})`);
   ok(MQ.player.flags.t_boss5, 'el jefe queda vencido');
@@ -691,7 +734,7 @@ section('Gente');
 }
 
 // scripts de historia existen y devuelven listas
-for (const k of ['intro', 'abuela', 'heal', 'rival1', 'rival2', 'rival3', 'altar', 'trenfantasma']) {
+for (const k of ['intro', 'abuela', 'heal', 'rival1', 'rival2', 'rival3', 'rival4', 'altar', 'trenfantasma', 'trenpasa', 'coleccionista']) {
   MQ.player = MQ.newPlayer('T', 'player');
   MQ.player.party = [MQ.makeMon('frontinito', 5)];
   const s = MQ.SCRIPTS[k]();

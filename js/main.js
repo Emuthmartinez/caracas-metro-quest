@@ -209,23 +209,43 @@
       ];
     },
 
+    // El final de verdad, en el andén de Miranda de la Línea Fantasma (world bible §5):
+    // primero se le ayuda — no se ficha (canon: el final no tiene villano); en la
+    // segunda vuelta, ya en el post-juego, él decide viajar contigo.
     trenfantasma: () => {
-      if (MQ.player.flags.tren) return [
-        { say: ['', 'El túnel respira tranquilo. A lo lejos se oye al Tren, repartiendo recuerdos estación por estación, como un cartero viejo.'] },
-      ];
-      return [
+      if (!MQ.player.flags.tren) return [
         { sfx: 'whistle' },
-        { say: ['', 'Un silbido de tren llena la Línea Fantasma... Las luces de emergencia parpadean dos veces. El aire huele a 1983.'] },
+        { say: ['', 'Un silbido de tren llena el andén de Miranda... Las luces de emergencia parpadean dos veces. El aire huele a 1983.'] },
         { say: ['', 'Del fondo del túnel emergen dos faros amarillos. Es ÉL: el primer tren, el que nunca llegó a Palo Verde, el que la ciudad olvidó sin querer.'] },
         { say: ['', 'Sus vagones van llenos hasta el techo: cumpleaños con bala fría, despedidas en Maiquetía, tardes de Ávila, goles gritados en cocinas ajenas.'] },
-        { battle: { wild: { id: 'trenfantasma', lvl: 38 }, noFlee: true },
+        { say: ['', 'No viene a pelear. Viene a que alguien lo ayude a entregar todo esto, de ida y de vuelta. Pero primero tiene que saber si aguantas el viaje.'] },
+        { battle: { wild: { id: 'trenfantasma', lvl: 60 }, noFlee: true, noCatch: true },
           winScript: [
             { flag: 'tren' },
             { fn: () => MQ.save(true) },
             { ending: true },
           ] },
       ];
+      if (MQ.player.flags.static_trenfantasma) return [
+        { say: ['', 'El andén de Miranda respira tranquilo. El Tren anda repartiendo recuerdos por la red... y ahora, a veces, viaja contigo.'] },
+      ];
+      return [
+        { sfx: 'whistle' },
+        { say: ['', 'El Tren Fantasma vuelve a entrar al andén, despacio. Esta vez abre las puertas frente a ti y espera. Es su manera de preguntar si quieres que viajen juntos.'] },
+        { battle: { wild: { id: 'trenfantasma', lvl: 60 }, noFlee: true },
+          winScript: [
+            { flag: 'static_trenfantasma' },
+            { fn: () => MQ.save(true) },
+          ] },
+      ];
     },
+
+    // La vieja entrada de Plaza Venezuela: el Tren ya no se detiene aquí (Q6A).
+    trenpasa: () => [
+      { sfx: 'whistle' },
+      { say: ['', 'Las luces parpadean dos veces... y el Tren Fantasma PASA de largo, ventana tras ventana llena de recuerdos, sin frenar siquiera.'] },
+      { say: ['', 'En el vidrio empañado del último vagón alguien escribió: "BELLO MONTE". Este ya no es su andén final.'] },
+    ],
   };
 
   const firstStarter = () => {

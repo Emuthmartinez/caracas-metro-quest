@@ -514,8 +514,11 @@
       { x: 8, y: 8, to: 'lineafantasma', tx: 2, ty: 4 },
     ],
     enc: null,
-    npcs: [{ x: 9, y: 4, look: 'rival', dir: 'up', name: 'Cheo', hideIf: 'rival3', script: 'rival3' }],
-    triggers: [{ x: 9, y: 2, once: 'rival3', script: 'rival3' }],
+    npcs: [{ x: 9, y: 4, look: 'operador', dir: 'up', name: 'Operadora Nocturna',
+      text: ['Este acceso era el final del cuento... hasta que la red creció. El Tren ya no se detiene aquí.',
+             'Dicen que ahora hay que ganarse la ciudad entera: ocho Fichas, el Consejo de Zona Rental en la Línea 4, y la bendición de la Reina.',
+             'El andén final está donde la ciudad guarda sus maletas: pasando Bello Monte, al fondo de la Línea Fantasma.'] }],
+    triggers: [],
   };
 
   // — La Línea Fantasma —
@@ -545,11 +548,11 @@
       return g;
     })(),
     warps: [{ x: 1, y: 4, to: 'zonarental', tx: 8, ty: 7 }],
-    enc: { rate: 0.2, mons: [['vagonima', 38, 28, 33], ['llorona', 22, 28, 33], ['sayona', 18, 29, 34], ['duendecito', 12, 28, 32], ['silbon', 6, 32, 35], ['catatumbo', 4, 36, 40, 'ending']] },
+    enc: { rate: 0.2, mons: [['vagonima', 38, 28, 33], ['llorona', 22, 28, 33], ['sayona', 18, 29, 34], ['duendecito', 12, 28, 32], ['silbon', 6, 32, 35]] },
     npcs: [],
     triggers: [
-      { x: 42, y: 4, once: null, script: 'trenfantasma' },
-      { x: 41, y: 4, once: null, script: 'trenfantasma' },
+      { x: 42, y: 4, once: null, script: 'trenpasa' },
+      { x: 41, y: 4, once: null, script: 'trenpasa' },
     ],
     tileScripts: { a: 'altar' },
   };

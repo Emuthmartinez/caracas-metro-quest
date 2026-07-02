@@ -300,5 +300,78 @@
   });
   npcsOf('in_safari').push({ x: 10, y: 11, look: 'buhonero', dir: 'down', name: 'Taquillero', script: 'safari:taquilla' });
 
-  // ---- estáticos con reja de reja: el gate 'postgame' llega con la bandera ending ------
+  // ---- el arco de Cheo, re-sentado en la red grande (world bible §1-4) -----------------
+  // Cheo 3 se muda a Las Adjuntas: anda tanteando la línea que se va de la ciudad,
+  // como hizo él una vez. El guion canon rival3 se reutiliza tal cual.
+  npcsOf('st_lasadjuntas').push(
+    { x: 26, y: 8, look: 'rival', dir: 'down', name: 'Cheo', hideIf: 'rival3', script: 'rival3' });
+
+  // Cheo final: después de las cuatro ánimas, antes de que el Consejo te bendiga.
+  const lineOf = (id) => MQ.player.party.concat(MQ.player.locker).some((m) => m.id === id) || MQ.player.dexCaught[id];
+  const starterOf = () => {
+    for (const id of ['frontinito', 'ucumari', 'waraira']) if (lineOf(id)) return 'frontinito';
+    for (const id of ['turpialin', 'cantaclaro', 'florentin']) if (lineOf(id)) return 'turpialin';
+    return 'cocuyin';
+  };
+  Object.assign(MQ.SCRIPTS, {
+    rival4: () => {
+      const counter = { frontinito: 'caribazo', turpialin: 'centellon', cocuyin: 'chiguiral' }[starterOf()] || 'caribazo';
+      return [
+        { say: ['Cheo', 'Primo. Cuatro ánimas me dejaron pasar y una sola pregunta me trajo hasta aquí: ¿qué se siente quedarse?'] },
+        { say: ['Cheo', 'Yo me fui cinco años y volví de visita. Tú te quedaste y la ciudad entera te conoce por tu nombre. Vamos a ver quién aprendió más.'] },
+        { battle: { trainer: { id: 'cheofinal', cls: 'Tu primo', name: 'Cheo', boss: true, money: 4000,
+          team: [['palomota', 52], ['vagonima', 53, 'cintamorada'], ['reyzamuro', 54], ['elpabellon', 54, 'ajidulce'], ['guacamayon', 55], [counter, 56, 'azabachepulsera']],
+          intro: 'Sin llorar, ¿oíste? Ni tú ni yo.',
+          win: 'Coño, primo... Ganaste tú. Ganaste tú y ganó esta ciudad, que aunque me fui nunca supo soltarme.',
+          lose: 'Todavía no, primo. Todavía no.' } },
+          winScript: [
+            { flag: 'rival4' },
+            { say: ['Cheo', 'Lo que quería decirte desde que aterricé: me quedo. Me quedo, primo. Que el Tren reparta los recuerdos: yo prefiero hacer los míos aquí.'] },
+            { healParty: true },
+            { fn: () => MQ.save(true) },
+          ] },
+      ];
+    },
+  });
+  npcsOf('st_zonarental').push(
+    { x: 30, y: 8, look: 'rival', dir: 'down', name: 'Cheo', showIf: 't_consejo4', hideIf: 'rival4', script: 'rival4' });
+  // la Voz del Consejo solo cierra el rito cuando Cheo dijo lo que vino a decir
+  const voz = MQ.MAPS.st_zonarental.npcs.find((n) => n.script === 'consejo:cierre');
+  if (voz) voz.showIf = 'rival4';
+
+  // ---- el final: el andén de Miranda (Línea Fantasma) ----------------------------------
+  for (const x of [14, 15, 16, 17, 18]) {
+    MQ.MAPS.gh_miranda_l5.triggers.push({ x, y: 5, once: null, script: 'trenfantasma' });
+    // el camino al final queda despejado
+    const g = MQ.MAPS.gh_miranda_l5.grid;
+    MQ.MAPS.gh_miranda_l5.grid[5] = g[5].slice(0, x) + '.' + g[5].slice(x + 1);
+  }
+
+  // ---- los Bachaqueros de Recuerdos y el Coleccionista (Nuevo Circo) --------------------
+  Object.assign(MQ.SCRIPTS, {
+    coleccionista: () => {
+      if (MQ.player.flags.recuerdos) return [
+        { say: ['el Coleccionista', 'Cada botella volvió con su dueño. Yo estoy aprendiendo a hacer recuerdos nuevos. Cuesta, ¿sabes? Pero huelen mejor.'] },
+      ];
+      return [
+        { say: ['el Coleccionista', 'Yo también me fui, chamo. Y cuando quise empacar mis recuerdos... no me cupieron. Así que empecé a guardar los de los demás.'] },
+        { say: ['el Coleccionista', 'Arepas de sábado, la voz de una abuela, el eco de un estadio. Todo embotellado, todo etiquetado, todo... robado, si somos sinceros.'] },
+        { say: ['el Coleccionista', 'Tu manera de pelear me recordó algo que yo tenía olvidado: que esto no se colecciona. Se vive. Ayúdame a destaparlas.'] },
+        { sfx: 'sparkle' },
+        { say: ['', 'El Coleccionista destapa botella por botella. El mercado entero huele a hallaca, a lluvia de mayo, a gasolina de moto y a torta de cumpleaños, todo a la vez.'] },
+        { flag: 'recuerdos' },
+        { give: { item: 'morocota', n: 1 } },
+        { say: ['el Coleccionista', 'Toma: una morocota de las de antes. El único recuerdo mío que sí quiero que cargue otro.'] },
+        { fn: () => MQ.save(true) },
+      ];
+    },
+  });
+  npcsOf('in_mercadocirco').push(
+    { x: 6, y: 6, look: 'buhonero', dir: 'down', name: 'Bachaquero de Recuerdos',
+      trainer: { id: 'bachaq1', cls: 'Bachaquero de Recuerdos', money: 1200,
+        team: [['ratonante', 44], ['maletica', 44], ['camioneton', 45]],
+        intro: 'El jefe no recibe. Los recuerdos entran, no salen. ¿O es que tú quieres discutir el inventario?',
+        win: 'Está bien, está bien... Pasa. Total, últimamente el jefe ni mira las botellas.',
+        lose: 'Sin recibo no hay reclamo, chamo.' } },
+    { x: 12, y: 6, look: 'senora', dir: 'down', name: 'el Coleccionista', showIf: 't_bachaq1', script: 'coleccionista' });
 })();
