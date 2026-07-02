@@ -840,7 +840,50 @@ section('Kit');
   ok(MQ.MAPS.sabanagrande.npcs.some((n) => n.script === 'regalo:patineta'), 'la patineta se regala en el bulevar');
 }
 
-for (const k of ['intro', 'abuela', 'heal', 'rival1', 'rival2', 'rival3', 'rival4', 'rival5', 'altar', 'trenfantasma', 'trenpasa', 'coleccionista', 'torre:reto', 'tia:cuida', 'coplera', 'olvidadizo', 'padrino', 'regalo:patineta']) {
+// ---- 5e. el Cronista, el Bíper y los salvajes con carga ----
+{
+  // los hitos del Cuaderno premian (50 -> madrugadoras, 100 -> tornasol bendito)
+  MQ.player = MQ.newPlayer('T', 'player');
+  MQ.player.party = [MQ.makeMon('chigui', 10)];
+  MQ.player.flags.starter = true;
+  for (let i = 0; i < 50; i++) MQ.player.dexCaught[MQ.DEX_ORDER[i]] = true;
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  w.enterMap('bellasartes');
+  const cron = MQ.MAPS.bellasartes.npcs.find((n) => n.script === 'cronista');
+  const habla = () => {
+    MQ.player.x = cron.x; MQ.player.y = cron.y + 1; MQ.player.dir = 'up';
+    w.interact();
+    for (let i = 0; i < 60 && (w.tb.active || w.script); i++) { w.update(); if (w.tb.active) w.press('a'); }
+  };
+  habla();
+  ok(MQ.player.flags.dex50 && MQ.player.bag.fichamadrugadora === 5, 'el Cronista premia los 50 fichados');
+  for (let i = 50; i < 100; i++) MQ.player.dexCaught[MQ.DEX_ORDER[i]] = true;
+  habla();
+  ok(MQ.player.flags.tornasolbendito, 'los 100 fichados bendicen el tornasol');
+  ok(MQ.shinyOdds() === 1365, `las probabilidades tornasol mejoran (1/${MQ.shinyOdds()})`);
+  // el bíper: carga con pasos y reabre revanchas del mapa
+  MQ.player.bag.biper = 1;
+  MQ.player.flags.t_ramon = true;
+  MQ.player.biperCharge = 100;
+  w.enterMap('tunel1');
+  w.openBag();
+  {
+    const idx = w.menu.items.findIndex((it) => it.value === 'biper');
+    for (let k = 0; k < idx; k++) w.press('down');
+    w.press('a');
+  }
+  ok(!MQ.player.flags.t_ramon, 'el Bíper reabre la revancha de Ramón');
+  ok(MQ.player.biperCharge === 0, 'el Bíper queda descargado');
+  for (let i = 0; i < 30 && w.tb.active; i++) w.press('a');
+  // los salvajes a veces cargan fruta (5%) o potenciador (1%)
+  let holds = 0;
+  for (let i = 0; i < 600; i++) if (MQ.wildHold('chigui')) holds++;
+  ok(holds > 3 && holds < 120, `los salvajes cargan objeto a la tasa esperada (${holds}/600)`);
+}
+
+for (const k of ['intro', 'abuela', 'heal', 'rival1', 'rival2', 'rival3', 'rival4', 'rival5', 'altar', 'trenfantasma', 'trenpasa', 'coleccionista', 'torre:reto', 'tia:cuida', 'coplera', 'olvidadizo', 'padrino', 'regalo:patineta', 'cronista', 'regalo:biper']) {
   MQ.player = MQ.newPlayer('T', 'player');
   MQ.player.party = [MQ.makeMon('frontinito', 5)];
   const s = MQ.SCRIPTS[k]();

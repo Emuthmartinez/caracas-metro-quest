@@ -657,6 +657,17 @@
               this.tb.open(MQ.ctx, p.skating ? 'Te montas en la patineta. El eco del túnel aplaude.' : 'Te bajas de la patineta y la guardas bajo el brazo.');
               return;
             }
+            if (item.biper) {
+              this.menu = null;
+              if ((p.biperCharge || 0) < 100) { this.tb.open(MQ.ctx, `El Bíper parpadea sin señal: le faltan ${100 - (p.biperCharge || 0)} pasos de carga.`); return; }
+              const rematch = (this.map.npcs || []).filter((n) => n.trainer && p.flags['t_' + n.trainer.id]);
+              if (!rematch.length) { this.tb.open(MQ.ctx, 'El Bíper suena en el vacío: aquí no hay entrenadores pendientes de revancha.'); return; }
+              for (const n of rematch) delete p.flags['t_' + n.trainer.id];
+              p.biperCharge = 0;
+              MQ.audio.sfx('lowhp');
+              this.tb.open(MQ.ctx, `¡Bip-bip! ${rematch.length} entrenador${rematch.length === 1 ? '' : 'es'} de este andén responde${rematch.length === 1 ? '' : 'n'} al mensaje: quieren la revancha.`);
+              return;
+            }
             if (item.rod) {
               this.menu = null;
               const [fdx, fdy] = DIRS[p.dir];
@@ -796,7 +807,11 @@
     // ---- movimiento y mundo -------------------------------------------------------
     press(k) {
       if (this.mapView) { if (k === 'a' || k === 'b') { this.mapView = false; MQ.audio.sfx('blip'); } return; }
-      if (this.dexView) { if (k === 'a' || k === 'b') { this.dexView = null; MQ.audio.sfx('blip'); } return; }
+      if (this.dexView) {
+        if (k === 'start') { this.dexLang = this.dexLang === 'en' ? 'es' : 'en'; MQ.audio.sfx('sel'); return; }
+        if (k === 'a' || k === 'b') { this.dexView = null; MQ.audio.sfx('blip'); }
+        return;
+      }
       if (this.statView) { if (k === 'a' || k === 'b') { this.statView = null; MQ.audio.sfx('blip'); } return; }
       if (this.tb.active) { if (k === 'a' || k === 'b') this.tb.advance(); return; }
       if (this.menu) { this.menu.press(k); return; }
@@ -884,6 +899,8 @@
           return;
         }
       }
+      // el bíper se carga caminando
+      if ((p.biperCharge || 0) < 100) p.biperCharge = (p.biperCharge || 0) + 1;
       // la esencia protectora se gasta paso a paso
       if (p.repelSteps > 0) {
         p.repelSteps--;
@@ -1082,10 +1099,11 @@
       const caught = MQ.player.dexCaught[id];
       ctx.fillText(caught ? 'FICHADO ●' : 'VISTO ○', 110, 70);
       ctx.fillStyle = '#e8dfc8';
-      const lines = MQ.wrap(ctx, caught ? sp.dex : 'Se sabe poco. Fíchalo para que el Cuaderno hable.', MQ.W - 56);
+      const entry = this.dexLang === 'en' ? (sp.dex_en || sp.dex) : sp.dex;
+      const lines = MQ.wrap(ctx, caught ? entry : 'Se sabe poco. Fíchalo para que el Cuaderno hable.', MQ.W - 56);
       lines.forEach((l, i) => ctx.fillText(l, 24, 108 + i * 12));
       ctx.fillStyle = '#8a8aa0';
-      ctx.fillText('(A para volver)', 24, MQ.H - 34);
+      ctx.fillText(`(A para volver · MENÚ: ${this.dexLang === 'en' ? 'ver en español' : 'read in English'})`, 24, MQ.H - 34);
     }
 
     drawStatPage(ctx, m) {

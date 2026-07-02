@@ -245,8 +245,22 @@
   MQ.movesAtLevel = (id, lvl) =>
     MQ.SPECIES[id].learn.filter(([l]) => l <= lvl).map(([, m]) => m).slice(-4);
 
-  // 1 de cada SHINY_ODDS sale "tornasol" (spec §1.4: probabilidad moderna)
+  // 1 de cada SHINY_ODDS sale "tornasol" (spec §1.4: probabilidad moderna);
+  // el Tornasol Bendito (100 fichados) mejora la suerte a 1/1365
   MQ.SHINY_ODDS = 4096;
+  MQ.shinyOdds = () =>
+    (MQ.player && MQ.player.flags && MQ.player.flags.tornasolbendito) ? 1365 : MQ.SHINY_ODDS;
+
+  // objeto equipado de los salvajes (spec §1.4): 5% fruta del estado, 1% potenciador
+  const TYPE_BOOST = { Criollo: 'franelabarrio', Sabroso: 'ajidulce', Rumba: 'cuatroafinado',
+    Espanto: 'cintamorada', Catatumbo: 'bombilloahorrador', Caribe: 'aguaanauco',
+    Monte: 'macheteviejo', Tepuy: 'piedraabuelo' };
+  MQ.wildHold = (id) => {
+    const r = Math.random();
+    if (r < 0.01) return TYPE_BOOST[MQ.SPECIES[id].types[0]] || null;
+    if (r < 0.05) return MQ.pick(['mamon', 'semeruco', 'guanabana', 'tamarindo', 'parchita', 'lechosapicada', 'merey']);
+    return null;
+  };
 
   MQ.rollIVs = () => {
     const iv = {};
@@ -286,7 +300,7 @@
       confianza: 70,
       moves: MQ.movesAtLevel(id, lvl),
       status: null, mareo: 0, pp: {},
-      shiny: opts.shiny ?? (MQ.rand(MQ.SHINY_ODDS) === 0),
+      shiny: opts.shiny ?? (MQ.rand(MQ.shinyOdds()) === 0),
     };
     MQ.ensurePP(m);
     return m;
@@ -424,5 +438,6 @@
     anzuelosuper: { name: 'Anzuelo Súper',  price: 900, desc: 'El anzuelo de los cuentos. Lo que pique, respétalo.', rod: 'super' },
     // — la patineta (la "bici" criolla, regalo de Sabana Grande) —
     patineta:  { name: 'La Patineta',       price: 0, desc: 'Rueda al doble de velocidad. En los andenes de estación el operador la mira feo.', patineta: true },
+    biper:     { name: 'El Bíper',          price: 0, desc: 'Pager noventero: al cargarse con 100 pasos, avisa a los entrenadores del mapa que quieres la revancha.', biper: true },
   };
 })();

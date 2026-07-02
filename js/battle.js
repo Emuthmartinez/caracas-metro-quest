@@ -51,7 +51,8 @@
         MQ.audio.music(this.trainer.boss ? 'boss' : 'battle');
       } else {
         this.enemy = MQ.makeMon(opts.wild.id, opts.wild.lvl,
-          { shiny: opts.wild.shiny ?? (MQ.rand(MQ.SHINY_ODDS) === 0), hidden: MQ.rand(64) === 0 });
+          { shiny: opts.wild.shiny ?? (MQ.rand(MQ.shinyOdds()) === 0), hidden: MQ.rand(64) === 0,
+            item: MQ.wildHold(opts.wild.id) });
         MQ.audio.music(opts.wild.id === 'trenfantasma' ? 'boss' : 'battle');
       }
       p.dexSeen[this.enemy.id] = true;

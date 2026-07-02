@@ -610,6 +610,54 @@
            'El Pescador guarda todo lo que saca del Guaire en un galpón... menos una cosa, que devolvió sin abrir. La Amazona apuesta contra sus propios caballos y SIEMPRE pierde. Adrede.',
            '¿El Baquiano? Los animales le hacen la fiesta de cumpleaños ELLOS a ÉL. Todito lo sé, chamo. El chisme es el archivo histórico del pueblo.'] });
 
+  // ---- el Cronista del Metro: premia el Cuaderno (spec §1.11) --------------------------
+  Object.assign(MQ.SCRIPTS, {
+    cronista: () => {
+      const p = MQ.player;
+      const n = Object.keys(p.dexCaught).length;
+      if (n >= 150 && !p.flags.dex150) return [
+        { say: ['el Cronista', `CIENTO CINCUENTA. El Cuaderno entero, con el Tren incluido. En cuarenta años de archivo nunca vi la colección completa.`] },
+        { flag: 'dex150' },
+        { sfx: 'victory' },
+        { say: ['', '★ El Cronista te otorga el DIPLOMA DEL CRONISTA. Tu nombre queda en el archivo histórico del Metro, entre los que se quedaron y los que volvieron. ★'] },
+        { give: { item: 'morocota', n: 3 } },
+        { fn: () => MQ.save(true) },
+      ];
+      if (n >= 100 && !p.flags.dex100) return [
+        { say: ['el Cronista', `Cien fichados. Cien historias del subterráneo con nombre y apellido. Esto merece una bendición de las raras.`] },
+        { flag: 'dex100' },
+        { flag: 'tornasolbendito' },
+        { sfx: 'sparkle' },
+        { say: ['', '★ Obtienes el TORNASOL BENDITO: desde hoy los tornasol se te aparecen tres veces más seguido (1 de cada 1365). ★'] },
+        { fn: () => MQ.save(true) },
+      ];
+      if (n >= 50 && !p.flags.dex50) return [
+        { say: ['el Cronista', `Cincuenta fichados ya. Vas en serio, chamo. Toma: estas madrugadoras las acuñaron para gente como tú.`] },
+        { flag: 'dex50' },
+        { give: { item: 'fichamadrugadora', n: 5 } },
+        { sfx: 'catch' },
+        { fn: () => MQ.save(true) },
+      ];
+      return [
+        { say: ['el Cronista', `Llevo el archivo histórico del Metro: ${n} espanto${n === 1 ? '' : 's'} fichado${n === 1 ? '' : 's'} en tu Cuaderno. A los 50, a los 100 y a los 150 hay premio. Palabra de archivo.`] },
+      ];
+    },
+    'regalo:biper': () => {
+      if (MQ.player.bag.biper || MQ.player.flags.biper) return [
+        { say: ['Chama del Bíper', '¿Te llegó la señal? Ese aparato junta valor con cada paso tuyo: a los 100 pasos, revancha segura.'] },
+      ];
+      return [
+        { say: ['Chama del Bíper', 'Mi papá usaba este BÍPER en los noventa pa\' avisar que llegaba tarde. Ahora avisa otra cosa: que quieres la revancha.'] },
+        { give: { item: 'biper', n: 1 } },
+        { flag: 'biper' },
+        { sfx: 'catch' },
+        { say: ['Chama del Bíper', 'Camina 100 pasos pa\' cargarlo y úsalo desde la MOCHILA en un andén con entrenadores ya vencidos. Bip-bip: pelea otra vez.'] },
+      ];
+    },
+  });
+  MQ.MAPS.bellasartes.npcs.push({ x: 12, y: 8, look: 'vieja', dir: 'down', name: 'el Cronista', script: 'cronista' });
+  MQ.MAPS.chacaito.npcs.push({ x: 14, y: 8, look: 'chama', dir: 'down', name: 'Chama del Bíper', script: 'regalo:biper' });
+
   say('gh_lasmercedes', 8, 'senora', 'la que Cocina',
     ['Esta cocina la dejó una familia entera cuando se fue. Yo le mantengo el fuego bajito, por si vuelven.',
      'El Tren pasa cada noche y deja el olor a hallaca recién hecha. Nadie la ve, pero todos la olemos.']);
