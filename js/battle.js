@@ -1329,15 +1329,79 @@
       }
     }
 
+    // El telón del combate según dónde estés (FireRed cambia el fondo por hábitat)
+    drawBattleBg(ctx) {
+      const amb = this.opts.ambience || {};
+      const region = amb.region || '';
+      const theme = amb.theme || 'tunel';
+      const grad = ctx.createLinearGradient(0, 0, 0, MQ.H);
+      if (region === 'avila' || region === 'losteques') {
+        // el cerro: cielo dorado, silueta del Ávila y neblina baja
+        grad.addColorStop(0, region === 'losteques' ? '#2a2a3e' : '#3a2a4e');
+        grad.addColorStop(0.5, region === 'losteques' ? '#3a3e52' : '#7a4a52');
+        grad.addColorStop(1, '#2a3a34');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, MQ.W, MQ.H);
+        ctx.fillStyle = region === 'losteques' ? '#242e3a' : '#2e3e40';
+        ctx.beginPath();
+        ctx.moveTo(0, 120);
+        for (let x = 0; x <= MQ.W; x += 20) ctx.lineTo(x, 96 + Math.sin(x * 0.045 + 2) * 22);
+        ctx.lineTo(MQ.W, 152); ctx.lineTo(0, 152);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(200,210,230,0.10)';
+        ctx.fillRect(0, 118, MQ.W, 16);
+        ctx.fillStyle = '#1c2622'; ctx.fillRect(0, 150, MQ.W, MQ.H - 150);
+      } else if (theme === 'calle' && (region === 'metrocable_sanagustin' || region === 'metrocable_mariche')) {
+        // arriba del barrio: cielo abierto, techos y el cable cruzando
+        grad.addColorStop(0, '#4a6a9a'); grad.addColorStop(0.6, '#c98a5a'); grad.addColorStop(1, '#8a5a3a');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, MQ.W, MQ.H);
+        ctx.strokeStyle = '#1a1a22'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(0, 40); ctx.quadraticCurveTo(MQ.W / 2, 62, MQ.W, 36); ctx.stroke();
+        ctx.fillStyle = '#6a4432';
+        for (let x = 0; x < MQ.W; x += 46) ctx.fillRect(x, 128 - (x * 7 % 18), 38, 30);
+        ctx.fillStyle = '#8a5a3e'; ctx.fillRect(0, 150, MQ.W, MQ.H - 150);
+      } else if (theme === 'calle') {
+        // sol de esquina: cielo de hora dorada y perfil de bloques
+        grad.addColorStop(0, '#7a5a9a'); grad.addColorStop(0.55, '#d9905a'); grad.addColorStop(1, '#b07040');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, MQ.W, MQ.H);
+        ctx.fillStyle = 'rgba(255,230,150,0.5)';
+        ctx.beginPath(); ctx.arc(MQ.W - 70, 46, 16, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#5a4436';
+        for (let x = -6; x < MQ.W; x += 52) ctx.fillRect(x, 108 + (x * 13 % 24), 44, 60);
+        ctx.fillStyle = '#7a5a42'; ctx.fillRect(0, 150, MQ.W, MQ.H - 150);
+      } else if (theme === 'ghost') {
+        // la Línea Fantasma: verdor de recuerdo y motas que suben
+        grad.addColorStop(0, '#06120e'); grad.addColorStop(0.6, '#0e2a20'); grad.addColorStop(1, '#12352a');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, MQ.W, MQ.H);
+        ctx.fillStyle = 'rgba(122,255,201,0.12)';
+        for (let i = 0; i < 8; i++) {
+          const mx = (i * 47 + this.fc * 0.3) % MQ.W;
+          const my = 170 - ((i * 31 + this.fc * 0.5) % 160);
+          ctx.fillRect(mx, my, 2, 2);
+        }
+        ctx.fillStyle = '#081a12'; ctx.fillRect(0, 150, MQ.W, MQ.H - 150);
+      } else if (theme === 'metro') {
+        // andén de estación: pared clara, cenefa naranja y pilares
+        grad.addColorStop(0, '#242030'); grad.addColorStop(0.6, '#38304a'); grad.addColorStop(1, '#463a54');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, MQ.W, MQ.H);
+        ctx.fillStyle = '#e85a1a'; ctx.fillRect(0, 24, MQ.W, 3);
+        ctx.fillStyle = 'rgba(200,190,220,0.08)';
+        for (let i = 0; i < 4; i++) ctx.fillRect(30 + i * 80, 27, 16, 123);
+        ctx.fillStyle = '#2a2438'; ctx.fillRect(0, 150, MQ.W, 2);
+        ctx.fillStyle = '#3a3242'; ctx.fillRect(0, 152, MQ.W, MQ.H - 152);
+      } else {
+        // el túnel canon: pilares de luz de servicio
+        grad.addColorStop(0, '#14101e'); grad.addColorStop(0.55, '#1e1830'); grad.addColorStop(1, '#2a2238');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, MQ.W, MQ.H);
+        ctx.fillStyle = 'rgba(245,166,35,0.05)';
+        for (let i = 0; i < 5; i++) ctx.fillRect(20 + i * 64, 0, 10, 150);
+        ctx.fillStyle = '#0e0a16'; ctx.fillRect(0, 150, MQ.W, 2);
+        ctx.fillStyle = 'rgba(245,166,35,0.04)'; ctx.fillRect(0, 152, MQ.W, MQ.H - 152);
+      }
+    }
+
     draw(ctx) {
       if (this.evo) { this.drawEvo(ctx); this.tb.draw(ctx); return; }
-      const grad = ctx.createLinearGradient(0, 0, 0, MQ.H);
-      grad.addColorStop(0, '#14101e'); grad.addColorStop(0.55, '#1e1830'); grad.addColorStop(1, '#2a2238');
-      ctx.fillStyle = grad; ctx.fillRect(0, 0, MQ.W, MQ.H);
-      ctx.fillStyle = 'rgba(245,166,35,0.05)';
-      for (let i = 0; i < 5; i++) ctx.fillRect(20 + i * 64, 0, 10, 150);
-      ctx.fillStyle = '#0e0a16'; ctx.fillRect(0, 150, MQ.W, 2);
-      ctx.fillStyle = 'rgba(245,166,35,0.04)'; ctx.fillRect(0, 152, MQ.W, MQ.H - 152);
+      this.drawBattleBg(ctx);
 
       const slide = this.anim.intro > 0 ? this.anim.intro * 5 : 0;
       const sh = this.anim.shake ? (Math.random() * 4 - 2) : 0;

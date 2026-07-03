@@ -305,7 +305,7 @@
         const [spk, txt] = Array.isArray(op.say) ? op.say : ['', op.say];
         this.tb.open(MQ.ctx, txt, () => this.stepScript(), spk);
       } else if (op.battle) {
-        MQ.pushScene(new MQ.BattleScene(op.battle, (res) => {
+        MQ.pushScene(new MQ.BattleScene({ ambience: { theme: this.map.theme, region: this.map.region }, ...op.battle }, (res) => {
           MQ.popScene();
           MQ.audio.music(this.map.music || 'town');
           if (res === 'lose') { this.script = null; MQ.respawn(this); return; }
@@ -849,6 +849,7 @@
           this.pendingEnc = null;
           MQ.pushScene(new MQ.BattleScene({ wild: e,
             dark: this.map.theme === 'tunel' || this.map.theme === 'ghost',
+            ambience: { theme: this.map.theme, region: this.map.region },
             weather: this.map.weather }, (res) => {
             MQ.popScene();
             MQ.audio.music(this.map.music || 'town');
