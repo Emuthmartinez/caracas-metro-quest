@@ -840,6 +840,70 @@ section('Kit');
   ok(MQ.MAPS.sabanagrande.npcs.some((n) => n.script === 'regalo:patineta'), 'la patineta se regala en el bulevar');
 }
 
+// ---- 5e-pre. anti-softlock: el juego entero se completa jugando (world bible §9) ----
+section('Camino crítico');
+{
+  // Fuentes de banderas: en qué mapa se gana cada bandera (jefes, tutores, ritos)
+  // y qué requiere ganarla ahí mismo. Punto fijo: expandir alcance -> ganar
+  // banderas -> expandir de nuevo, hasta estabilizar. Nada de teletransporte.
+  const SOURCES = [
+    { map: 'casa', gives: 'starter' },
+    { map: 'propatria', gives: 'oficio_luz' },
+    { map: 'calvario', gives: 'oficio_machete' },
+    { map: 'capitolio', gives: 'ficha1' },
+    { map: 'bellasartes', gives: 'oficio_empuje', needs: ['ficha2'] },
+    { map: 'plazavenezuela', gives: 'ficha2' },
+    { map: 'chacaito', gives: 'ficha3' },
+    { map: 'mercado', gives: 'ficha4' },
+    { map: 'st_elsilencio', gives: 'oficio_demolicion' },
+    { map: 'st_zoologico', gives: 'ficha5' },
+    { map: 'st_layaguara', gives: 'ficha6' },
+    { map: 'st_layaguara', gives: 'oficio_nado', needs: ['ficha6'] },
+    { map: 'st_larinconada', gives: 'ficha7' },
+    { map: 'st_parquecentral', gives: 'ficha8' },
+    { map: 'st_parquecentral', gives: 'oficio_teleferico' },
+    { map: 'st_zonarental', gives: 'consejo', needs: ['fichas8'] },
+    { map: 'lineafantasma', gives: 'fichaoro' },
+    { map: 'gh_miranda_l5', gives: 'tren' },
+    { map: 'gh_miranda_l5', gives: 'ending', needs: ['tren'] },
+  ];
+  const flags = new Set();
+  const derive = () => {
+    const owned = ['ficha1', 'ficha2', 'ficha3', 'ficha4', 'ficha5', 'ficha6', 'ficha7', 'ficha8'].filter((f) => flags.has(f)).length;
+    for (const n of [4, 5, 7, 8]) if (owned >= n) flags.add('fichas' + n);
+  };
+  const reachable = new Set(['casa']);
+  let changed = true;
+  let rounds = 0;
+  while (changed && rounds++ < 250) {
+    changed = false;
+    // expandir por warps cuyas rejas ya se cumplen
+    const frontier = [...reachable];
+    for (const mid of frontier) {
+      for (const w of MQ.MAPS[mid].warps || []) {
+        if (w.requires && !flags.has(w.requires)) continue;
+        if (!reachable.has(w.to)) { reachable.add(w.to); changed = true; }
+      }
+    }
+    // ganar banderas donde ya llegamos
+    for (const s of SOURCES) {
+      if (!reachable.has(s.map) || flags.has(s.gives)) continue;
+      if (s.needs && !s.needs.every((f) => flags.has(f))) continue;
+      flags.add(s.gives);
+      derive();
+      changed = true;
+    }
+  }
+  ok(flags.has('starter') && flags.has('fichas4'), 'Acto 1 completable (4 fichas)');
+  ok(flags.has('ficha5') && flags.has('ficha6'), 'Acto 2 completable (Zoológico y Guaire)');
+  ok(flags.has('oficio_nado'), 'el Nado llega antes de su reja (anti-softlock §9)');
+  ok(flags.has('ficha7') && flags.has('ficha8'), 'Acto 3 completable (Sur y Torre)');
+  ok(flags.has('consejo') && flags.has('fichaoro'), 'Consejo y bendición alcanzables');
+  ok(reachable.has('gh_miranda_l5') && flags.has('ending'), 'el final se alcanza JUGANDO, sin teletransporte');
+  const unreachable = Object.keys(MQ.MAPS).filter((m) => !reachable.has(m));
+  ok(unreachable.length === 0, `toda la red se abre al completar el juego (faltan: ${unreachable.join(',') || 'ninguno'})`);
+}
+
 // ---- 5e. el Cronista, el Bíper y los salvajes con carga ----
 {
   // los hitos del Cuaderno premian (50 -> madrugadoras, 100 -> tornasol bendito)
