@@ -437,5 +437,6 @@
     // — la patineta (la "bici" criolla, regalo de Sabana Grande) —
     patineta:  { name: 'La Patineta',       price: 0, desc: 'Rueda al doble de velocidad. En los andenes de estación el operador la mira feo.', patineta: true },
     biper:     { name: 'El Bíper',          price: 0, desc: 'Pager noventero: al cargarse con 100 pasos, avisa a los entrenadores del mapa que quieres la revancha.', biper: true },
+    rastreador: { name: 'El Rastreador',    price: 0, desc: 'Antena de zahorí urbano: vibra hacia lo que la gente enterró pa\' olvidarlo. Se usa desde la mochila.', finder: true },
   };
 })();

@@ -360,6 +360,16 @@
       const tx = p.x + dx, ty = p.y + dy;
       const npc = this.npcAt(tx, ty);
       if (npc) return this.talkTo(npc);
+      // lo enterrado: se saca con A mirando el escondite (o parado encima)
+      const hid = (this.map.hidden || []).find((h) => !p.flags[h.flag] && ((h.x === tx && h.y === ty) || (h.x === p.x && h.y === p.y)));
+      if (hid) {
+        const n = hid.n || 1;
+        p.bag[hid.item] = (p.bag[hid.item] || 0) + n;
+        MQ.setFlag(hid.flag);
+        MQ.audio.sfx('sparkle');
+        this.tb.open(MQ.ctx, `¡Había algo escondido! Sacas ${n > 1 ? n + '× ' : ''}${MQ.ITEMS[hid.item].name}.`);
+        return;
+      }
       const ch = this.tile(tx, ty);
       // las bancas de andén y de parada menor guardan la partida (world bible §0)
       if (ch === 'B') {
@@ -402,6 +412,7 @@
         this.tb.open(MQ.ctx, tr.after || (tr.boss ? 'Ya tienes mi Ficha Dorada. Hazle honor, chamo.' : '¡Buen combate el de nosotros! Sigue pa\' lante.'), null, npc.name);
         return;
       }
+      if (!tr.boss) MQ.audio.music('reto'); // el reto suena desde la primera palabra
       const script = [
         { say: [npc.name, tr.intro] },
         { battle: { trainer: { ...tr, name: npc.name } },
@@ -441,6 +452,7 @@
       if (!sp) return false;
       this.engage = { npc: sp, phase: 'alert', t: 0, moving: 0 };
       MQ.audio.sfx('alert');
+      MQ.audio.music('reto'); // el tema de la mirada cruzada, hasta que arranque el combate
       return true;
     }
 
@@ -729,6 +741,21 @@
               p.biperCharge = 0;
               MQ.audio.sfx('lowhp');
               this.tb.open(MQ.ctx, `¡Bip-bip! ${rematch.length} entrenador${rematch.length === 1 ? '' : 'es'} de este andén responde${rematch.length === 1 ? '' : 'n'} al mensaje: quieren la revancha.`);
+              return;
+            }
+            if (item.finder) {
+              this.menu = null;
+              const left = (this.map.hidden || []).filter((h) => !p.flags[h.flag]);
+              if (!left.length) { MQ.audio.sfx('weak'); this.tb.open(MQ.ctx, 'El Rastreador se queda mudo. Aquí no hay nada enterrado... o ya te lo llevaste todo.'); return; }
+              let best = left[0], bd = Infinity;
+              for (const h of left) { const d = Math.abs(h.x - p.x) + Math.abs(h.y - p.y); if (d < bd) { bd = d; best = h; } }
+              MQ.audio.sfx('click');
+              if (bd === 0) { this.tb.open(MQ.ctx, '¡El Rastreador vibra como loco! Está justo bajo tus pies. Dale A.'); return; }
+              const hdx = best.x - p.x, hdy = best.y - p.y;
+              const rumbo = Math.abs(hdx) >= Math.abs(hdy) ? (hdx > 0 ? 'este' : 'oeste') : (hdy > 0 ? 'sur' : 'norte');
+              this.tb.open(MQ.ctx, bd <= 8
+                ? `El Rastreador vibra fuerte hacia el ${rumbo}. Algo espera escondido, cerquita.`
+                : `El Rastreador zumba bajito hacia el ${rumbo}. Hay algo enterrado en este lugar, pero falta caminar.`);
               return;
             }
             if (item.rod) {

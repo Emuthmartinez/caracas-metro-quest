@@ -312,6 +312,39 @@
   drop('gh_chuao', 14, 2, 'polvomariposa');
   drop('cb_laceiba', 14, 3, 'bombilloahorrador');
 
+  // ---- lo enterrado (ítems ocultos, estilo FireRed: sin brillo, sin pista visible) ------
+  // Se sacan con A mirando el escondite o parado encima; el Rastreador los huele.
+  const bury = (mapId, x, y, item, n) =>
+    ((MQ.MAPS[mapId].hidden = MQ.MAPS[mapId].hidden || []).push({ x, y, item, n: n || 1, flag: `hid_${mapId}_${x}_${y}` }));
+  bury('tunel1', 14, 4, 'ficha');             // detrás del pilar que vigila Ramón
+  bury('tunel2', 9, 5, 'papelon');
+  bury('tunel4', 26, 5, 'xpilas');
+  bury('tn_zonarental__bellomonte', 24, 7, 'cocada');
+  bury('st_bellomonte', 16, 13, 'monedalocha'); // la moneda de la estación sin tren
+  bury('gh_tamanaco', 22, 11, 'cintamorada');
+  bury('sf_parquedeleste', 31, 19, 'estampa');
+  bury('sf_neblina', 14, 22, 'guanabana');
+  bury('in_safari', 11, 7, 'huevoguacharaca'); // el tesoro del safari
+  bury('cb_sanagustin', 9, 9, 'tajadaplatano');
+
+  // el Zahorí de Bello Monte: la estación sin tren guarda al que encuentra lo perdido
+  Object.assign(MQ.SCRIPTS, {
+    'regalo:rastreador': () => {
+      if (MQ.player.bag.rastreador || MQ.player.flags.rastreador) return [
+        { say: ['el Zahorí', 'La antena no miente: hay paqueticos que se ven y tesoritos que no. Camina y pregúntale a la mochila.'] },
+      ];
+      return [
+        { say: ['el Zahorí', 'Yo encontraba agua con dos alambres de percha. En el Metro encontré otra cosa: lo que la gente entierra pa\' olvidarlo.'] },
+        { give: { item: 'rastreador', n: 1 } },
+        { flag: 'rastreador' },
+        { sfx: 'catch' },
+        { say: ['', '★ ¡Obtienes el RASTREADOR! ★'] },
+        { say: ['el Zahorí', 'Úsalo desde la MOCHILA: si vibra, algo escondido espera. Revisa el pilar, el rincón, el piso mismo donde pisas.'] },
+      ];
+    },
+  });
+  npcsOf('st_bellomonte').push({ x: 20, y: 8, look: 'vieja', dir: 'down', name: 'el Zahorí', script: 'regalo:rastreador' });
+
   // ---- la reja del safari (Zoológico) — versión de taquilla -----------------------------
   Object.assign(MQ.SCRIPTS, {
     'safari:taquilla': () => {

@@ -509,6 +509,59 @@ section('Overworld');
   ok(count >= 14, `hay ${count} paqueticos regados por la red`);
 }
 
+// lo enterrado y el Rastreador: escondites sin brillo + la antena que los huele
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 10)];
+  MQ.player.flags.starter = true;
+  MQ.player.map = 'tunel1';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  // sacar la ficha de detrás del pilar (14,4) mirando desde (13,4)
+  MQ.player.x = 13; MQ.player.y = 4; MQ.player.dir = 'right';
+  const before = MQ.player.bag.ficha || 0;
+  w.interact();
+  ok((MQ.player.bag.ficha || 0) === before + 1, 'lo enterrado sale con A mirando el pilar');
+  ok(MQ.player.flags.hid_tunel1_14_4, 'el escondite levanta su bandera');
+  while (w.tb.active) w.press('a');
+  w.interact();
+  ok((MQ.player.bag.ficha || 0) === before + 1, 'el escondite no se saca dos veces');
+  while (w.tb.active) w.press('a');
+
+  // todos los escondites del mundo: en casilla real y con ítem real
+  let hidCount = 0;
+  for (const [id, m] of Object.entries(MQ.MAPS)) {
+    for (const h of m.hidden || []) {
+      hidCount++;
+      ok(MQ.ITEMS[h.item], `escondite en ${id}: ítem real (${h.item})`);
+      ok(((m.grid[h.y] || '')[h.x] || '') !== '', `escondite en ${id} (${h.x},${h.y}) dentro del mapa`);
+      const vecino = MQ.WALKABLE.has((m.grid[h.y] || '')[h.x] || '#') ||
+        [[0, 1], [0, -1], [1, 0], [-1, 0]].some(([dx, dy]) => MQ.WALKABLE.has((m.grid[h.y + dy] || '')[h.x + dx] || '#'));
+      ok(vecino, `escondite en ${id} (${h.x},${h.y}) alcanzable`);
+    }
+  }
+  ok(hidCount >= 10, `hay ${hidCount} escondites enterrados por la red`);
+
+  // el Zahorí regala el Rastreador
+  const za = MQ.MAPS.st_bellomonte.npcs.find((n) => n.script === 'regalo:rastreador');
+  ok(!!za, 'el Zahorí espera en Bello Monte');
+  w.runScript(MQ.SCRIPTS['regalo:rastreador']());
+  for (let i = 0; i < 30 && (w.tb.active || w.script); i++) { w.update(); if (w.tb.active) w.press('a'); }
+  ok(MQ.player.bag.rastreador === 1, 'el Zahorí entrega el Rastreador');
+
+  // la antena: apunta al escondite más cercano sin sacar
+  MQ.player.x = 5; MQ.player.y = 5; // tunel2 papelón está en (9,5)... aquí seguimos en tunel1
+  w.openBag();
+  ok(!!w.menu, 'la mochila abre con el Rastreador dentro');
+  const idx = w.menu.items.findIndex((it) => it.value === 'rastreador');
+  ok(idx >= 0, 'el Rastreador aparece en la mochila');
+  for (let k = 0; k < idx; k++) w.press('down');
+  w.press('a');
+  ok(!w.menu && w.tb.active, 'el Rastreador habla (ya no queda nada en tunel1: se queda mudo)');
+  while (w.tb.active) w.press('a');
+}
+
 // el vigilante que gira: te encuentra hasta parado (spinner estilo FireRed)
 {
   MQ.player = MQ.newPlayer('Tester', 'player');
