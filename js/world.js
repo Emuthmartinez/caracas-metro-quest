@@ -366,7 +366,7 @@
     east: { to: 'chacaito', tx: 1, ty: 5 },
     enc: { rate: 0.17, mons: [['araguako', 22, 14, 17], ['mapanare', 20, 14, 17], ['cachicamo', 18, 14, 17], ['guacamayo', 15, 14, 17], ['cunaguaro', 13, 14, 17], ['vagonima', 12, 15, 17]] },
     npcs: [
-      { x: 16, y: 4, look: 'chamo', dir: 'down', name: 'Motorizado Jeison',
+      { x: 16, y: 4, look: 'chamo', dir: 'down', name: 'Motorizado Jeison', spin: true,
         trainer: { id: 'jeison', cls: 'Motorizado', team: [['centella', 16]], money: 170,
           intro: 'Yo hago Petare—Chacaíto en doce minutos, mi llave. Mi centella y yo no conocemos la cola.',
           win: 'Coñ... ¡digo, caramba! Me ganaste hasta el casco. Dale pues.',

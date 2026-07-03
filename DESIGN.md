@@ -32,6 +32,8 @@ cómo se llama aquí), y guía para extender el mundo sin romper nada.
 | Medallas / gimnasios | 4 Fichas Doradas de los Jefes de Estación (→ 8 con la expansión de red) | ✅ |
 | Rival recurrente | Cheo, 3 combates, equipo que contra-pica tu inicial | ✅ |
 | Línea de vista de entrenadores | el ¡! del andén: te ven a 4 casillas por donde miran (paredes y gente bloquean), caminan hasta ti y te retan; los Jefes esperan en su puesto | ✅ |
+| Vigilantes que giran (spinners) | Jeison, Petra y Don Emiliano barren el túnel con la mirada cada tanto — quieto también te encuentran | ✅ |
+| Ítems en el piso (Poké Balls tiradas) | 16 paqueticos sólidos regados por túneles, superficie, Línea Fantasma y Metrocable; se recogen una vez (la morocota del parque es la pepita) | ✅ |
 | Legendarios / post-game | Silbón (raro), Catatumbo (post-final), Tren Fantasma (jefe) | ✅ |
 | Gritos por especie | `MQ.CRIES`: chiptune por criatura (29 afinados a mano + 121 generados por motivo) | ✅ |
 | Tornasol (shiny) | 1/4096 (probabilidad moderna, spec §1.4), paleta franja-naranja | ✅ |

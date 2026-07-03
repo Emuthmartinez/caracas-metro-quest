@@ -285,6 +285,33 @@
       'Llévate un poquito de páramo en el bolsillo.',
       'El páramo no suelta lo suyo.'));
 
+  // los que giran: su mirada barre el túnel a intervalos, como los spinners de FireRed
+  for (const [mapId, tid] of [['tn_ciudaduniversitaria__labandera', 'ajedrez1'], ['tn_capuchinos__layaguara', 'obr2']]) {
+    const n = npcsOf(mapId).find((x) => x.trainer && x.trainer.id === tid);
+    if (n) n.spin = true;
+  }
+
+  // ---- los paqueticos del andén (ítems tirados, estilo FireRed) -------------------------
+  // Objetos sólidos: se recogen con A, no reaparecen (bandera propia por sitio).
+  const drop = (mapId, x, y, item, n) =>
+    npcsOf(mapId).push({ x, y, itemBall: item, n: n || 1, hideIf: `item_${mapId}_${x}_${y}` });
+  drop('tunel1', 6, 2, 'malta');
+  drop('tunel2', 13, 2, 'ficha', 3);
+  drop('tunel3', 21, 2, 'azabache');
+  drop('tunel4', 25, 2, 'cafe');
+  drop('tn_elsilencio__capuchinos', 24, 2, 'golfeado');
+  drop('tn_capuchinos__layaguara', 44, 2, 'xaguante');
+  drop('tn_caricuao__zoologico', 64, 2, 'aguacoco');
+  drop('tn_plazavenezuela__ciudaduniversitaria', 12, 2, 'sancocho');
+  drop('tn_ciudaduniversitaria__labandera', 52, 2, 'cafecerrero');
+  drop('tn_labandera__elvalle', 32, 2, 'carnemechada');
+  drop('tn_petare__paloverde', 72, 2, 'fichaplus');
+  drop('tn_lasmercedes__tamanaco', 20, 2, 'hervido');
+  drop('sf_caobos', 24, 2, 'morocota');       // la pepita dorada del parque
+  drop('sf_sabasnieves', 36, 2, 'semeruco');  // frutica del sendero
+  drop('gh_chuao', 14, 2, 'polvomariposa');
+  drop('cb_laceiba', 14, 3, 'bombilloahorrador');
+
   // ---- la reja del safari (Zoológico) — versión de taquilla -----------------------------
   Object.assign(MQ.SCRIPTS, {
     'safari:taquilla': () => {

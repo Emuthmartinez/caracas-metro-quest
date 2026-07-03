@@ -477,6 +477,73 @@ section('Overworld');
   ram.x = 14; ram.y = 2; ram.dir = 'down'; // de vuelta a su puesto pa' los demás tests
 }
 
+// los paqueticos del andén: sólidos, se recogen una sola vez, y todos en piso legal
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 10)];
+  MQ.player.flags.starter = true;
+  MQ.player.map = 'tunel1';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  const ball = w.map.npcs.find((n) => n.itemBall);
+  ok(!!ball, 'tunel1 tiene un paquetico tirado');
+  ok(!w.walkable(ball.x, ball.y), 'el paquetico es sólido (bloquea el paso)');
+  MQ.player.x = ball.x; MQ.player.y = ball.y + 1; MQ.player.dir = 'up';
+  w.interact();
+  ok((MQ.player.bag[ball.itemBall] || 0) >= (ball.n || 1), `el paquetico cayó en la mochila (${ball.itemBall})`);
+  ok(MQ.player.flags[ball.hideIf], 'la bandera evita que reaparezca');
+  ok(!w.npcAt(ball.x, ball.y), 'el paquetico ya no está en el piso');
+  while (w.tb.active) w.press('a');
+
+  let count = 0;
+  for (const [id, m] of Object.entries(MQ.MAPS)) {
+    for (const n of m.npcs || []) {
+      if (!n.itemBall) continue;
+      count++;
+      ok(MQ.ITEMS[n.itemBall], `paquetico en ${id}: ítem real (${n.itemBall})`);
+      ok(MQ.WALKABLE.has((m.grid[n.y] || '')[n.x] || '#'), `paquetico en ${id} (${n.x},${n.y}) en piso caminable`);
+      ok(n.hideIf && n.hideIf.startsWith('item_'), `paquetico en ${id} con bandera propia`);
+    }
+  }
+  ok(count >= 14, `hay ${count} paqueticos regados por la red`);
+}
+
+// el vigilante que gira: te encuentra hasta parado (spinner estilo FireRed)
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 40)];
+  MQ.player.flags.starter = true;
+  MQ.player.map = 'tn_ciudaduniversitaria__labandera';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  const don = w.map.npcs.find((n) => n.trainer && n.trainer.id === 'ajedrez1');
+  ok(don && don.spin, 'Don Emiliano es de los que giran');
+  // parado en su mirada: spotNow lo encuentra
+  don.dir = 'down';
+  let py = 0;
+  for (let y = don.y + 1; y <= don.y + 4; y++) {
+    if (!MQ.WALKABLE.has(w.tile(don.x, y)) || w.npcAt(don.x, y)) break;
+    py = y;
+  }
+  ok(py > 0, 'hay casilla libre en la mirada de Don Emiliano');
+  MQ.player.x = don.x; MQ.player.y = py; MQ.player.dir = 'up';
+  ok(w.spotNow(), 'parado en su línea de vista: te encuentra');
+  ok(w.engage && w.engage.npc === don, 'el ¡! es de Don Emiliano');
+  w.engage = null;
+  // la rotación del turno (frame % 50) también dispara la mirada
+  // (el giro es probabilístico: se reintenta el tic del turno hasta que caiga)
+  don.dir = 'up';
+  const oldPick = MQ.pick;
+  MQ.pick = (arr) => (arr.length === 4 && arr[0] === 'up' ? 'down' : oldPick(arr));
+  for (let tries = 0; tries < 200 && !w.engage; tries++) { w.frame = 49; w.update(); }
+  MQ.pick = oldPick;
+  ok(don.dir === 'down', 'el giro del turno lo volteó hacia ti');
+  ok(w.engage && w.engage.npc === don, 'al girar te ve sin que muevas un pie');
+  w.engage = null;
+}
+
 // guion del altar y del tren
 {
   MQ.player = MQ.newPlayer('Tester', 'player');

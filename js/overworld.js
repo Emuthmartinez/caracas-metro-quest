@@ -377,6 +377,15 @@
     }
 
     talkTo(npc) {
+      // los paqueticos del andén: se recogen con A y no reaparecen
+      if (npc.itemBall) {
+        const n = npc.n || 1;
+        MQ.player.bag[npc.itemBall] = (MQ.player.bag[npc.itemBall] || 0) + n;
+        MQ.setFlag(npc.hideIf);
+        MQ.audio.sfx('ficha');
+        this.tb.open(MQ.ctx, `¡Encontraste ${n > 1 ? n + '× ' : ''}${MQ.ITEMS[npc.itemBall].name}!`);
+        return;
+      }
       if (!npc.mon) npc.dir = { up: 'down', down: 'up', left: 'right', right: 'left' }[MQ.player.dir];
       if (npc.script) {
         const s = MQ.SCRIPTS[npc.script] && MQ.SCRIPTS[npc.script]();
@@ -423,6 +432,16 @@
         }
       }
       return null;
+    }
+
+    // mirar y encontrar: si alguien te tiene en la mira, arranca el ¡!
+    spotNow() {
+      if (this.engage) return false;
+      const sp = this.trainerSpotting();
+      if (!sp) return false;
+      this.engage = { npc: sp, phase: 'alert', t: 0, moving: 0 };
+      MQ.audio.sfx('alert');
+      return true;
     }
 
     openShop() {
@@ -927,8 +946,18 @@
       // la gente del andén mira alrededor, como la gente de verdad
       // (los entrenadores no: su mirada es su línea de vista, y esa se respeta)
       if (this.frame % 70 === 0 && Math.random() < 0.6) {
-        const idlers = (this.map.npcs || []).filter((n) => !n.mon && !n.trainer && !(n.hideIf && MQ.player.flags[n.hideIf]) && (!n.showIf || MQ.player.flags[n.showIf]));
+        const idlers = (this.map.npcs || []).filter((n) => !n.mon && !n.trainer && !n.itemBall && !(n.hideIf && MQ.player.flags[n.hideIf]) && (!n.showIf || MQ.player.flags[n.showIf]));
         if (idlers.length) MQ.pick(idlers).dir = MQ.pick(['up', 'down', 'left', 'right']);
+      }
+
+      // los que giran barren el túnel con la mirada — y quieto también te encuentran
+      if (this.frame % 50 === 0) {
+        for (const n of this.map.npcs || []) {
+          if (!n.spin || !n.trainer || MQ.player.flags['t_' + n.trainer.id]) continue;
+          if (n.hideIf && MQ.player.flags[n.hideIf]) continue;
+          if (Math.random() < 0.6) n.dir = MQ.pick(['up', 'down', 'left', 'right']);
+        }
+        if (this.moving === 0 && this.spotNow()) return;
       }
 
       const p = MQ.player;
@@ -1000,12 +1029,7 @@
       if (ch === 'M') { this.openTrain(); return; } // pisar la franja del andén = tomar el tren
       if (this.checkTrigger()) return;
       // ¡te vieron! — el ¡! del andén (línea de vista estilo FireRed)
-      const spotter = this.trainerSpotting();
-      if (spotter) {
-        this.engage = { npc: spotter, phase: 'alert', t: 0, moving: 0 };
-        MQ.audio.sfx('alert');
-        return;
-      }
+      if (this.spotNow()) return;
       // encuentro salvaje: la pantalla parpadea y arranca la música antes del combate.
       // Tablas nuevas (data/encounters vía encRef) o las clásicas del mapa (enc).
       if (ch !== '~' && ch !== 'g') return;
@@ -1111,6 +1135,13 @@
         }
         const nx = Math.round(n.x * T - camX + ex), ny = Math.round(n.y * T - camY + ey);
         if (nx < -T || ny < -T || nx > MQ.W || ny > MQ.H) continue;
+        // paquetico tirado: bultico claro con cinta naranja y su nudo
+        if (n.itemBall) {
+          ctx.fillStyle = '#d8d8e2'; ctx.fillRect(nx + 4, ny + 7, 8, 7);
+          ctx.fillStyle = '#e85a1a'; ctx.fillRect(nx + 4, ny + 10, 8, 2);
+          ctx.fillStyle = '#8a8a96'; ctx.fillRect(nx + 6, ny + 5, 4, 2);
+          continue;
+        }
         if (n.mon) MQ.drawMon(ctx, n.mon, nx, ny, 1);
         else MQ.drawPerson(ctx, nx, ny, MQ.LOOKS[n.look] || MQ.LOOKS.chamo, n.dir || 'down', step, !!(eng && eng.moving > 0));
         if (n.boss && !p.flags['t_' + (n.trainer && n.trainer.id)] && (now / 500 | 0) % 2) {
