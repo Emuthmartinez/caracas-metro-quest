@@ -31,6 +31,7 @@ cómo se llama aquí), y guía para extender el mundo sin romper nada.
 | Dex visto/capturado | Cuaderno de Espantos, entrada al fichar; **150 especies** (data/creatures) | ✅ |
 | Medallas / gimnasios | 4 Fichas Doradas de los Jefes de Estación (→ 8 con la expansión de red) | ✅ |
 | Rival recurrente | Cheo, 3 combates, equipo que contra-pica tu inicial | ✅ |
+| Línea de vista de entrenadores | el ¡! del andén: te ven a 4 casillas por donde miran (paredes y gente bloquean), caminan hasta ti y te retan; los Jefes esperan en su puesto | ✅ |
 | Legendarios / post-game | Silbón (raro), Catatumbo (post-final), Tren Fantasma (jefe) | ✅ |
 | Gritos por especie | `MQ.CRIES`: chiptune por criatura (29 afinados a mano + 121 generados por motivo) | ✅ |
 | Tornasol (shiny) | 1/4096 (probabilidad moderna, spec §1.4), paleta franja-naranja | ✅ |

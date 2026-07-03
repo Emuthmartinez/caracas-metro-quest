@@ -64,6 +64,7 @@
     click: () => { beep(1200, 0.05, 'square', 0.05); beep(1600, 0.06, 'square', 0.04, 0.05); }, // ¡plin! quedó fija
     sparkle: () => [1318, 1568, 2093].forEach((f, i) => beep(f, 0.08, 'sine', 0.04, i * 0.05)), // estrellitas
     breakout: () => { noise(0.12, 0.07); beep(220, 0.18, 'sawtooth', 0.05, 0, 180); }, // reventó la ficha
+    alert: () => { beep(988, 0.08, 'square', 0.06); beep(988, 0.1, 'square', 0.06, 0.1); }, // ¡te vieron!
   };
 
   // Pistas: [nota|null, duración en pasos] — paso = semicorchea aprox.

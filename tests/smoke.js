@@ -438,6 +438,45 @@ section('Overworld');
   ok(MQ.player.map === 'tunel3', `con ficha: pasa al túnel 3 (=${MQ.player.map})`);
 }
 
+// línea de vista estilo FireRed: Ramón te ve, suelta el ¡!, camina hasta ti y te reta
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 12)];
+  MQ.player.flags.starter = true;
+  MQ.player.map = 'tunel1'; MQ.player.x = 17; MQ.player.y = 2; MQ.player.dir = 'down';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  const ram = w.map.npcs.find((n) => n.trainer && n.trainer.id === 'ramon');
+  ram.dir = 'right'; // que vigile el pasillo despejado (al sur hay un pilar)
+  w.arrived();
+  ok(w.engage && w.engage.npc === ram && w.engage.phase === 'alert', 'Ramón te vio: suelta el ¡!');
+  let guard = 0;
+  while (w.engage && guard++ < 400) w.update();
+  ok(!w.engage && !!w.script, 'tras el ¡! camina hasta ti y arranca el reto');
+  ok(ram.x === 16 && ram.y === 2, `Ramón caminó hasta quedar al lado (${ram.x},${ram.y})`);
+  ok(MQ.player.dir === 'left', 'el jugador voltea a mirarlo');
+  let steps = 0;
+  while ((w.tb.active || w.script || MQ.scenes.length > 1) && steps++ < 3000) {
+    const t = MQ.scenes[MQ.scenes.length - 1];
+    t.update && t.update();
+    if (t.tb && t.tb.active) { t.press('a'); continue; }
+    if (t.phase === 'menu') { t.press('a'); continue; }
+    if (t.phase === 'moves') {
+      let idx = t.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (t.mine.pp[m] ?? 0) > 0);
+      if (idx < 0) idx = 0;
+      for (let k = 0; k < idx; k++) t.press('down');
+      t.press('a'); continue;
+    }
+    if (t.phase === 'party' || t.phase === 'learn' || t.phase === 'bag') { t.press('a'); continue; }
+  }
+  ok(MQ.player.flags.t_ramon, 'el combate por línea de vista se ganó');
+  MQ.player.x = 17; MQ.player.y = 2;
+  w.arrived();
+  ok(!w.engage, 'un entrenador vencido ya no persigue a nadie');
+  ram.x = 14; ram.y = 2; ram.dir = 'down'; // de vuelta a su puesto pa' los demás tests
+}
+
 // guion del altar y del tren
 {
   MQ.player = MQ.newPlayer('Tester', 'player');

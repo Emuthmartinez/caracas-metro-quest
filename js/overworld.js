@@ -268,6 +268,7 @@
       this.statView = null;
       this.mapView = false;      // mapa del Metro a pantalla completa
       this.mapBehind = false;    // mapa de fondo al elegir destino del tren
+      this.engage = null;        // {npc, phase, t, moving} — el ¡! del entrenador
       this.enterMap(MQ.player.map, true);
     }
 
@@ -287,6 +288,7 @@
     enterMap(id, first) {
       const p = MQ.player;
       p.map = id;
+      this.engage = null;
       const m = this.map;
       if (m.station) p.visited[id] = true;
       this.banner = { text: m.name.toUpperCase(), t: 150 };
@@ -380,25 +382,47 @@
         const s = MQ.SCRIPTS[npc.script] && MQ.SCRIPTS[npc.script]();
         if (s) return this.runScript(s);
       }
-      if (npc.trainer) {
-        const tr = npc.trainer;
-        if (MQ.player.flags['t_' + tr.id]) {
-          this.tb.open(MQ.ctx, tr.after || (tr.boss ? 'Ya tienes mi Ficha Dorada. Hazle honor, chamo.' : '¡Buen combate el de nosotros! Sigue pa\' lante.'), null, npc.name);
-          return;
-        }
-        const script = [
-          { say: [npc.name, tr.intro] },
-          { battle: { trainer: { ...tr, name: npc.name } },
-            winScript: tr.reward ? [
-              { fn: () => { MQ.setFlag(tr.reward); MQ.audio.sfx('catch'); } },
-              { say: ['', `★ ¡Obtienes la ${MQ.FICHAS[tr.reward]}! ★`] },
-              { fn: () => MQ.save(true) },
-            ] : [] },
-        ];
-        return this.runScript(script);
-      }
+      if (npc.trainer) return this.startTrainer(npc);
       const txt = Array.isArray(npc.text) ? MQ.pick(npc.text) : npc.text;
       if (txt) this.tb.open(MQ.ctx, txt, null, npc.name);
+    }
+
+    startTrainer(npc) {
+      const tr = npc.trainer;
+      if (MQ.player.flags['t_' + tr.id]) {
+        this.tb.open(MQ.ctx, tr.after || (tr.boss ? 'Ya tienes mi Ficha Dorada. Hazle honor, chamo.' : '¡Buen combate el de nosotros! Sigue pa\' lante.'), null, npc.name);
+        return;
+      }
+      const script = [
+        { say: [npc.name, tr.intro] },
+        { battle: { trainer: { ...tr, name: npc.name } },
+          winScript: tr.reward ? [
+            { fn: () => { MQ.setFlag(tr.reward); MQ.audio.sfx('catch'); } },
+            { say: ['', `★ ¡Obtienes la ${MQ.FICHAS[tr.reward]}! ★`] },
+            { fn: () => MQ.save(true) },
+          ] : [] },
+      ];
+      return this.runScript(script);
+    }
+
+    // Línea de vista estilo FireRed: el entrenador que te ve dentro de 4 casillas
+    // por donde mira (sin pared ni gente en medio) suelta el ¡! y va por ti.
+    // Los Jefes no cazan a nadie: esperan en su puesto, como manda el protocolo.
+    trainerSpotting() {
+      const p = MQ.player;
+      for (const n of this.map.npcs || []) {
+        if (!n.trainer || n.trainer.boss || n.boss) continue;
+        if (p.flags['t_' + n.trainer.id]) continue;
+        if (n.hideIf && p.flags[n.hideIf]) continue;
+        if (n.showIf && !p.flags[n.showIf]) continue;
+        const [dx, dy] = DIRS[n.dir || 'down'];
+        for (let i = 1; i <= 4; i++) {
+          const tx = n.x + dx * i, ty = n.y + dy * i;
+          if (tx === p.x && ty === p.y) return n;
+          if (!MQ.WALKABLE.has(this.tile(tx, ty)) || this.npcAt(tx, ty)) break;
+        }
+      }
+      return null;
     }
 
     openShop() {
@@ -880,9 +904,30 @@
       }
       if (this.tb.active || this.menu || this.script || this.dexView || this.statView || this.mapView) return;
 
+      // el entrenador que te vio: suelta el ¡!, camina hasta ti y te reta
+      if (this.engage) {
+        const e = this.engage, n = e.npc, p = MQ.player;
+        e.t++;
+        if (e.phase === 'alert') {
+          if (e.t >= 34) { e.phase = 'walk'; e.t = 0; }
+          return;
+        }
+        if (e.moving > 0) { e.moving -= 2; return; }
+        if (Math.abs(p.x - n.x) + Math.abs(p.y - n.y) <= 1) {
+          p.dir = { up: 'down', down: 'up', left: 'right', right: 'left' }[n.dir];
+          this.engage = null;
+          return this.startTrainer(n);
+        }
+        const [dx, dy] = DIRS[n.dir];
+        n.x += dx; n.y += dy;
+        e.moving = T;
+        return;
+      }
+
       // la gente del andén mira alrededor, como la gente de verdad
+      // (los entrenadores no: su mirada es su línea de vista, y esa se respeta)
       if (this.frame % 70 === 0 && Math.random() < 0.6) {
-        const idlers = (this.map.npcs || []).filter((n) => !n.mon && !(n.hideIf && MQ.player.flags[n.hideIf]) && (!n.showIf || MQ.player.flags[n.showIf]));
+        const idlers = (this.map.npcs || []).filter((n) => !n.mon && !n.trainer && !(n.hideIf && MQ.player.flags[n.hideIf]) && (!n.showIf || MQ.player.flags[n.showIf]));
         if (idlers.length) MQ.pick(idlers).dir = MQ.pick(['up', 'down', 'left', 'right']);
       }
 
@@ -954,6 +999,13 @@
       }
       if (ch === 'M') { this.openTrain(); return; } // pisar la franja del andén = tomar el tren
       if (this.checkTrigger()) return;
+      // ¡te vieron! — el ¡! del andén (línea de vista estilo FireRed)
+      const spotter = this.trainerSpotting();
+      if (spotter) {
+        this.engage = { npc: spotter, phase: 'alert', t: 0, moving: 0 };
+        MQ.audio.sfx('alert');
+        return;
+      }
       // encuentro salvaje: la pantalla parpadea y arranca la música antes del combate.
       // Tablas nuevas (data/encounters vía encRef) o las clásicas del mapa (enc).
       if (ch !== '~' && ch !== 'g') return;
@@ -1049,13 +1101,28 @@
       for (const n of m.npcs || []) {
         if (n.hideIf && p.flags[n.hideIf]) continue;
         if (n.showIf && !p.flags[n.showIf]) continue;
-        const nx = Math.round(n.x * T - camX), ny = Math.round(n.y * T - camY);
+        const eng = this.engage && this.engage.npc === n ? this.engage : null;
+        // el entrenador que camina hacia ti se interpola como el jugador
+        let ex = 0, ey = 0, step = 0;
+        if (eng && eng.moving > 0) {
+          const [edx, edy] = DIRS[n.dir];
+          ex = -edx * eng.moving; ey = -edy * eng.moving;
+          step = ((eng.moving / 8) | 0) % 2;
+        }
+        const nx = Math.round(n.x * T - camX + ex), ny = Math.round(n.y * T - camY + ey);
         if (nx < -T || ny < -T || nx > MQ.W || ny > MQ.H) continue;
         if (n.mon) MQ.drawMon(ctx, n.mon, nx, ny, 1);
-        else MQ.drawPerson(ctx, nx, ny, MQ.LOOKS[n.look] || MQ.LOOKS.chamo, n.dir || 'down', 0);
+        else MQ.drawPerson(ctx, nx, ny, MQ.LOOKS[n.look] || MQ.LOOKS.chamo, n.dir || 'down', step, !!(eng && eng.moving > 0));
         if (n.boss && !p.flags['t_' + (n.trainer && n.trainer.id)] && (now / 500 | 0) % 2) {
           ctx.fillStyle = '#f5d76e'; ctx.font = MQ.FONT_B;
           ctx.fillText('★', nx + 5, ny - 9);
+        }
+        // el globo del ¡! — brinca dos píxeles, como en el andén de verdad
+        if (eng && eng.phase === 'alert') {
+          const hop = eng.t < 8 ? -2 : 0;
+          MQ.panel(ctx, nx + 2, ny - 18 + hop, 12, 14);
+          ctx.fillStyle = '#e04b32'; ctx.font = MQ.FONT_B; ctx.textBaseline = 'top';
+          ctx.fillText('!', nx + 6, ny - 15 + hop);
         }
       }
       // jugador
