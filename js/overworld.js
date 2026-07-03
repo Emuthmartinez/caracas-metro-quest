@@ -669,7 +669,7 @@
       this.menu = new MQ.Menu([
         { label: 'EQUIPO' }, { label: 'CUADERNO' }, { label: 'MAPA' }, { label: 'MOCHILA' },
         { label: 'CARNET' }, { label: 'LOCKER' }, { label: 'FICHAS' }, { label: 'GUARDAR' },
-        { label: MQ.audio.muted ? 'SONIDO: NO' : 'SONIDO: SÍ' }, { label: 'CERRAR' },
+        { label: 'AJUSTES' }, { label: 'CERRAR' },
       ], { x: MQ.W - 124, y: 8, w: 116, rows: 10, title: p.name + ' · ' + p.money + 'b',
         onPick: (it) => {
           const l = it.label;
@@ -681,8 +681,30 @@
           else if (l === 'LOCKER') this.openLocker();
           else if (l === 'FICHAS') this.showFichas();
           else if (l === 'GUARDAR') { MQ.save(); MQ.audio.sfx('save'); this.menu = null; this.tb.open(MQ.ctx, '¡Partida guardada! Tranquilo, que esto no se lo lleva ni un apagón.'); }
-          else if (l.startsWith('SONIDO')) { MQ.audio.toggleMute(); it.label = MQ.audio.muted ? 'SONIDO: NO' : 'SONIDO: SÍ'; }
+          else if (l === 'AJUSTES') this.openSettings();
           else this.menu = null;
+        },
+        onCancel: () => { this.menu = null; } });
+    }
+
+    // AJUSTES: la pantalla de opciones de toda la vida (texto, estilo de combate, sonido)
+    openSettings() {
+      const p = MQ.player;
+      const labels = () => [
+        `TEXTO: ${{ lento: 'LENTO', medio: 'MEDIO', rapido: 'RÁPIDO' }[p.textSpeed || 'medio']}`,
+        `COMBATE: ${p.battleStyle === 'seguido' ? 'SEGUIDO' : 'CAMBIO'}`,
+        MQ.audio.muted ? 'SONIDO: NO' : 'SONIDO: SÍ',
+        'Listo',
+      ];
+      const refresh = () => labels().forEach((l, i) => { this.menu.items[i].label = l; });
+      this.menu = new MQ.Menu(labels().map((l) => ({ label: l })), {
+        x: MQ.W - 160, y: 8, w: 152, rows: 4, title: 'AJUSTES',
+        onPick: (it, i) => {
+          if (i === 0) p.textSpeed = { medio: 'rapido', rapido: 'lento', lento: 'medio' }[p.textSpeed || 'medio'];
+          else if (i === 1) p.battleStyle = p.battleStyle === 'seguido' ? 'cambio' : 'seguido';
+          else if (i === 2) MQ.audio.toggleMute();
+          else { this.menu = null; return; }
+          refresh();
         },
         onCancel: () => { this.menu = null; } });
     }

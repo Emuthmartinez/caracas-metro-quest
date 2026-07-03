@@ -87,8 +87,9 @@
 
   // Caja de diálogo con páginas. say(texto) -> promesa-like via callback.
   MQ.Textbox = class {
-    constructor() { this.pages = []; this.lines = []; this.done = null; this.speaker = ''; }
+    constructor() { this.pages = []; this.lines = []; this.done = null; this.speaker = ''; this.reveal = 0; }
     open(ctx, text, done, speaker = '') {
+      this.reveal = 0;
       const all = MQ.wrap(ctx, text, MQ.W - 28);
       this.pages = [];
       for (let i = 0; i < all.length; i += 3) this.pages.push(all.slice(i, i + 3));
@@ -100,7 +101,10 @@
     advance() {
       if (!this.active) return;
       MQ.audio && MQ.audio.sfx('blip');
-      if (this.pages.length) this.lines = this.pages.shift();
+      // si la máquina de escribir va por la mitad, A completa la página primero
+      const total = this.lines.join('').length;
+      if (this.reveal > 0 && this.reveal < total) { this.reveal = total; return; }
+      if (this.pages.length) { this.lines = this.pages.shift(); this.reveal = 0; }
       else { this.lines = []; const d = this.done; this.done = null; d && d(); }
     }
     draw(ctx) {
@@ -116,8 +120,18 @@
         ctx.fillText(this.speaker, 13, y - 8);
         ctx.fillStyle = '#e8dfc8';
       }
-      this.lines.forEach((l, i) => ctx.fillText(l, 12, y + 11 + i * 13));
-      if ((performance.now() / 400 | 0) % 2) {
+      // máquina de escribir: revela a la velocidad de AJUSTES
+      const total = this.lines.join('').length;
+      if (this.reveal < total) {
+        const spd = { lento: 1, medio: 2, rapido: 4 }[(MQ.player && MQ.player.textSpeed) || 'medio'] || 2;
+        this.reveal = Math.min(total, this.reveal + spd);
+      }
+      let left = this.reveal;
+      this.lines.forEach((l, i) => {
+        if (left > 0) ctx.fillText(l.slice(0, left), 12, y + 11 + i * 13);
+        left -= l.length;
+      });
+      if (this.reveal >= total && (performance.now() / 400 | 0) % 2) {
         ctx.fillStyle = '#f5a623';
         ctx.fillText('▼', MQ.W - 16, y + h - 13);
       }

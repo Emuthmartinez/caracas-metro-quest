@@ -352,7 +352,22 @@
       this.pvol = freshVol();
       this.say(`¡Échale pichón, ${name(this.mine)}!`, () => {
         this.entryEffects(this.mine, true);
-        this.act(() => { if (forced) this.toMenu(); else this.enemyTurn(); });
+        this.act(() => {
+          // el cambio de cortesía (estilo CAMBIO) no regala turno: entra el rival y a pelear
+          if (this.shiftPending) { this.shiftPending = false; this.sendNextEnemy(); }
+          else if (forced) this.toMenu();
+          else this.enemyTurn();
+        });
+      });
+      this.pump();
+    }
+
+    // el rival que sigue entra al andén
+    sendNextEnemy() {
+      this.say(`${this.trainer.name || this.trainer.cls} saca a ${name(this.enemy)}. ¡La cosa sigue!`, () => {
+        MQ.audio.cry(this.enemy.id);
+        this.entryEffects(this.enemy, false);
+        this.act(() => this.toMenu());
       });
       this.pump();
     }
@@ -1119,12 +1134,26 @@
         MQ.player.dexSeen[this.enemy.id] = true;
         Object.assign(this.est, zeroStages());
         Object.assign(this.evol, freshVol());
-        this.say(`${this.trainer.name || this.trainer.cls} saca a ${name(this.enemy)}. ¡La cosa sigue!`, () => {
-          MQ.audio.cry(this.enemy.id);
-          this.entryEffects(this.enemy, false);
-          this.act(() => this.toMenu());
-        });
-        this.pump();
+        // estilo CAMBIO (el "shift" de FireRed): te avisan quién viene y puedes rotar gratis
+        const canShift = (MQ.player.battleStyle || 'cambio') === 'cambio' && this.mine.hp > 0 &&
+          MQ.player.party.some((m, i) => m.hp > 0 && i !== this.mi);
+        if (canShift) {
+          this.say(`${this.trainer.name || this.trainer.cls} está por sacar a ${name(this.enemy)}. ¿Cambias tú también?`, () => {
+            this.phase = 'shift';
+            this.menu = new MQ.Menu([{ label: 'Sí, cambio' }, { label: 'No, sigo así' }], {
+              x: MQ.W - 136, y: MQ.H - 118, w: 128, rows: 2,
+              onPick: (it) => {
+                this.menu = null;
+                if (it.label.startsWith('Sí')) { this.shiftPending = true; this.openParty(true); }
+                else this.sendNextEnemy();
+              },
+              onCancel: () => { this.menu = null; this.sendNextEnemy(); },
+            });
+          });
+          this.pump();
+          return;
+        }
+        this.sendNextEnemy();
         return;
       }
       if (this.trainer) {
@@ -1521,7 +1550,7 @@
       ctx.fillStyle = '#1a1a28'; ctx.fillRect(MQ.W - 60, 188, 50, 4);
       ctx.fillStyle = '#4a90d9'; ctx.fillRect(MQ.W - 60, 188, 50 * xf, 4);
 
-      if (this.menu && (this.phase === 'menu' || this.phase === 'moves' || this.phase === 'party' || this.phase === 'bag' || this.phase === 'learn'))
+      if (this.menu && (this.phase === 'menu' || this.phase === 'moves' || this.phase === 'party' || this.phase === 'bag' || this.phase === 'learn' || this.phase === 'shift'))
         this.menu.draw(ctx);
       this.tb.draw(ctx);
     }

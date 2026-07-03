@@ -230,6 +230,7 @@ function autoBattle(opts, presses = 3000) {
     if (b.tb.active) { b.press('a'); continue; }
     if (b.phase === 'menu') { b.press('a'); continue; }           // PELEAR
     if (b.phase === 'moves') { pickDamage(b); continue; }
+    if (b.phase === 'shift') { b.press('b'); continue; } // no cambio: sigue el pleito
     if (b.phase === 'party') { if (Math.random() < 0.5) b.press('down'); b.press('a'); continue; }
     if (b.phase === 'bag' || b.phase === 'learn') { b.press('a'); continue; }
   }
@@ -336,6 +337,7 @@ section('Fuzz Gen-3');
           for (let k = 0; k < Math.floor(Math.random() * 4); k++) b.press('down');
           b.press('a'); continue;
         }
+        if (b.phase === 'shift') { b.press('b'); continue; }
         if (b.phase === 'party' || b.phase === 'bag' || b.phase === 'learn') {
           if (Math.random() < 0.3) b.press('down');
           b.press('a');
@@ -468,6 +470,7 @@ section('Overworld');
       for (let k = 0; k < idx; k++) t.press('down');
       t.press('a'); continue;
     }
+    if (t.phase === 'shift') { t.press('b'); continue; }
     if (t.phase === 'party' || t.phase === 'learn' || t.phase === 'bag') { t.press('a'); continue; }
   }
   ok(MQ.player.flags.t_ramon, 'el combate por línea de vista se ganó');
@@ -626,10 +629,93 @@ section('Overworld');
       for (let k = 0; k < idx; k++) b.press('down');
       b.press('a'); continue;
     }
+    if (b.phase === 'shift') { b.press('b'); continue; }
     if (b.phase === 'party' || b.phase === 'learn' || b.phase === 'bag') { b.press('a'); continue; }
   }
   ok(res === 'win', 'el Probador cae ante el frontino');
   ok(b.showTrainer === true, 'el vencido vuelve a dar la cara en la despedida');
+}
+
+// AJUSTES: máquina de escribir, estilo CAMBIO/SEGUIDO y el menú que los gobierna
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 40), MQ.makeMon('chigui', 38)];
+  MQ.player.flags.starter = true;
+  // máquina de escribir: el texto se revela al dibujar y A completa la página
+  const tb = new MQ.Textbox();
+  tb.open(MQ.ctx, 'Un texto largo del andén que la máquina de escribir revela letra por letra, con calma criolla.');
+  ok(tb.reveal === 0, 'la página arranca sin revelar');
+  tb.draw(MQ.ctx); tb.draw(MQ.ctx);
+  ok(tb.reveal > 0 && tb.reveal < tb.lines.join('').length, 'el texto se va escribiendo');
+  tb.advance();
+  ok(tb.reveal === tb.lines.join('').length && tb.active, 'A completa la página sin pasarla');
+  while (tb.active) tb.advance();
+  ok(!tb.active, 'la caja cierra al agotar las páginas');
+
+  // estilo CAMBIO: aviso de relevo con cambio gratis (sin turno regalado)
+  let res = null;
+  const b = new MQ.BattleScene({ trainer: { id: 'x_duo', cls: 'Probadora', name: 'Dúo', look: 'chama',
+    team: [['cachicamo', 3], ['bachaquito', 3]], money: 10, intro: 'Van dos.', win: 'Bien.', lose: 'Ja.' } }, (r) => { res = r; });
+  let sawShift = false, shifted = false, steps = 0;
+  while (!res && steps++ < 4000) {
+    b.update();
+    if (b.tb.active) { b.press('a'); continue; }
+    if (b.phase === 'shift') {
+      sawShift = true;
+      if (!shifted) { b.press('a'); shifted = true; } // Sí, cambio
+      else b.press('b');
+      continue;
+    }
+    if (b.phase === 'party') { b.press('down'); b.press('a'); continue; }
+    if (b.phase === 'menu') { b.press('a'); continue; }
+    if (b.phase === 'moves') {
+      let idx = b.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (b.mine.pp[m] ?? 0) > 0);
+      if (idx < 0) idx = 0;
+      for (let k = 0; k < idx; k++) b.press('down');
+      b.press('a'); continue;
+    }
+    if (b.phase === 'learn' || b.phase === 'bag') { b.press('a'); continue; }
+  }
+  ok(sawShift, 'el estilo CAMBIO avisa el relevo rival');
+  ok(res === 'win', 'la Probadora cae con cambio de por medio');
+  ok(b.mi === 1, 'el cambio de cortesía entró de verdad');
+
+  // en SEGUIDO no hay aviso
+  MQ.player.battleStyle = 'seguido';
+  MQ.player.party.forEach(MQ.fullHeal);
+  res = null; sawShift = false; steps = 0;
+  const b2 = new MQ.BattleScene({ trainer: { id: 'x_duo2', cls: 'Probadora', name: 'Dúo II', look: 'chama',
+    team: [['cachicamo', 3], ['bachaquito', 3]], money: 10, intro: 'Van dos.', win: 'Bien.', lose: 'Ja.' } }, (r) => { res = r; });
+  while (!res && steps++ < 4000) {
+    b2.update();
+    if (b2.tb.active) { b2.press('a'); continue; }
+    if (b2.phase === 'shift') { sawShift = true; b2.press('b'); continue; }
+    if (b2.phase === 'menu') { b2.press('a'); continue; }
+    if (b2.phase === 'moves') {
+      let idx = b2.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (b2.mine.pp[m] ?? 0) > 0);
+      if (idx < 0) idx = 0;
+      for (let k = 0; k < idx; k++) b2.press('down');
+      b2.press('a'); continue;
+    }
+    if (b2.phase === 'party' || b2.phase === 'learn' || b2.phase === 'bag') { b2.press('a'); continue; }
+  }
+  ok(res === 'win' && !sawShift, 'en SEGUIDO el relevo entra sin preguntar');
+  MQ.player.battleStyle = 'cambio';
+
+  // el menú AJUSTES rota las opciones
+  MQ.player.map = 'propatria';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  w.openSettings();
+  ok(!!w.menu && w.menu.items[0].label.includes('MEDIO'), 'AJUSTES abre con TEXTO: MEDIO');
+  w.press('a');
+  ok(MQ.player.textSpeed === 'rapido' && w.menu.items[0].label.includes('RÁPIDO'), 'TEXTO rota a RÁPIDO');
+  w.press('down'); w.press('a');
+  ok(MQ.player.battleStyle === 'seguido' && w.menu.items[1].label.includes('SEGUIDO'), 'COMBATE rota a SEGUIDO');
+  w.press('b');
+  ok(!w.menu, 'AJUSTES cierra con B');
+  MQ.player.textSpeed = 'medio'; MQ.player.battleStyle = 'cambio';
 }
 
 // el vigilante que gira: te encuentra hasta parado (spinner estilo FireRed)
@@ -719,6 +805,7 @@ section('Overworld');
         for (let k = 0; k < Math.max(0, idx); k++) t.press('down');
         t.press('a'); continue;
       }
+      if (t.phase === 'shift') { t.press('b'); continue; }
       if (t.phase === 'party') { if (Math.random() < 0.5) t.press('down'); t.press('a'); continue; }
       if (t.phase === 'bag' || t.phase === 'learn') { t.press('a'); continue; }
       if (t.pages) { t.press('a'); continue; } // EndScene
@@ -952,6 +1039,7 @@ section('Gente');
       for (let k = 0; k < Math.max(0, idx); k++) t.press('down');
       t.press('a'); continue;
     }
+    if (t.phase === 'shift') { t.press('b'); continue; }
     if (t.phase === 'party') { if (Math.random() < 0.5) t.press('down'); t.press('a'); continue; }
     if (t.phase === 'bag' || t.phase === 'learn') { t.press('a'); continue; }
   }
