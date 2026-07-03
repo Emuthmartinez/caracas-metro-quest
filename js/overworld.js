@@ -307,20 +307,9 @@
         const [spk, txt] = Array.isArray(op.say) ? op.say : ['', op.say];
         this.tb.open(MQ.ctx, txt, () => this.stepScript(), spk);
       } else if (op.battle) {
-        MQ.pushScene(new MQ.BattleScene({
-          ambience: { theme: this.map.theme, region: this.map.region },
-          dark: this.map.theme === 'tunel' || this.map.theme === 'ghost',
-          weather: this.map.weather,
-          ...op.battle }, (res) => {
-          MQ.popScene();
-          MQ.audio.music(this.map.music || 'town');
-          if (res === 'lose') { this.script = null; MQ.respawn(this); return; }
-          if (op.battle.trainer) MQ.player.flags['t_' + op.battle.trainer.id] = true;
-          if (op.winScript && (res === 'win' || res === 'catch')) {
-            s.list.splice(s.i, 0, ...op.winScript);
-          }
-          this.stepScript();
-        }));
+        // el remolino a negro antes del combate, como manda el original
+        this.wipe = { t: 36, fn: () => this.startBattleOp(op, s) };
+        MQ.audio.sfx('toss');
       } else if (op.flag) { MQ.setFlag(op.flag); this.stepScript(); }
       else if (op.give) { MQ.player.bag[op.give.item] = (MQ.player.bag[op.give.item] || 0) + op.give.n; MQ.audio.sfx('ficha'); this.stepScript(); }
       else if (op.money) { MQ.player.money += op.money; this.stepScript(); }
@@ -339,6 +328,23 @@
       else if (op.warpTo) { const w = op.warpTo; MQ.player.x = w.x; MQ.player.y = w.y; this.enterMap(w.map); this.stepScript(); }
       else if (op.ending) { this.script = null; MQ.startEnding(); }
       else this.stepScript();
+    }
+
+    startBattleOp(op, s) {
+      MQ.pushScene(new MQ.BattleScene({
+        ambience: { theme: this.map.theme, region: this.map.region },
+        dark: this.map.theme === 'tunel' || this.map.theme === 'ghost',
+        weather: this.map.weather,
+        ...op.battle }, (res) => {
+        MQ.popScene();
+        MQ.audio.music(this.map.music || 'town');
+        if (res === 'lose') { this.script = null; MQ.respawn(this); return; }
+        if (op.battle.trainer) MQ.player.flags['t_' + op.battle.trainer.id] = true;
+        if (op.winScript && (res === 'win' || res === 'catch')) {
+          s.list.splice(s.i, 0, ...op.winScript);
+        }
+        this.stepScript();
+      }));
     }
 
     checkTrigger() {
@@ -933,6 +939,11 @@
         }
         return;
       }
+      // el remolino a negro del combate pactado
+      if (this.wipe) {
+        if (--this.wipe.t <= 0) { const fn = this.wipe.fn; this.wipe = null; fn(); }
+        return;
+      }
       // destello del encuentro salvaje
       if (this.encFlash > 0) {
         this.encFlash--;
@@ -1230,6 +1241,18 @@
       if (this.encFlash > 0 && (this.encFlash / 4 | 0) % 2) {
         ctx.fillStyle = 'rgba(245,235,210,0.85)';
         ctx.fillRect(0, 0, MQ.W, MQ.H);
+      }
+      // iris que se cierra sobre ti: el túnel se traga la luz y arranca el pleito
+      if (this.wipe) {
+        const f = 1 - this.wipe.t / 36;
+        const r = Math.max(MQ.W, MQ.H) * 0.75 * (1 - f) + 6;
+        ctx.save();
+        ctx.fillStyle = '#08060e';
+        ctx.beginPath();
+        ctx.rect(0, 0, MQ.W, MQ.H);
+        ctx.arc(Math.round(ppx - camX) + 8, Math.round(ppy - camY) + 8, r, 0, Math.PI * 2, true);
+        ctx.fill('evenodd');
+        ctx.restore();
       }
     }
 
