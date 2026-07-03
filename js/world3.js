@@ -69,7 +69,12 @@
       { say: [null, intro] },
       { fn: () => MQ.audio.cry(id) },
       { battle: { wild: { id, lvl }, noFlee: true },
-        winScript: [{ flag: 'static_' + id }, { fn: () => MQ.save(true) }] },
+        // solo desaparece si lo fichaste; si lo noqueas, vuelve otra noche
+        // (el Cuaderno de 150 no puede quedar trancado por un crítico de más)
+        winScript: [
+          { fn: () => { if (MQ.player.dexCaught[id]) MQ.setFlag('static_' + id); } },
+          { fn: () => MQ.save(true) },
+        ] },
     ];
   };
   Object.assign(MQ.SCRIPTS, {
@@ -308,15 +313,11 @@
     { x: 26, y: 8, look: 'rival', dir: 'down', name: 'Cheo', hideIf: 'rival3', script: 'rival3' });
 
   // Cheo final: después de las cuatro ánimas, antes de que el Consejo te bendiga.
-  const lineOf = (id) => MQ.player.party.concat(MQ.player.locker).some((m) => m.id === id) || MQ.player.dexCaught[id];
-  const starterOf = () => {
-    for (const id of ['frontinito', 'ucumari', 'waraira']) if (lineOf(id)) return 'frontinito';
-    for (const id of ['turpialin', 'cantaclaro', 'florentin']) if (lineOf(id)) return 'turpialin';
-    return 'cocuyin';
-  };
+  const CHEO_COUNTER_FINAL = { frontinito: 'caribazo', turpialin: 'centellon', cocuyin: 'chiguiral' };
+  const starterOf = () => (MQ.firstStarter ? MQ.firstStarter() : 'frontinito');
   Object.assign(MQ.SCRIPTS, {
     rival4: () => {
-      const counter = { frontinito: 'caribazo', turpialin: 'centellon', cocuyin: 'chiguiral' }[starterOf()] || 'caribazo';
+      const counter = CHEO_COUNTER_FINAL[starterOf()] || 'caribazo';
       return [
         { say: ['Cheo', 'Primo. Cuatro ánimas me dejaron pasar y una sola pregunta me trajo hasta aquí: ¿qué se siente quedarse?'] },
         { say: ['Cheo', 'Yo me fui cinco años y volví de visita. Tú te quedaste y la ciudad entera te conoce por tu nombre. Vamos a ver quién aprendió más.'] },
@@ -418,12 +419,14 @@
         const gained = Math.min(Math.floor((p.steps - p.daycare.steps) / 256), 100 - p.daycare.mon.lvl);
         const cost = 100 + gained * 100;
         const name = MQ.SPECIES[p.daycare.mon.id].name;
+        if (p.money < cost) return [
+          { say: ['la Tía', `¡Llegaste! ${name} está ${gained > 0 ? `más grande: subió ${gained} nivel${gained === 1 ? '' : 'es'}` : 'igualito, pero bien comido'}. Son ${cost} bolos de cariño... y no te alcanzan, mijo. Aquí te lo sigo cuidando sin apuro.`] },
+        ];
         return [
           { say: ['la Tía', `¡Llegaste! ${name} está ${gained > 0 ? `más grande: subió ${gained} nivel${gained === 1 ? '' : 'es'} caminando conmigo` : 'igualito, pero bien comido'}. Son ${cost} bolos de cariño.`] },
           { choice: { title: `¿Recogerlo (${cost}b)?`, options: [
             { label: 'Sí, gracias Tía', script: [
               { fn: () => {
-                if (p.money < cost) return;
                 p.money -= cost;
                 const m = p.daycare.mon;
                 m.lvl = Math.min(100, m.lvl + gained);
@@ -459,7 +462,7 @@
     },
     // Cheo, ya quedado, entrena contigo en San Antonio cada vez que subas
     rival5: () => {
-      const counter = { frontinito: 'caribazo', turpialin: 'centellon', cocuyin: 'chiguiral' }[starterOf()] || 'caribazo';
+      const counter = CHEO_COUNTER_FINAL[starterOf()] || 'caribazo';
       return [
         { say: ['Cheo', 'Primo. Ahora que me quedé, subo aquí los fines de semana a entrenar con la niebla. ¿Le damos?'] },
         { battle: { trainer: { id: 'cheorematch', cls: 'Tu primo', name: 'Cheo', boss: true, money: 5000,

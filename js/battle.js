@@ -175,6 +175,7 @@
       const p = MQ.player, item = MQ.ITEMS[k];
       if (item.ball) {
         if (this.trainer) { this.say('¡A los espantos ajenos no se les lanza ficha! Eso es de mala educación.', () => this.toMenu()); this.pump(); return; }
+        if (this.opts.noCatch) { this.say(`${name(this.enemy)} no vino a que lo fichen: vino a que lo ayuden. Guarda la ficha para cuando él decida.`, () => this.toMenu()); this.pump(); return; }
         p.bag[k]--;
         this.throwFicha(item);
       } else if (item.battleStage) {
@@ -355,7 +356,7 @@
 
     tryFlee() {
       if (this.trainer) { this.say('¡De un duelo no se huye, chamo! Eso no se hace.', () => this.toMenu()); this.pump(); return; }
-      if (this.opts.noFlee) { this.say('¡El Tren Fantasma bloquea el túnel! No hay pa\' dónde correr.', () => this.toMenu()); this.pump(); return; }
+      if (this.opts.noFlee) { this.say(`¡${name(this.enemy)} cierra todos los caminos! No hay pa' dónde correr.`, () => this.toMenu()); this.pump(); return; }
       if (this.pvol.trap > 0 || this.pvol.noescape) {
         this.say('¡Estás atrapado! No hay carrerita que valga.', () => this.enemyTurn());
         this.pump();
@@ -520,11 +521,12 @@
       }
       // flojera (Pereza): descansa ronda por medio
       if (atk.ability === 'flojera') {
-        aVol.loaf = !aVol.loaf;
-        if (aVol.loaf === false) { /* actúa */ } else if (aVol.loaf) {
+        if (aVol.loaf) {
+          aVol.loaf = false;
           this.say(`${name(atk)} está flojeando... mañana sí.`, then);
           return;
         }
+        aVol.loaf = true; // este turno trabaja; el que viene, flojea
       }
       // amedrentado este turno
       if (aVol.flinch) {
@@ -1106,8 +1108,9 @@
     }
 
     nextEnemyOrWin() {
-      if (this.trainer && this.ei < this.eteam.length - 1) {
-        this.ei++;
+      const nextAlive = this.trainer && this.eteam.findIndex((m) => m.hp > 0);
+      if (this.trainer && nextAlive >= 0) {
+        this.ei = nextAlive;
         this.enemy = this.eteam[this.ei];
         this.anim.efall = 0;
         MQ.player.dexSeen[this.enemy.id] = true;
@@ -1150,6 +1153,9 @@
       // limpia volátiles que no deben salir del andén
       for (const m of MQ.player.party) { delete m._disp; }
       delete this.enemy._disp;
+      // al fichar el combate termina sin experiencia: nadie evoluciona
+      // (y el recién fichado conserva su forma, como manda el clásico)
+      if (result === 'catch') { this.onEnd(result); return; }
       // evoluciones pendientes (por nivel o por confianza)
       const evos = MQ.player.party.filter((m) => {
         const ev = MQ.SPECIES[m.id].evolve;

@@ -254,6 +254,7 @@
     return 'cocuyin';
   };
   const hasLine = (id) => MQ.player.party.concat(MQ.player.locker).some((m) => m.id === id) || MQ.player.dexCaught[id];
+  MQ.firstStarter = firstStarter; // el contra-pick de Cheo vive en world3 también
 
   // ---- escenas: pila --------------------------------------------------------------
   MQ.scenes = [];
@@ -411,7 +412,7 @@
   class EndScene {
     constructor() {
       this.i = 0; this.t = 0;
-      MQ.setFlag('ending'); // libera al Catatumbo en la Línea Fantasma
+      MQ.setFlag('ending'); // abre el post-juego: el Catatumbo en la cumbre, el Carretón en Los Teques
       MQ.audio.music('gaita');
       this.pages = [
         'El Tren Fantasma se detiene por primera vez en cuarenta años.\n\nLas puertas se abren con un suspiro de 1983.',
@@ -428,7 +429,7 @@
           MQ.popScene();
           MQ.save(true);
           const w = top();
-          if (w && w.tb) w.tb.open(MQ.ctx, 'POSDATA: dicen que con el alboroto, el mismísimo CATATUMBO bajó a curiosear por la Línea Fantasma. Brilla entre las sombras... por si te atreves.');
+          if (w && w.tb) w.tb.open(MQ.ctx, 'POSDATA: dicen que con el alboroto, el mismísimo CATATUMBO bajó a posarse en la cumbre del Ávila. Sube por el Teleférico y la Puerta del Ávila... por si te atreves.');
         }
       }
     }

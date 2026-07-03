@@ -67,7 +67,6 @@
     };
   }
 
-  const heal3 = ['malta', 'cafe'];
 
   // ---- Diálogo del primo (depende de tu inicial) -------------------------------
   MQ.cheoCounter = (starter) =>

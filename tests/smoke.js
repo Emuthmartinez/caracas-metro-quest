@@ -282,7 +282,7 @@ ok(MQ.player.money === 300, `dinero del entrenador pagado (${MQ.player.money})`)
 {
   MQ.player = MQ.newPlayer('T', 'player');
   const m = MQ.makeMon('frontinito', 15);
-  m.xp = MQ.xpForLevel(16) - 1;
+  m.xp = MQ.xpForLevel(16, MQ.xpGroupOf('frontinito')) - 1;
   MQ.player.party = [m];
   let result = null;
   const b = new MQ.BattleScene({ wild: { id: 'caribito', lvl: 3 } }, (r) => { result = r; });

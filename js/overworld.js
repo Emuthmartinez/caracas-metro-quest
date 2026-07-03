@@ -305,7 +305,11 @@
         const [spk, txt] = Array.isArray(op.say) ? op.say : ['', op.say];
         this.tb.open(MQ.ctx, txt, () => this.stepScript(), spk);
       } else if (op.battle) {
-        MQ.pushScene(new MQ.BattleScene({ ambience: { theme: this.map.theme, region: this.map.region }, ...op.battle }, (res) => {
+        MQ.pushScene(new MQ.BattleScene({
+          ambience: { theme: this.map.theme, region: this.map.region },
+          dark: this.map.theme === 'tunel' || this.map.theme === 'ghost',
+          weather: this.map.weather,
+          ...op.battle }, (res) => {
           MQ.popScene();
           MQ.audio.music(this.map.music || 'town');
           if (res === 'lose') { this.script = null; MQ.respawn(this); return; }
@@ -439,6 +443,10 @@
       for (const line of lines)
         for (const s of line.stops)
           if (known.has(s) && !stops.includes(s)) stops.push(s);
+      if (!lines.length || (MQ.LINES && !lines.some((l) => l.stops.includes(p.map)))) {
+        this.tb.open(MQ.ctx, 'Las luces prenden, el cartel brilla... pero por esta vía nunca ha pasado un tren. Bello Monte quedó a medio hacer, como tantas promesas.', null, 'Voz del Metro');
+        return;
+      }
       if (!stops.length) {
         this.tb.open(MQ.ctx, 'El tren de la hora fantasma solo para en estaciones que ya conoces. Camina los túneles primero. Cuando vuelvas, párate aquí en la franja del andén y listo.', null, 'Voz del Metro');
         return;
@@ -667,7 +675,12 @@
             if (item.biper) {
               this.menu = null;
               if ((p.biperCharge || 0) < 100) { this.tb.open(MQ.ctx, `El Bíper parpadea sin señal: le faltan ${100 - (p.biperCharge || 0)} pasos de carga.`); return; }
-              const rematch = (this.map.npcs || []).filter((n) => n.trainer && p.flags['t_' + n.trainer.id]);
+              // banderas t_ que otras personas usan como reja de aparición: intocables
+              const gated = new Set();
+              for (const mm of Object.values(MQ.MAPS))
+                for (const nn of mm.npcs || []) if (nn.showIf) gated.add(nn.showIf);
+              const rematch = (this.map.npcs || []).filter((n) =>
+                n.trainer && !n.trainer.boss && !gated.has('t_' + n.trainer.id) && p.flags['t_' + n.trainer.id]);
               if (!rematch.length) { this.tb.open(MQ.ctx, 'El Bíper suena en el vacío: aquí no hay entrenadores pendientes de revancha.'); return; }
               for (const n of rematch) delete p.flags['t_' + n.trainer.id];
               p.biperCharge = 0;
@@ -897,7 +910,7 @@
       const ch = this.tile(p.x, p.y);
       // el safari se camina con pasos contados (spec §1.5)
       if (this.map.id === 'in_safari') {
-        p.safariSteps = (p.safariSteps ?? 500) - 1;
+        p.safariSteps = (p.safariSteps ?? 0) - 1;
         if (p.safariSteps <= 0) {
           p.safariSteps = 0;
           const back = MQ.MAPS.st_zoologico.warps.find((w) => w.to === 'in_safari');

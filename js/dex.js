@@ -60,7 +60,7 @@
     que:  { name: 'QUE', color: '#e85a1a', verb: 'quedó quemado' },
     pav:  { name: 'PAV', color: '#8a8adf', verb: 'quedó empavado' },
   };
-  // mareo es volátil (m.mareo: turnos restantes); se muestra aparte y se va al cambiar
+  // mareo es volátil: vive en los volátiles del combate (pvol/evol), no en el mon
   MQ.VOLATILE = { mareo: { name: 'MAREO', color: '#d98aa0', verb: 'quedó mareado por el gentío' } };
 
   // ---- Clima de combate (5 condiciones criollas, spec §2.4) -------------------
@@ -299,7 +299,7 @@
       item: opts.item || null,
       confianza: 70,
       moves: MQ.movesAtLevel(id, lvl),
-      status: null, mareo: 0, pp: {},
+      status: null, pp: {},
       shiny: opts.shiny ?? (MQ.rand(MQ.shinyOdds()) === 0),
     };
     MQ.ensurePP(m);
@@ -329,8 +329,7 @@
     m.ability = m.ability || rollAbility(sp);
     m.item = m.item || null;
     m.confianza = m.confianza ?? 70;
-    m.mareo = m.mareo || 0;
-    m.xp = MQ.xpForLevel(m.lvl, sp.exp_group);
+    m.xp = Math.max(m.xp || 0, MQ.xpForLevel(m.lvl, sp.exp_group)); // no se pierde lo caminado
     MQ.recalcStats(m);
     return m;
   };
@@ -348,7 +347,6 @@
     MQ.migrateMon(m);
     m.hp = m.maxhp;
     m.status = null;
-    m.mareo = 0;
     m.pp = {};
     MQ.ensurePP(m);
   };
