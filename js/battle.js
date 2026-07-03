@@ -58,6 +58,7 @@
       p.dexSeen[this.enemy.id] = true;
       this.mi = p.party.findIndex((m) => m.hp > 0);
       this.mine = p.party[this.mi];
+      this.parts = new Set([this.mi]); // los que pelearon contra el rival de turno
       this.pst = zeroStages(); this.est = zeroStages();
       this.pvol = freshVol(); this.evol = freshVol();
       const foes = this.eteam ? this.eteam.map((m) => m.id) : [this.enemy.id];
@@ -350,6 +351,7 @@
         prev.status = null; prev.psn2T = 0;
       }
       this.mi = idx; this.mine = MQ.player.party[idx];
+      this.parts && this.parts.add(idx);
       this.anim.mfall = 0;
       this.pst = zeroStages();
       this.pvol = freshVol();
@@ -368,6 +370,7 @@
     // el rival que sigue entra al andén
     sendNextEnemy() {
       this.showTrainer = false; // la figura cede el puesto al espanto que entra
+      this.parts = new Set([this.mi]); // cuenta nueva: participantes contra el que entra
       this.say(`${this.trainer.name || this.trainer.cls} saca a ${name(this.enemy)}. ¡La cosa sigue!`, () => {
         MQ.audio.cry(this.enemy.id);
         this.entryEffects(this.enemy, false);
@@ -1065,26 +1068,43 @@
       this.say(`¡${name(e)} rival quedó fuera de servicio!`, () => this.giveXP(e));
     }
 
+    // calle (EVs) del caído + confianza, tope Gen 3
+    applySpoils(m, e) {
+      const yieldEv = MQ.SPECIES[e.id].ev_yield || {};
+      m.evs = m.evs || MQ.zeroEVs();
+      const total = Object.values(m.evs).reduce((a, b) => a + b, 0);
+      let room = 510 - total;
+      for (const [st, n] of Object.entries(yieldEv)) {
+        const add = Math.min(n, room, 252 - (m.evs[st] || 0));
+        if (add > 0) { m.evs[st] += add; room -= add; }
+      }
+      m.confianza = Math.min(255, (m.confianza || 70) + 2);
+    }
+
     giveXP(e) {
-      const m = this.mine;
-      if (m.hp > 0) {
-        let xp = Math.floor(MQ.expYield(e.id) * e.lvl / 7 * (this.trainer ? 1.5 : 1));
-        if (m.item === 'huevoguacharaca') xp = Math.floor(xp * 1.5);
+      const party = MQ.player.party;
+      // Gen 3: los que pelearon contra este rival se reparten la experiencia;
+      // si alguien carga la Media Arepa, la mitad es de los que pelearon y la
+      // otra mitad de los que la cargan sin pelear. Calle y confianza pa' todos.
+      const parts = [...(this.parts || new Set([this.mi]))].filter((i) => party[i] && party[i].hp > 0);
+      const shareIdx = party.map((m, i) => i).filter((i) => party[i].hp > 0 && party[i].item === 'mediaarepa' && !parts.includes(i));
+      const base = Math.floor(MQ.expYield(e.id) * e.lvl / 7 * (this.trainer ? 1.5 : 1));
+      const recipients = [];
+      const pool = shareIdx.length ? Math.floor(base / 2) : base;
+      for (const i of parts) recipients.push({ m: party[i], xp: Math.floor(pool / Math.max(1, parts.length)) });
+      for (const i of shareIdx) recipients.push({ m: party[i], xp: Math.floor(base / 2 / shareIdx.length) });
+      const next = () => {
+        const r = recipients.shift();
+        if (!r) return this.nextEnemyOrWin();
+        let xp = r.xp;
+        if (r.m.item === 'huevoguacharaca') xp = Math.floor(xp * 1.5);
         xp = Math.max(1, xp);
-        m.xp += xp;
-        // calle (EVs) del caído, tope Gen 3
-        const yieldEv = MQ.SPECIES[e.id].ev_yield || {};
-        m.evs = m.evs || MQ.zeroEVs();
-        const total = Object.values(m.evs).reduce((a, b) => a + b, 0);
-        let room = 510 - total;
-        for (const [st, n] of Object.entries(yieldEv)) {
-          const add = Math.min(n, room, 252 - (m.evs[st] || 0));
-          if (add > 0) { m.evs[st] += add; room -= add; }
-        }
-        m.confianza = Math.min(255, (m.confianza || 70) + 2);
-        this.say(`${name(m)} gana ${xp} puntos de experiencia.`);
-        this.levelUps(m, () => this.nextEnemyOrWin());
-      } else this.nextEnemyOrWin();
+        r.m.xp += xp;
+        this.applySpoils(r.m, e);
+        this.say(`${name(r.m)} gana ${xp} puntos de experiencia.`);
+        this.levelUps(r.m, next);
+      };
+      next();
       this.pump();
     }
 

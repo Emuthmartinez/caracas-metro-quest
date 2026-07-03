@@ -402,6 +402,7 @@
     monedalocha: { name: 'Moneda de Locha', price: 400, desc: 'Equipado: 10% de amedrentar al golpear. Una locha con historia.', hold: 'kingsrock' },
     huevoguacharaca: { name: 'Huevo de Guacharaca', price: 500, desc: 'Equipado: gana 1.5x de experiencia. Madruga como su madre.', hold: 'luckyegg' },
     morocota:  { name: 'Morocota',          price: 500, desc: 'Equipado: dobla los bolos ganados en duelos. Oro del de antes.', hold: 'amuletcoin' },
+    mediaarepa: { name: 'Media Arepa',      price: 500, desc: 'Equipado: al que la carga le llega la mitad de la experiencia sin pelear. Compartir es de panas.', hold: 'expshare' },
     campanavagon: { name: 'Campana del Vagón', price: 450, desc: 'Equipado: recupera 1/8 del daño que causa. Din, don.', hold: 'shellbell' },
     azabachepulsera: { name: 'Azabache de Pulsera', price: 450, desc: 'Equipado: 10% de aguantar a 1 PS un golpe fatal.', hold: 'focusband' },
     polvomariposa: { name: 'Polvo de Mariposa', price: 450, desc: 'Equipado: evasión x1.1. De las mariposas amarillas del andén.', hold: 'brightpowder' },

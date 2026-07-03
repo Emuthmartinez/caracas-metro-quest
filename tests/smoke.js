@@ -719,6 +719,52 @@ section('Overworld');
   MQ.player.textSpeed = 'medio'; MQ.player.battleStyle = 'cambio';
 }
 
+// la experiencia se reparte: participantes (Gen 3) y la Media Arepa
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 30), MQ.makeMon('chigui', 28), MQ.makeMon('morrocoy', 26)];
+  MQ.player.flags.starter = true;
+  MQ.player.party[2].item = 'mediaarepa'; // el tercero acompaña sin pelear
+  const [xp0, xp1, xp2] = MQ.player.party.map((m) => m.xp);
+  let res = null;
+  const b = new MQ.BattleScene({ wild: { id: 'cachicamo', lvl: 5 } }, (r) => { res = r; });
+  let didSwitch = false, steps = 0;
+  while (!res && steps++ < 4000) {
+    b.update();
+    if (b.tb.active) { b.press('a'); continue; }
+    if (b.phase === 'menu') {
+      if (!didSwitch) { b.press('down'); b.press('down'); } // EQUIPO (cambiar primero)
+      b.press('a'); continue;
+    }
+    if (b.phase === 'party') { didSwitch = true; b.press('down'); b.press('a'); continue; }
+    if (b.phase === 'moves') {
+      let idx = b.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (b.mine.pp[m] ?? 0) > 0);
+      if (idx < 0) idx = 0;
+      for (let k = 0; k < idx; k++) b.press('down');
+      b.press('a'); continue;
+    }
+    if (b.phase === 'shift' || b.phase === 'bag' || b.phase === 'learn') { b.press('a'); continue; }
+  }
+  ok(res === 'win', 'el combate con cambio se ganó');
+  const [g0, g1, g2] = MQ.player.party.map((m, i) => m.xp - [xp0, xp1, xp2][i]);
+  ok(g0 > 0 && g1 > 0, `los dos participantes ganan experiencia (${g0}, ${g1})`);
+  ok(g2 > 0, `la Media Arepa le reparte al de la banca (${g2})`);
+  ok(g2 >= g0 + g1 - 2, 'la mitad del banquero equivale a la mitad de los que pelearon');
+  ok((MQ.player.party[2].evs && Object.values(MQ.player.party[2].evs).some((v) => v > 0)), 'la calle también le llega al de la Media Arepa');
+
+  // la Panadera la regala una sola vez
+  MQ.player.map = 'sabanagrande';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  w.runScript(MQ.SCRIPTS['regalo:mediaarepa']());
+  for (let i = 0; i < 40 && (w.tb.active || w.script); i++) { w.update(); if (w.tb.active) w.press('a'); }
+  ok(MQ.player.bag.mediaarepa === 1, 'la Panadera entrega la Media Arepa');
+  w.runScript(MQ.SCRIPTS['regalo:mediaarepa']());
+  for (let i = 0; i < 40 && (w.tb.active || w.script); i++) { w.update(); if (w.tb.active) w.press('a'); }
+  ok(MQ.player.bag.mediaarepa === 1, 'y una sola vez');
+}
+
 // el Fanático: el hincha de los Jefes, con su dato antes y su fiesta después
 {
   let pares = 0;

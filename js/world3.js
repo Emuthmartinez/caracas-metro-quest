@@ -363,6 +363,24 @@
   });
   npcsOf('propatria').push({ x: 5, y: 8, look: 'chamo', dir: 'right', name: 'el Maratonista', script: 'regalo:cholas' });
 
+  // la Panadera del Bulevar: la Media Arepa (el Exp Share criollo)
+  Object.assign(MQ.SCRIPTS, {
+    'regalo:mediaarepa': () => {
+      if (MQ.player.bag.mediaarepa || MQ.player.flags.mediaarepa) return [
+        { say: ['la Panadera', 'La arepa entera es pa\'l que pelea; la media, pa\'l que acompaña. Así se cría un equipo.'] },
+      ];
+      return [
+        { say: ['la Panadera', 'Mi horno lleva prendido desde el 83. ¿Sabes qué aprendí? Que nadie crece comiendo solo.'] },
+        { give: { item: 'mediaarepa', n: 1 } },
+        { flag: 'mediaarepa' },
+        { sfx: 'catch' },
+        { say: ['', '★ ¡Obtienes la MEDIA AREPA! ★'] },
+        { say: ['la Panadera', 'Dásela a cargar a uno de tu equipo: aunque no pelee, le llega su mitad de la experiencia. Compartir es de panas.'] },
+      ];
+    },
+  });
+  npcsOf('sabanagrande').push({ x: 16, y: 8, look: 'senora', dir: 'down', name: 'la Panadera', script: 'regalo:mediaarepa' });
+
   // ---- el Fanático: el hincha de los Jefes (el "gym guide" de toda la vida) ----------
   // Antes del combate sopla el dato del equipo rival; después, celebra como si
   // hubiera peleado él. Mismo chamo en las ocho estaciones, nadie sabe cómo llega.
