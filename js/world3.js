@@ -380,7 +380,7 @@
   // La Torre (Independencia): tres duelos seguidos, sin curarse entre medio.
   Object.assign(MQ.SCRIPTS, {
     'torre:reto': () => [
-      { say: ['la Relojera', 'Bienvenido a LA TORRE. Tres retadores, uno detrás del otro, sin Doctorcito entre medio. El reloj de arriba lleva la cuenta desde 1953.'] },
+      { say: ['la Relojera', `Bienvenido a LA TORRE. Tres retadores, uno detrás del otro, sin Doctorcito entre medio.${(MQ.player.torreWins || 0) > 0 ? ` El reloj lleva tu cuenta: ${MQ.player.torreWins} ronda${MQ.player.torreWins === 1 ? '' : 's'} limpia${MQ.player.torreWins === 1 ? '' : 's'}.` : ' El reloj de arriba lleva la cuenta desde 1953.'}`] },
       { choice: { title: '¿Aceptar el reto?', options: [
         { label: '¡Que suene el reloj!', script: [
           { battle: { trainer: { id: 'torre1', cls: 'Retador de la Torre', name: 'Ávido', money: 0,
@@ -396,6 +396,7 @@
                     intro: 'Piso tres. Yo le doy cuerda al reloj desde antes del Metro. A ver si llegas puntual a tu propia victoria.',
                     win: 'Puntual. La Torre te reconoce: llévate esto.', lose: 'Llegaste tarde. Como casi todos.' } },
                     winScript: [
+                      { fn: () => { MQ.player.torreWins = (MQ.player.torreWins || 0) + 1; } },
                       { give: { item: 'estampa', n: 3 } },
                       { give: { item: 'cariaquitodoble', n: 2 } },
                       { give: { item: 'morocota', n: 1 } },

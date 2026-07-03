@@ -355,6 +355,13 @@
       const npc = this.npcAt(tx, ty);
       if (npc) return this.talkTo(npc);
       const ch = this.tile(tx, ty);
+      // las bancas de andén y de parada menor guardan la partida (world bible §0)
+      if (ch === 'B') {
+        MQ.save();
+        MQ.audio.sfx('save');
+        this.tb.open(MQ.ctx, 'Te sientas un momento en la banca. El andén está tranquilo... Partida guardada.');
+        return;
+      }
       if (ch === 'H') return this.runScript(MQ.SCRIPTS.heal());
       if (ch === 'S') return this.openShop();
       // A en el borde del andén (sobre la franja M o mirando la vía) también aborda
