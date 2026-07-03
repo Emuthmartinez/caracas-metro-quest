@@ -719,6 +719,36 @@ section('Overworld');
   MQ.player.textSpeed = 'medio'; MQ.player.battleStyle = 'cambio';
 }
 
+// el Fanático: el hincha de los Jefes, con su dato antes y su fiesta después
+{
+  let pares = 0;
+  for (const [id, m] of Object.entries(MQ.MAPS)) {
+    const fans = (m.npcs || []).filter((n) => n.name === 'el Fanático');
+    if (!fans.length) continue;
+    ok(fans.length === 2, `el Fanático en ${id} tiene sus dos caras (${fans.length})`);
+    const [antes, despues] = fans[0].hideIf ? fans : [fans[1], fans[0]];
+    ok(antes.hideIf && despues.showIf && antes.hideIf === despues.showIf, `el Fanático en ${id} alterna con la misma ficha`);
+    ok(/^ficha[1-8]$/.test(antes.hideIf), `el Fanático en ${id} escolta a un Jefe real (${antes.hideIf})`);
+    ok(antes.x === despues.x && antes.y === despues.y, `el Fanático en ${id} no se desdobla de sitio`);
+    ok(MQ.WALKABLE.has((m.grid[antes.y] || '')[antes.x] || '#'), `el Fanático en ${id} pisa piso real`);
+    pares++;
+  }
+  ok(pares === 8, `el Fanático cubre las 8 estaciones de Jefe (${pares})`);
+  // antes de la ficha habla el del dato; con la ficha, el de la fiesta
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 10)];
+  MQ.player.flags.starter = true;
+  MQ.player.map = 'capitolio';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  const pre = w.npcAt(10, 9);
+  ok(pre && pre.hideIf === 'ficha1' && pre.text[0].includes('Rumba'), 'sin ficha: el Fanático sopla el dato');
+  MQ.setFlag('ficha1');
+  const post = w.npcAt(10, 9);
+  ok(post && post.showIf === 'ficha1' && post.text[0].includes('GANASTE'), 'con ficha: el Fanático celebra');
+}
+
 // el vigilante que gira: te encuentra hasta parado (spinner estilo FireRed)
 {
   MQ.player = MQ.newPlayer('Tester', 'player');

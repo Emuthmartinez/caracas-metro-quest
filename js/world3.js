@@ -363,6 +363,39 @@
   });
   npcsOf('propatria').push({ x: 5, y: 8, look: 'chamo', dir: 'right', name: 'el Maratonista', script: 'regalo:cholas' });
 
+  // ---- el Fanático: el hincha de los Jefes (el "gym guide" de toda la vida) ----------
+  // Antes del combate sopla el dato del equipo rival; después, celebra como si
+  // hubiera peleado él. Mismo chamo en las ocho estaciones, nadie sabe cómo llega.
+  const fan = (mapId, x, y, ficha, antes, despues) => npcsOf(mapId).push(
+    { x, y, look: 'chamo', dir: 'down', name: 'el Fanático', hideIf: ficha,
+      text: ['¡Epa, epa! ¡Futuro campeón de la hora fantasma! ' + antes] },
+    { x, y, look: 'chamo', dir: 'down', name: 'el Fanático', showIf: ficha,
+      text: [despues] });
+  fan('capitolio', 10, 9, 'ficha1',
+    'Vas por la Doña, ¿no? Puro Espanto y Monte del llano. Métele Rumba, que a los espantos el tambor los espanta.',
+    '¡GANASTE! ¡Yo lo vi primero que nadie! Cuando seas leyenda del Metro, acuérdate del Fanático.');
+  fan('plazavenezuela', 10, 7, 'ficha2',
+    'El Rumbero no pierde el compás: Rumba y Monte toda la noche. Un chispazo Catatumbo y se le corta el son, te lo firmo.',
+    '¡Le cortaste el son al mismísimo Rumbero! Esto hay que celebrarlo... cuando cobre.');
+  fan('chacaito', 10, 9, 'ficha3',
+    'Valentina pelea importado: Tepuy y Caribe con asesoría. El Monte no paga visa: verde contra piedra y agua, hazme caso.',
+    '¡O sea, le ganaste a Valentina! Qué nota, chamo. Ella va a decir que te dejó ganar: mentira.');
+  fan('mercado', 4, 7, 'ficha4',
+    'Doña Petra carga cuarenta años de bultos: Tepuy y Monte que no se cansan. El agua ablanda la piedra: Caribe, mi pana.',
+    '¡Sudaste la Ficha del Pueblo! Doña Petra no regala nada, por eso la suya vale doble.');
+  fan('st_zoologico', 17, 10, 'ficha5',
+    'El Baquiano conoce el monte mejor que el monte: equipo parejo, sin hueco fácil. Lleva de todo un poco y frutas pa\' aguantar.',
+    '¡El monte te reconoció! Ahora los animales te saludan a ti también, fíjate.');
+  fan('st_layaguara', 17, 10, 'ficha6',
+    'El Pescador saca del Guaire pura agua brava: Caribe y Rumba. Un catatumbazo en el agua y se acabó la pesca.',
+    '¡Le ganaste al que le gana al río! El Guaire va a hablar de esto por años.');
+  fan('st_larinconada', 17, 10, 'ficha7',
+    'La Amazona corre con Criollo y Rumba, caballos que nunca pierden. Lo Sabroso los distrae y lo Espanto los espanta: ahí está la gracia.',
+    '¡Cinco cuerpos de ventaja le sacaste! La sexta válida ahora lleva tu nombre.');
+  fan('st_parquecentral', 17, 10, 'ficha8',
+    'La Ingeniera nunca duerme: Catatumbo y Sabroso a toda potencia. El cerro aguanta el rayo: Tepuy, chamo, Tepuy.',
+    '¡Apagaste... digo, VENCISTE a la Ingeniera! Ocho fichas, chamo... prepárate pa\' la memoria.');
+
   // ---- la reja del safari (Zoológico) — versión de taquilla -----------------------------
   Object.assign(MQ.SCRIPTS, {
     'safari:taquilla': () => {

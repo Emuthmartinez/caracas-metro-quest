@@ -44,6 +44,7 @@ cómo se llama aquí), y guía para extender el mundo sin romper nada.
 | Texto máquina de escribir | las cajas revelan letra a letra; A completa la página; velocidad en AJUSTES (LENTO/MEDIO/RÁPIDO) | ✅ |
 | Estilo de combate SHIFT/SET | CAMBIO (avisa el relevo rival y ofrece cambio gratis) o SEGUIDO, en AJUSTES; se guarda con la partida | ✅ |
 | Menú de opciones | AJUSTES en pausa: velocidad de texto, estilo de combate, sonido | ✅ |
+| Gym guide | el Fanático: el mismo hincha en las 8 estaciones de Jefe — sopla el dato del equipo rival y celebra tu victoria | ✅ |
 | Legendarios / post-game | Silbón (raro), Catatumbo (post-final), Tren Fantasma (jefe) | ✅ |
 | Gritos por especie | `MQ.CRIES`: chiptune por criatura (29 afinados a mano + 121 generados por motivo) | ✅ |
 | Tornasol (shiny) | 1/4096 (probabilidad moderna, spec §1.4), paleta franja-naranja | ✅ |
