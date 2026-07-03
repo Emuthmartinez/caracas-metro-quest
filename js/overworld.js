@@ -662,14 +662,15 @@
       const p = MQ.player;
       this.menu = new MQ.Menu([
         { label: 'EQUIPO' }, { label: 'CUADERNO' }, { label: 'MAPA' }, { label: 'MOCHILA' },
-        { label: 'LOCKER' }, { label: 'FICHAS' }, { label: 'GUARDAR' },
+        { label: 'CARNET' }, { label: 'LOCKER' }, { label: 'FICHAS' }, { label: 'GUARDAR' },
         { label: MQ.audio.muted ? 'SONIDO: NO' : 'SONIDO: SÍ' }, { label: 'CERRAR' },
-      ], { x: MQ.W - 124, y: 8, w: 116, rows: 9, title: p.name + ' · ' + p.money + 'b',
+      ], { x: MQ.W - 124, y: 8, w: 116, rows: 10, title: p.name + ' · ' + p.money + 'b',
         onPick: (it) => {
           const l = it.label;
           if (l === 'EQUIPO') this.openParty();
           else if (l === 'CUADERNO') this.openDex();
           else if (l === 'MAPA') { this.mapView = true; this.menu = null; }
+          else if (l === 'CARNET') { this.carnetView = true; this.menu = null; }
           else if (l === 'MOCHILA') this.openBag();
           else if (l === 'LOCKER') this.openLocker();
           else if (l === 'FICHAS') this.showFichas();
@@ -718,7 +719,7 @@
         { x: 8, y: 8, w: 200, rows: 7, title: 'MOCHILA',
           onPick: (it) => {
             const item = MQ.ITEMS[it.value];
-            if (item.ball || item.battleStage) { this.menu = null; this.tb.open(MQ.ctx, item.desc); return; }
+            if (item.ball || item.battleStage || item.cholas) { this.menu = null; this.tb.open(MQ.ctx, item.desc); return; }
             if (item.patineta) {
               this.menu = null;
               if (this.map.station || this.map.theme === 'casa') { this.tb.open(MQ.ctx, 'OPERADOR: ¡Aquí no, chamo! La patineta se rueda en túneles y en la calle.'); return; }
@@ -896,6 +897,7 @@
 
     // ---- movimiento y mundo -------------------------------------------------------
     press(k) {
+      if (this.carnetView) { if (k === 'a' || k === 'b') { this.carnetView = false; MQ.audio.sfx('blip'); } return; }
       if (this.mapView) { if (k === 'a' || k === 'b') { this.mapView = false; MQ.audio.sfx('blip'); } return; }
       if (this.dexView) {
         if (k === 'start') { this.dexLang = this.dexLang === 'en' ? 'es' : 'en'; MQ.audio.sfx('sel'); return; }
@@ -948,7 +950,7 @@
         }
         return;
       }
-      if (this.tb.active || this.menu || this.script || this.dexView || this.statView || this.mapView) return;
+      if (this.tb.active || this.menu || this.script || this.dexView || this.statView || this.mapView || this.carnetView) return;
 
       // el entrenador que te vio: suelta el ¡!, camina hasta ti y te reta
       if (this.engage) {
@@ -989,7 +991,8 @@
 
       const p = MQ.player;
       if (this.moving > 0) {
-        this.moving -= (MQ.player.skating && !this.map.station ? 4 : 2);
+        // patineta > trote con las Cholas (B sostenido) > caminar
+        this.moving -= (p.skating && !this.map.station ? 4 : (MQ.input.held.b && p.flags.cholas ? 3 : 2));
         if (this.moving <= 0) { this.moving = 0; this.arrived(); }
         return;
       }
@@ -1212,6 +1215,7 @@
       }
 
       if (this.mapView || this.mapBehind) this.drawMetroMap(ctx);
+      if (this.carnetView) this.drawCarnet(ctx);
       if (this.dexView) this.drawDexPage(ctx, this.dexView);
       if (this.statView) this.drawStatPage(ctx, this.statView);
       if (this.menu) this.menu.draw(ctx);
@@ -1227,6 +1231,45 @@
         ctx.fillStyle = 'rgba(245,235,210,0.85)';
         ctx.fillRect(0, 0, MQ.W, MQ.H);
       }
+    }
+
+    // el Carnet del Pasajero: la Trainer Card del Metro
+    drawCarnet(ctx) {
+      const p = MQ.player;
+      MQ.panel(ctx, 8, 8, MQ.W - 16, MQ.H - 16);
+      ctx.font = MQ.FONT_B; ctx.textBaseline = 'top';
+      ctx.fillStyle = '#e85a1a';
+      ctx.fillRect(16, 16, MQ.W - 32, 3);
+      ctx.fillStyle = '#f5a623';
+      ctx.fillText('CARNET DEL PASAJERO · METRO DE CARACAS', 20, 26);
+      // foto tipo carnet: el pasajero sobre fondo de cabina
+      ctx.fillStyle = '#2a2438'; ctx.fillRect(22, 44, 36, 42);
+      ctx.strokeStyle = '#8a8a96'; ctx.lineWidth = 1; ctx.strokeRect(22.5, 44.5, 35, 41);
+      MQ.drawPerson(ctx, 32, 58, MQ.LOOKS[p.look] || MQ.LOOKS.player, 'down', 0);
+      // datos del viajero
+      const f = p.frames || 0;
+      const hh = Math.floor(f / 216000), mm = Math.floor(f / 3600) % 60;
+      const caught = Object.keys(p.dexCaught).length, seen = Object.keys(p.dexSeen).length;
+      ctx.fillStyle = '#e8dfc8'; ctx.font = MQ.FONT;
+      ctx.fillText(`PASAJERO: ${p.name}`, 70, 46);
+      ctx.fillText(`BOLOS: ${p.money}b`, 70, 60);
+      ctx.fillText(`TIEMPO DE VIAJE: ${hh}:${String(mm).padStart(2, '0')}`, 70, 74);
+      ctx.fillText(`CUADERNO: ${caught} fichados · ${seen} vistos`, 70, 88);
+      // las ocho Fichas Doradas: troqueles que se van dorando
+      ctx.fillStyle = '#f5a623'; ctx.font = MQ.FONT_B;
+      ctx.fillText('FICHAS DORADAS', 22, 104);
+      Object.keys(MQ.FICHAS).forEach((fk, i) => {
+        const fx = 24 + i * 26, fy = 118;
+        ctx.fillStyle = p.flags[fk] ? '#f5d76e' : '#2a2438';
+        ctx.beginPath(); ctx.arc(fx + 8, fy + 8, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = p.flags[fk] ? '#b8860b' : '#4a4458'; ctx.stroke();
+        if (p.flags[fk]) { ctx.fillStyle = '#b8860b'; ctx.font = MQ.FONT; ctx.fillText(String(i + 1), fx + 6, fy + 4); }
+      });
+      ctx.fillStyle = '#8a8aa0'; ctx.font = MQ.FONT;
+      ctx.fillText('Válido para una (1) hora fantasma por noche.', 22, 146);
+      ctx.fillText('Intransferible. El Metro no se hace responsable', 22, 158);
+      ctx.fillText('por espantos fichados dentro de sus instalaciones.', 22, 168);
+      ctx.fillText('(A para volver)', 22, MQ.H - 34);
     }
 
     drawDexPage(ctx, id) {

@@ -562,6 +562,47 @@ section('Overworld');
   while (w.tb.active) w.press('a');
 }
 
+// el Carnet, las Cholas y el susto a mitad de bolos (a la FireRed)
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 10)];
+  MQ.player.flags.starter = true;
+  MQ.player.map = 'propatria'; MQ.player.x = 6; MQ.player.y = 8; MQ.player.dir = 'left';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  // el Maratonista regala las Cholas
+  const mar = MQ.MAPS.propatria.npcs.find((n) => n.script === 'regalo:cholas');
+  ok(!!mar && mar.x === 5 && mar.y === 8, 'el Maratonista espera en Propatria');
+  w.interact();
+  for (let i = 0; i < 30 && (w.tb.active || w.script); i++) { w.update(); if (w.tb.active) w.press('a'); }
+  ok(MQ.player.bag.cholas === 1 && MQ.player.flags.cholas, 'las Cholas llegan a la mochila');
+  // trotar: con B sostenido el paso gasta menos cuadros
+  const stepFrames = (b) => {
+    MQ.player.x = 10; MQ.player.y = 3; MQ.player.dir = 'right';
+    MQ.input.held.b = b; MQ.input.held.right = true;
+    w.update(); // arranca el paso
+    let n = 1;
+    while (w.moving > 0 && n < 20) { w.update(); n++; }
+    MQ.input.held.right = false; MQ.input.held.b = false;
+    return n;
+  };
+  const lento = stepFrames(false), rapido = stepFrames(true);
+  ok(rapido < lento, `el trote apura el paso (${rapido} < ${lento} cuadros)`);
+  // el Carnet abre y cierra
+  MQ.player.frames = 216000 * 2 + 3600 * 34; // 2:34 de viaje
+  w.carnetView = true;
+  w.draw(MQ.ctx);
+  w.press('a');
+  ok(!w.carnetView, 'el Carnet se cierra con A');
+  // el susto cuesta la mitad, como manda FireRed
+  MQ.player.money = 501;
+  MQ.player.respawn = { map: 'propatria', x: 6, y: 8 };
+  MQ.respawn(w);
+  ok(MQ.player.money === 250, `el susto cobra la mitad (${MQ.player.money})`);
+  while (w.tb.active) w.press('a');
+}
+
 // el vigilante que gira: te encuentra hasta parado (spinner estilo FireRed)
 {
   MQ.player = MQ.newPlayer('Tester', 'player');

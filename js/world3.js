@@ -345,6 +345,24 @@
   });
   npcsOf('st_bellomonte').push({ x: 20, y: 8, look: 'vieja', dir: 'down', name: 'el Zahorí', script: 'regalo:rastreador' });
 
+  // el Maratonista de Propatria: las "running shoes" criollas, desde el primer andén
+  Object.assign(MQ.SCRIPTS, {
+    'regalo:cholas': () => {
+      if (MQ.player.bag.cholas || MQ.player.flags.cholas) return [
+        { say: ['el Maratonista', '¿Y ese trote, chamo? Sostén B y no lo sueltes. El que trota el andén alcanza la hora fantasma.'] },
+      ];
+      return [
+        { say: ['el Maratonista', 'Yo corrí el Maratón del Metro del 83, cuando la ciudad estrenaba tren y todos estrenábamos esperanza.'] },
+        { give: { item: 'cholas', n: 1 } },
+        { flag: 'cholas' },
+        { sfx: 'catch' },
+        { say: ['', '★ ¡Obtienes LAS CHOLAS! ★'] },
+        { say: ['el Maratonista', 'Sostén B mientras caminas y trota. Las suelas ya saben el camino: tú solo síguelas.'] },
+      ];
+    },
+  });
+  npcsOf('propatria').push({ x: 5, y: 8, look: 'chamo', dir: 'right', name: 'el Maratonista', script: 'regalo:cholas' });
+
   // ---- la reja del safari (Zoológico) — versión de taquilla -----------------------------
   Object.assign(MQ.SCRIPTS, {
     'safari:taquilla': () => {

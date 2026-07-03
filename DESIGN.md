@@ -36,6 +36,9 @@ cómo se llama aquí), y guía para extender el mundo sin romper nada.
 | Ítems en el piso (Poké Balls tiradas) | 16 paqueticos sólidos regados por túneles, superficie, Línea Fantasma y Metrocable; se recogen una vez (la morocota del parque es la pepita) | ✅ |
 | Ítems ocultos + Itemfinder | 10 escondites sin brillo (pilares, rincones, el safari); el Rastreador del Zahorí de Bello Monte vibra hacia el más cercano | ✅ |
 | Tema de \"la mirada se cruza\" | pista `reto`: suena del ¡! hasta que arranca el combate (también al retar tú a un entrenador) | ✅ |
+| Trainer Card | el Carnet del Pasajero (pausa → CARNET): foto, bolos, tiempo de viaje, troqueles de las 8 Fichas, cuenta del Cuaderno | ✅ |
+| Running Shoes (B para correr) | las Cholas del Maratonista de Propatria: sostén B y trota (la patineta sigue siendo más rápida) | ✅ |
+| Whiteout | irse en blanco cuesta la mitad de los bolos, como en FireRed | ✅ |
 | Legendarios / post-game | Silbón (raro), Catatumbo (post-final), Tren Fantasma (jefe) | ✅ |
 | Gritos por especie | `MQ.CRIES`: chiptune por criatura (29 afinados a mano + 121 generados por motivo) | ✅ |
 | Tornasol (shiny) | 1/4096 (probabilidad moderna, spec §1.4), paleta franja-naranja | ✅ |

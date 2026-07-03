@@ -49,16 +49,17 @@
     for (const m of [...(p.party || []), ...(p.locker || [])]) MQ.migrateMon(m);
     p.repelSteps = p.repelSteps || 0;
     p.steps = p.steps || 0;
+    p.frames = p.frames || 0;
     return p;
   };
 
   MQ.respawn = (world) => {
     const p = MQ.player;
-    p.money = Math.floor(p.money * 0.75); // spec §1.1: el susto cuesta 25%, más amable que el clásico
+    p.money = Math.floor(p.money / 2); // a la FireRed: el susto cuesta la mitad
     p.party.forEach(MQ.fullHeal);
     p.x = p.respawn.x; p.y = p.respawn.y;
     world.enterMap(p.respawn.map);
-    world.tb.open(MQ.ctx, 'Te fuiste en blanco... El Doctorcito te recogió del andén, te sanó el equipo y te cobró la cuarta parte de los bolos "por concepto de susto".');
+    world.tb.open(MQ.ctx, 'Te fuiste en blanco... El Doctorcito te recogió del andén, te sanó el equipo y te cobró la mitad de los bolos "por concepto de susto".');
   };
 
   // ---- guiones de historia --------------------------------------------------------
@@ -497,6 +498,8 @@
         s.update && s.update();
         s.draw(MQ.ctx);
       }
+      // el tiempo de viaje corre siempre (para el Carnet del Pasajero)
+      if (MQ.player) MQ.player.frames = (MQ.player.frames || 0) + 1;
       requestAnimationFrame(loop);
     };
     loop();
