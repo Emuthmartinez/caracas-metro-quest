@@ -330,7 +330,10 @@
         onPick: (it) => {
           const m = p.party[it.value];
           if (m.hp <= 0) { MQ.audio.sfx('bump'); return; }
-          if (it.value === this.mi && !forced) { MQ.audio.sfx('bump'); return; }
+          // el que está en el andén no cuenta: cambiarse a sí mismo regalaría
+          // etapas limpias y una segunda mala cara (todos los llamadores de
+          // forced garantizan otro vivo, así que siempre hay pick válido)
+          if (it.value === this.mi) { MQ.audio.sfx('bump'); return; }
           if (!forced && (this.pvol.trap > 0 || this.pvol.noescape)) {
             this.say('¡No hay cambio: lo tienen agarrado!', () => this.toMenu());
             this.pump();
@@ -364,6 +367,7 @@
 
     // el rival que sigue entra al andén
     sendNextEnemy() {
+      this.showTrainer = false; // la figura cede el puesto al espanto que entra
       this.say(`${this.trainer.name || this.trainer.cls} saca a ${name(this.enemy)}. ¡La cosa sigue!`, () => {
         MQ.audio.cry(this.enemy.id);
         this.entryEffects(this.enemy, false);
@@ -1138,6 +1142,8 @@
         const canShift = (MQ.player.battleStyle || 'cambio') === 'cambio' && this.mine.hp > 0 &&
           MQ.player.party.some((m, i) => m.hp > 0 && i !== this.mi);
         if (canShift) {
+          // mientras "está por sacar", el que da la cara es el retador, no el espanto
+          this.showTrainer = true;
           this.say(`${this.trainer.name || this.trainer.cls} está por sacar a ${name(this.enemy)}. ¿Cambias tú también?`, () => {
             this.phase = 'shift';
             this.menu = new MQ.Menu([{ label: 'Sí, cambio' }, { label: 'No, sigo así' }], {

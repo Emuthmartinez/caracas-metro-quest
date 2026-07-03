@@ -101,9 +101,10 @@
     advance() {
       if (!this.active) return;
       MQ.audio && MQ.audio.sfx('blip');
-      // si la máquina de escribir va por la mitad, A completa la página primero
+      // si la página no terminó de escribirse (o ni ha empezado a dibujarse),
+      // A la completa primero — nunca se pasa una página sin verla
       const total = this.lines.join('').length;
-      if (this.reveal > 0 && this.reveal < total) { this.reveal = total; return; }
+      if (this.reveal < total) { this.reveal = total; return; }
       if (this.pages.length) { this.lines = this.pages.shift(); this.reveal = 0; }
       else { this.lines = []; const d = this.done; this.done = null; d && d(); }
     }

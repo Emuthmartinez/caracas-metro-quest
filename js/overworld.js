@@ -330,6 +330,11 @@
       else this.stepScript();
     }
 
+    // el acechador vuelve a su puesto de siempre (posición y mirada de origen)
+    restoreEngaged(n) {
+      if (n && n.home) { n.x = n.home.x; n.y = n.home.y; n.dir = n.home.dir; }
+    }
+
     startBattleOp(op, s) {
       MQ.pushScene(new MQ.BattleScene({
         ambience: { theme: this.map.theme, region: this.map.region },
@@ -337,6 +342,7 @@
         weather: this.map.weather,
         ...op.battle }, (res) => {
         MQ.popScene();
+        if (this.engagedNpc) { this.restoreEngaged(this.engagedNpc); this.engagedNpc = null; }
         MQ.audio.music(this.map.music || 'town');
         if (res === 'lose') { this.script = null; MQ.respawn(this); return; }
         if (op.battle.trainer) MQ.player.flags['t_' + op.battle.trainer.id] = true;
@@ -456,6 +462,9 @@
       if (this.engage) return false;
       const sp = this.trainerSpotting();
       if (!sp) return false;
+      // su puesto de siempre: al resolverse el pleito vuelve ahí (evita que un
+      // entrenador caminado quede tapando el único paso de un rincón)
+      if (!sp.home) sp.home = { x: sp.x, y: sp.y, dir: sp.dir };
       this.engage = { npc: sp, phase: 'alert', t: 0, moving: 0 };
       MQ.audio.sfx('alert');
       MQ.audio.music('reto'); // el tema de la mirada cruzada, hasta que arranque el combate
@@ -936,6 +945,7 @@
       if (this.tb.active) { if (k === 'a' || k === 'b') this.tb.advance(); return; }
       if (this.menu) { this.menu.press(k); return; }
       if (this.script) return;
+      if (this.engage) return; // durante el ¡! no se habla, no se pausa, no se guarda
       if (k === 'a') this.interact();
       else if (k === 'start') this.openPause();
     }
@@ -988,6 +998,8 @@
       // el entrenador que te vio: suelta el ¡!, camina hasta ti y te reta
       if (this.engage) {
         const e = this.engage, n = e.npc, p = MQ.player;
+        // si por cualquier vía ya quedó vencido, el acecho se disuelve
+        if (p.flags['t_' + n.trainer.id]) { this.engage = null; this.restoreEngaged(n); return; }
         e.t++;
         if (e.phase === 'alert') {
           if (e.t >= 34) { e.phase = 'walk'; e.t = 0; }
@@ -997,6 +1009,7 @@
         if (Math.abs(p.x - n.x) + Math.abs(p.y - n.y) <= 1) {
           p.dir = { up: 'down', down: 'up', left: 'right', right: 'left' }[n.dir];
           this.engage = null;
+          this.engagedNpc = n; // al terminar su combate vuelve a su puesto
           return this.startTrainer(n);
         }
         const [dx, dy] = DIRS[n.dir];

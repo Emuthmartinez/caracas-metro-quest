@@ -474,10 +474,11 @@ section('Overworld');
     if (t.phase === 'party' || t.phase === 'learn' || t.phase === 'bag') { t.press('a'); continue; }
   }
   ok(MQ.player.flags.t_ramon, 'el combate por línea de vista se ganó');
+  ok(ram.x === 14 && ram.y === 2, `Ramón vuelve solo a su puesto (${ram.x},${ram.y})`);
   MQ.player.x = 17; MQ.player.y = 2;
   w.arrived();
   ok(!w.engage, 'un entrenador vencido ya no persigue a nadie');
-  ram.x = 14; ram.y = 2; ram.dir = 'down'; // de vuelta a su puesto pa' los demás tests
+  ram.dir = 'down'; // la mirada canónica pa' los demás tests
 }
 
 // los paqueticos del andén: sólidos, se recogen una sola vez, y todos en piso legal
