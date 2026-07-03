@@ -765,6 +765,37 @@ section('Overworld');
   ok(MQ.player.bag.mediaarepa === 1, 'y una sola vez');
 }
 
+// el Viejo del Andén: la demostración de fichaje no deja nada en tu mochila
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 8)];
+  MQ.player.flags.starter = true;
+  MQ.player.bag.ficha = 3;
+  MQ.player.map = 'canoamarillo';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  const viejo = MQ.MAPS.canoamarillo.npcs.find((n) => n.script === 'viejo:demo');
+  ok(!!viejo, 'el Viejo espera en Caño Amarillo');
+  w.runScript(MQ.SCRIPTS['viejo:demo']());
+  let steps = 0;
+  while ((w.tb.active || w.script || MQ.scenes.length > 1) && steps++ < 3000) {
+    const t = MQ.scenes[MQ.scenes.length - 1];
+    t.update && t.update();
+    if (t.tb && t.tb.active) t.press('a');
+  }
+  ok(steps < 3000, 'la demostración corre sola de punta a punta');
+  ok(MQ.player.flags.viejodemo, 'la lección quedó aprendida (bandera)');
+  ok(MQ.player.party.length === 1, 'el bachaquito del Viejo no se queda contigo');
+  ok(MQ.player.bag.ficha === 3, 'la ficha que vuela es del Viejo, no tuya');
+  ok(!MQ.player.dexCaught.bachaquito, 'fichar ajeno no marca tu Cuaderno');
+  ok(MQ.player.dexSeen.bachaquito, 'pero verlo sí cuenta como visto');
+  // la segunda visita es puro consejo
+  w.runScript(MQ.SCRIPTS['viejo:demo']());
+  for (let i = 0; i < 20 && (w.tb.active || w.script); i++) { w.update(); if (w.tb.active) w.press('a'); }
+  ok(MQ.scenes.length === 1, 'el consejo repetido no abre combate');
+}
+
 // el Fanático: el hincha de los Jefes, con su dato antes y su fiesta después
 {
   let pares = 0;

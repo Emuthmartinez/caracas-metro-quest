@@ -363,6 +363,25 @@
   });
   npcsOf('propatria').push({ x: 5, y: 8, look: 'chamo', dir: 'right', name: 'el Maratonista', script: 'regalo:cholas' });
 
+  // el Viejo del Andén: la demostración de fichaje (el Old Man de FireRed)
+  Object.assign(MQ.SCRIPTS, {
+    'viejo:demo': () => {
+      if (MQ.player.flags.viejodemo) return [
+        { say: ['el Viejo del Andén', 'Vida baja y muñeca floja, chamo. Todo lo demás es literatura.'] },
+      ];
+      return [
+        { say: ['el Viejo del Andén', '¿Andas fichando espantos a la carrera y sin técnica? Se nota, se siente. Ven acá, que el Viejo te enseña gratis.'] },
+        { battle: { wild: { id: 'bachaquito', lvl: 3 }, demo: 'obrero' },
+          winScript: [
+            { flag: 'viejodemo' },
+            { say: ['el Viejo del Andén', 'Cuarenta años fichando en este andén y la muñeca nunca me falló. Ahora te toca a ti.'] },
+            { fn: () => MQ.save(true) },
+          ] },
+      ];
+    },
+  });
+  npcsOf('canoamarillo').push({ x: 6, y: 7, look: 'obrero', dir: 'down', name: 'el Viejo del Andén', script: 'viejo:demo' });
+
   // la Panadera del Bulevar: la Media Arepa (el Exp Share criollo)
   Object.assign(MQ.SCRIPTS, {
     'regalo:mediaarepa': () => {

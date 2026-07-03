@@ -79,6 +79,16 @@
           ? `¡Un ${name(this.enemy)} TORNASOL salvaje apareció! ¡De esos no se ven todos los días!`
           : `¡Un ${name(this.enemy)} salvaje apareció en la oscuridad!`);
       }
+      // la demostración del Viejo: él pelea, tú miras (el Old Man de toda la vida)
+      this.demo = opts.demo || null;
+      if (this.demo) {
+        this.say('VIEJO: Mira bien, chamo, que esto se enseña una sola vez y con estilo.');
+        this.say('VIEJO: Primero se le baja la vida. Con cariño, pero firme...');
+        this.act(() => { this.enemy.hp = Math.max(1, Math.floor(this.enemy.maxhp * 0.3)); this.anim.shake = 12; MQ.audio.sfx('hit'); });
+        this.say('VIEJO: ¿Ves? Cansadito. Y si además está dormido o quebrantado, mejor todavía.');
+        this.say('VIEJO: Ahora sí. ¡La ficha con la muñeca floja!', () => this.throwFicha(MQ.ITEMS.ficha));
+        return;
+      }
       this.announceWeather();
       this.entryEffects(this.enemy, false);
       this.say(`¡Dale, ${name(this.mine)}!`, () => {
@@ -233,7 +243,8 @@
       const statusMul = (e.status === 'slp' || e.status === 'pav') ? 2
         : e.status ? 1.5 : 1;
       let willCatch, shakes;
-      if (this.opts.noCatch) { willCatch = false; shakes = 0; }
+      if (this.demo) { willCatch = true; shakes = 4; } // al Viejo no le falla la muñeca
+      else if (this.opts.noCatch) { willCatch = false; shakes = 0; }
       else if (ball >= 255) { willCatch = true; shakes = 4; }
       else {
         const a = Math.max(1, Math.floor(
@@ -255,7 +266,7 @@
       this.menu = null;
       this.cap = { stage: 'toss', t: 0, item, willCatch, shakes: Math.min(shakes, 3), wob: 0, mul: 1, flash: 0, col };
       MQ.audio.sfx('toss');
-      this.say(`¡Le lanzas una ${item.name}!`);
+      this.say(this.demo ? '¡El Viejo lanza su ficha como quien saluda!' : `¡Le lanzas una ${item.name}!`);
       this.pump();
     }
 
@@ -303,6 +314,13 @@
       this.cap = null;
       this.phase = 'msg';
       MQ.audio.cry(e.id);
+      if (this.demo) {
+        // el Viejo ficha, presume y suelta: la lección no se queda en la mochila
+        this.say('¡PLIN! La ficha se quedó quieta a la primera.');
+        this.say('VIEJO: ¿Viste? Vida baja y muñeca floja. Y como mi manada ya está completa... anda, chiquito, libre.', () => this.finish('win'));
+        this.pump();
+        return;
+      }
       const mon = { ...e }; delete mon._disp;
       const dest = MQ.addMon(mon);
       this.say(`¡PLIN! La ficha se quedó quieta. ¡${name(e)} aceptó tu ficha!`);
@@ -1526,7 +1544,15 @@
           }
         }
       }
-      if (this.anim.mfall < FALL && (this.mine.hp > 0 || this.anim.mfall > 0)) {
+      if (this.demo) {
+        // el Viejo del Andén de espaldas, dando la clase desde tu plataforma
+        shadow(mCx, mBaseCy, 24, 0.3);
+        ctx.save();
+        ctx.translate(Math.round(M_X - sh - slide) + 24, Math.round(mBaseCy) - 52);
+        ctx.scale(3.5, 3.5);
+        MQ.drawPerson(ctx, 0, 0, MQ.LOOKS[this.demo] || MQ.LOOKS.obrero, 'up', 0);
+        ctx.restore();
+      } else if (this.anim.mfall < FALL && (this.mine.hp > 0 || this.anim.mfall > 0)) {
         shadow(mCx, mBaseCy, 28, 0.3 * (1 - this.anim.mfall / FALL));
         combatant(this.mine.id, 'back', M_X - sh - slide, M_Y, this.anim.mfall, this.mine.hp > 0);
       }
@@ -1561,20 +1587,22 @@
           ctx.fillRect(140, 15 + i * 8, 8, 6);
         });
       }
-      MQ.panel(ctx, MQ.W - 166, 156, 160, 44);
-      ctx.fillStyle = '#e8dfc8';
-      const mGender = this.mine.gender === 'm' ? '♂' : this.mine.gender === 'f' ? '♀' : '';
-      ctx.fillText((this.mine.shiny ? '★' : '') + name(this.mine) + mGender + '  N' + this.mine.lvl, MQ.W - 158, 163);
-      this.hpBar(ctx, MQ.W - 158, 176, 130, this.mine);
-      ctx.font = MQ.FONT;
-      ctx.fillStyle = '#8a8aa0';
-      ctx.fillText(`${this.mine.hp}/${this.mine.maxhp} PS`, MQ.W - 158, 186);
-      this.statusChip(ctx, this.mine, this.pvol, MQ.W - 92, 185);
-      const group = MQ.xpGroupOf(this.mine.id);
-      const cur = MQ.xpForLevel(this.mine.lvl, group), nxt = MQ.xpForLevel(this.mine.lvl + 1, group);
-      const xf = MQ.clamp((this.mine.xp - cur) / (nxt - cur), 0, 1);
-      ctx.fillStyle = '#1a1a28'; ctx.fillRect(MQ.W - 60, 188, 50, 4);
-      ctx.fillStyle = '#4a90d9'; ctx.fillRect(MQ.W - 60, 188, 50 * xf, 4);
+      if (!this.demo) {
+        MQ.panel(ctx, MQ.W - 166, 156, 160, 44);
+        ctx.fillStyle = '#e8dfc8';
+        const mGender = this.mine.gender === 'm' ? '♂' : this.mine.gender === 'f' ? '♀' : '';
+        ctx.fillText((this.mine.shiny ? '★' : '') + name(this.mine) + mGender + '  N' + this.mine.lvl, MQ.W - 158, 163);
+        this.hpBar(ctx, MQ.W - 158, 176, 130, this.mine);
+        ctx.font = MQ.FONT;
+        ctx.fillStyle = '#8a8aa0';
+        ctx.fillText(`${this.mine.hp}/${this.mine.maxhp} PS`, MQ.W - 158, 186);
+        this.statusChip(ctx, this.mine, this.pvol, MQ.W - 92, 185);
+        const group = MQ.xpGroupOf(this.mine.id);
+        const cur = MQ.xpForLevel(this.mine.lvl, group), nxt = MQ.xpForLevel(this.mine.lvl + 1, group);
+        const xf = MQ.clamp((this.mine.xp - cur) / (nxt - cur), 0, 1);
+        ctx.fillStyle = '#1a1a28'; ctx.fillRect(MQ.W - 60, 188, 50, 4);
+        ctx.fillStyle = '#4a90d9'; ctx.fillRect(MQ.W - 60, 188, 50 * xf, 4);
+      }
 
       if (this.menu && (this.phase === 'menu' || this.phase === 'moves' || this.phase === 'party' || this.phase === 'bag' || this.phase === 'learn' || this.phase === 'shift'))
         this.menu.draw(ctx);
