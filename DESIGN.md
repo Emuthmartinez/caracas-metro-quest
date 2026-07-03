@@ -39,6 +39,7 @@ cómo se llama aquí), y guía para extender el mundo sin romper nada.
 | Trainer Card | el Carnet del Pasajero (pausa → CARNET): foto, bolos, tiempo de viaje, troqueles de las 8 Fichas, cuenta del Cuaderno | ✅ |
 | Running Shoes (B para correr) | las Cholas del Maratonista de Propatria: sostén B y trota (la patineta sigue siendo más rápida) | ✅ |
 | Whiteout | irse en blanco cuesta la mitad de los bolos, como en FireRed | ✅ |
+| Secuencia de retador | la figura del entrenador abre el combate ("¡te reta!"), se retira al sacar su espanto y vuelve a dar la cara vencido | ✅ |
 | Legendarios / post-game | Silbón (raro), Catatumbo (post-final), Tren Fantasma (jefe) | ✅ |
 | Gritos por especie | `MQ.CRIES`: chiptune por criatura (29 afinados a mano + 121 generados por motivo) | ✅ |
 | Tornasol (shiny) | 1/4096 (probabilidad moderna, spec §1.4), paleta franja-naranja | ✅ |

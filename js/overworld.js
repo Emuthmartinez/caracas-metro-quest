@@ -415,7 +415,7 @@
       if (!tr.boss) MQ.audio.music('reto'); // el reto suena desde la primera palabra
       const script = [
         { say: [npc.name, tr.intro] },
-        { battle: { trainer: { ...tr, name: npc.name } },
+        { battle: { trainer: { ...tr, name: npc.name, look: npc.look } },
           winScript: tr.reward ? [
             { fn: () => { MQ.setFlag(tr.reward); MQ.audio.sfx('catch'); } },
             { say: ['', `★ ¡Obtienes la ${MQ.FICHAS[tr.reward]}! ★`] },

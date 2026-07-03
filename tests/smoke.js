@@ -603,6 +603,35 @@ section('Overworld');
   while (w.tb.active) w.press('a');
 }
 
+// el retador da la cara: figura antes del espanto, y otra vez al ser vencido
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 30)];
+  MQ.player.flags.starter = true;
+  let res = null;
+  const b = new MQ.BattleScene({ trainer: { id: 'x_probador', cls: 'Probador', name: 'Canario', look: 'obrero',
+    team: [['cachicamo', 3]], money: 10, intro: 'Dale pues.', win: 'Bien jugado.', lose: 'Ja.' } }, (r) => { res = r; });
+  ok(b.showTrainer === true, 'la figura del retador abre el combate');
+  let steps = 0;
+  while (b.phase !== 'menu' && steps++ < 200) { b.update(); if (b.tb.active) b.press('a'); }
+  ok(b.showTrainer === false, 'la figura se retira al sacar su espanto');
+  steps = 0;
+  while (!res && steps++ < 3000) {
+    b.update();
+    if (b.tb.active) { b.press('a'); continue; }
+    if (b.phase === 'menu') { b.press('a'); continue; }
+    if (b.phase === 'moves') {
+      let idx = b.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (b.mine.pp[m] ?? 0) > 0);
+      if (idx < 0) idx = 0;
+      for (let k = 0; k < idx; k++) b.press('down');
+      b.press('a'); continue;
+    }
+    if (b.phase === 'party' || b.phase === 'learn' || b.phase === 'bag') { b.press('a'); continue; }
+  }
+  ok(res === 'win', 'el Probador cae ante el frontino');
+  ok(b.showTrainer === true, 'el vencido vuelve a dar la cara en la despedida');
+}
+
 // el vigilante que gira: te encuentra hasta parado (spinner estilo FireRed)
 {
   MQ.player = MQ.newPlayer('Tester', 'player');

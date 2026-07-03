@@ -65,8 +65,11 @@
       MQ.sprites.preload(p.party.map((m) => m.id), ['front', 'back']);
 
       if (this.trainer) {
+        // el retador da la cara primero, como manda la tradición (FireRed)
+        this.showTrainer = true;
         this.say(`¡${this.trainer.cls} ${this.trainer.name || ''} te reta!`.replace('  ', ' '));
         this.say(this.trainer.intro);
+        this.act(() => { this.showTrainer = false; });
         this.say(`${this.trainer.name || this.trainer.cls} saca a ${name(this.enemy)}.`, () => MQ.audio.cry(this.enemy.id));
       } else {
         MQ.audio.cry(this.enemy.id);
@@ -1129,6 +1132,7 @@
         let money = this.trainer.money * this.moneyMul;
         if (MQ.player.party.some((m) => m.item === 'morocota')) money *= 2;
         MQ.player.money += money;
+        this.act(() => { this.showTrainer = true; }); // el vencido vuelve a dar la cara
         this.say(this.trainer.win);
         this.say(`Ganas ${money} bolos.`, () => this.finish('win'));
       } else {
@@ -1446,7 +1450,15 @@
       };
 
       const capByFX = this.cap && this.cap.stage !== 'toss';
-      if (!capByFX && this.anim.efall < FALL && (this.enemy.hp > 0 || this.phase === 'msg' || this.anim.efall > 0)) {
+      if (this.showTrainer && this.trainer) {
+        // el retador de pie en el andén rival, a escala de combate
+        shadow(eCx, eBaseCy, 18, 0.3);
+        ctx.save();
+        ctx.translate(Math.round(E_X + sh + slide) + 10, Math.round(eBaseCy) - 46);
+        ctx.scale(3, 3);
+        MQ.drawPerson(ctx, 0, 0, MQ.LOOKS[this.trainer.look] || MQ.LOOKS.chamo, 'down', 0);
+        ctx.restore();
+      } else if (!capByFX && this.anim.efall < FALL && (this.enemy.hp > 0 || this.phase === 'msg' || this.anim.efall > 0)) {
         shadow(eCx, eBaseCy, 22, 0.3 * (1 - this.anim.efall / FALL));
         combatant(this.enemy.id, this.enemy.shiny ? 'shiny' : 'front', E_X + sh + slide, E_Y, this.anim.efall, this.enemy.hp > 0);
         if (this.enemy.shiny && this.enemy.hp > 0 && this.fc < 60) {
@@ -1479,18 +1491,21 @@
       }
 
       ctx.font = MQ.FONT_B; ctx.textBaseline = 'top';
-      MQ.panel(ctx, 6, 8, 150, 34);
-      ctx.fillStyle = '#e8dfc8';
-      const eGender = this.enemy.gender === 'm' ? '♂' : this.enemy.gender === 'f' ? '♀' : '';
-      ctx.fillText((this.enemy.shiny ? '★' : '') + name(this.enemy) + eGender + '  N' + this.enemy.lvl, 14, 15);
-      this.hpBar(ctx, 14, 28, 120, this.enemy);
-      this.statusChip(ctx, this.enemy, this.evol, 112, 14);
-      ctx.font = MQ.FONT_B;
-      const types = MQ.SPECIES[this.enemy.id].types;
-      types.forEach((t, i) => {
-        ctx.fillStyle = MQ.TYPES[t].color;
-        ctx.fillRect(140, 15 + i * 8, 8, 6);
-      });
+      // el panel rival espera a que el retador saque su espanto
+      if (!this.showTrainer) {
+        MQ.panel(ctx, 6, 8, 150, 34);
+        ctx.fillStyle = '#e8dfc8';
+        const eGender = this.enemy.gender === 'm' ? '♂' : this.enemy.gender === 'f' ? '♀' : '';
+        ctx.fillText((this.enemy.shiny ? '★' : '') + name(this.enemy) + eGender + '  N' + this.enemy.lvl, 14, 15);
+        this.hpBar(ctx, 14, 28, 120, this.enemy);
+        this.statusChip(ctx, this.enemy, this.evol, 112, 14);
+        ctx.font = MQ.FONT_B;
+        const types = MQ.SPECIES[this.enemy.id].types;
+        types.forEach((t, i) => {
+          ctx.fillStyle = MQ.TYPES[t].color;
+          ctx.fillRect(140, 15 + i * 8, 8, 6);
+        });
+      }
       MQ.panel(ctx, MQ.W - 166, 156, 160, 44);
       ctx.fillStyle = '#e8dfc8';
       const mGender = this.mine.gender === 'm' ? '♂' : this.mine.gender === 'f' ? '♀' : '';
