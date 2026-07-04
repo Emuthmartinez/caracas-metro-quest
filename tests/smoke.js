@@ -31,7 +31,7 @@ const sandbox = {
 sandbox.globalThis = sandbox;
 vm.createContext(sandbox);
 
-for (const f of ['core.js', 'audio.js', 'dex.js', 'sprite-manifest.js', 'sprites.js', 'world.js', 'battle.js', 'overworld.js', 'main.js']) {
+for (const f of ['core.js', 'audio.js', 'gamedata.js', 'art.js', 'dex.js', 'sprite-manifest.js', 'sprites.js', 'world.js', 'world2.js', 'battle.js', 'overworld.js', 'main.js', 'world3.js']) {
   const code = fs.readFileSync(path.join(__dirname, '..', 'js', f), 'utf8');
   vm.runInContext(code, sandbox, { filename: f });
 }
@@ -39,37 +39,76 @@ const MQ = sandbox.MQ;
 MQ.ctx = ctxStub;
 ok(MQ && MQ.SPECIES && MQ.MAPS, 'MQ cargó con especies y mapas');
 
-// ---- 1. integridad del dex ----
+// ---- 1. integridad del dex (150 especies, 204 movimientos, Gen 3) ----
 section('Dex');
+ok(MQ.DEX_ORDER.length === 150, `el bestiario completo está vivo (${MQ.DEX_ORDER.length}/150)`);
 ok(MQ.DEX_ORDER.length === Object.keys(MQ.SPECIES).length, 'DEX_ORDER cubre todas las especies');
+ok(MQ.SPECIES[MQ.DEX_ORDER[149]] && MQ.DEX_ORDER[149] === 'trenfantasma', 'el Tren Fantasma cierra el dex (#150)');
+const BUDGETS = { s1: [300, 340], s2: [400, 440], s3: [500, 540], leg: [570, 600] };
+const EV_TOTAL = { s1: 1, s2: 2, s3: 3, leg: 3 };
 for (const id of MQ.DEX_ORDER) {
   const sp = MQ.SPECIES[id];
   ok(sp, `especie ${id} existe`);
   ok(sp.types.every((t) => MQ.TYPES[t]), `${id}: tipos válidos (${sp.types})`);
+  // seis estadísticas base dentro de su presupuesto de poder
+  ok(MQ.STATS6.every((s) => Number.isInteger(sp.base[s]) && sp.base[s] > 0), `${id}: 6 stats base positivas`);
+  const bst = MQ.STATS6.reduce((a, s) => a + sp.base[s], 0);
+  const [lo, hi] = BUDGETS[sp.budget] || [0, 9999];
+  ok(bst >= lo && bst <= hi, `${id}: BST ${bst} dentro del presupuesto ${sp.budget}`);
+  ok(MQ.XP_GROUPS[sp.exp_group], `${id}: grupo de experiencia válido (${sp.exp_group})`);
+  // habilidades registradas
+  ok(sp.abilities && MQ.ABILITIES[sp.abilities.primary], `${id}: habilidad primaria existe`);
+  if (sp.abilities.secondary) ok(MQ.ABILITIES[sp.abilities.secondary], `${id}: habilidad secundaria existe`);
+  if (sp.abilities.hidden) ok(MQ.ABILITIES[sp.abilities.hidden], `${id}: habilidad oculta existe`);
+  // calle (EV yield) acorde al porte
+  const evTotal = Object.values(sp.ev_yield || {}).reduce((a, b) => a + b, 0);
+  ok(evTotal === EV_TOTAL[sp.budget], `${id}: calle otorgada ${evTotal} = ${EV_TOTAL[sp.budget]}`);
   ok(sp.learn.length > 0, `${id}: tiene movimientos`);
   for (const [lvl, mv] of sp.learn) ok(MQ.MOVES[mv], `${id}: movimiento ${mv} existe`);
   ok(sp.learn.some(([l]) => l === 1), `${id}: tiene movimiento de nivel 1`);
-  if (sp.evolve) ok(MQ.SPECIES[sp.evolve.to], `${id}: evolución ${sp.evolve.to} existe`);
+  if (sp.evolve) {
+    ok(MQ.SPECIES[sp.evolve.to], `${id}: evolución ${sp.evolve.to} existe`);
+    ok(sp.evolve.method === 'level' ? sp.evolve.lvl > 1 : sp.evolve.method === 'confianza',
+      `${id}: método de evolución válido (${sp.evolve.method})`);
+  }
   ok(sp.dex && sp.dex.length > 20, `${id}: tiene entrada de dex`);
+  ok(sp.dex_en && sp.dex_en.length > 10, `${id}: tiene entrada de dex en inglés`);
   ok(sp.catch > 0 && sp.catch <= 255, `${id}: catch rate válido`);
   const cry = MQ.CRIES[id];
   ok(Array.isArray(cry) && cry.length > 0, `${id}: tiene grito`);
   for (const s of cry || [])
     ok(s[0] === 'n' ? s.length === 4 : s.length === 7 && s[1] > 0 && s[2] > 0, `${id}: paso de grito válido (${s[0]})`);
-  // arte: todos los caracteres en paleta
+  // arte: todos los caracteres en paleta (pintado a mano o silueta generada)
+  ok(Array.isArray(sp.art) && sp.art.length > 0 && sp.pal, `${id}: tiene arte de respaldo`);
   for (const row of sp.art) {
     ok(row.length <= 17, `${id}: fila de arte <= 17 chars (${row.length})`);
     for (const ch of row) if (ch !== '.') ok(sp.pal[ch], `${id}: color '${ch}' en paleta`);
   }
 }
+// movimientos: esquema Gen 3 (categoría por tipo, efectos de la taxonomía §2.7)
+ok(Object.keys(MQ.MOVES).length === 204, `los 204 movimientos cargaron (${Object.keys(MQ.MOVES).length})`);
+const FX_KINDS = new Set(['status', 'stage', 'heal', 'drain', 'recoil', 'multi', 'flinch',
+  'crit', 'weather', 'trap', 'hazard', 'charge', 'protect', 'endure', 'counter',
+  'recharge', 'switch', 'noescape', 'money', 'curse', 'leech', 'cantmiss-under']);
 for (const [id, mv] of Object.entries(MQ.MOVES)) {
   ok(MQ.TYPES[mv.type], `mov ${id}: tipo válido`);
-  ok(mv.pow > 0 || mv.fx, `mov ${id}: tiene poder o efecto`);
+  ok(['physical', 'special', 'status'].includes(mv.category), `mov ${id}: categoría válida`);
+  if (mv.pow > 0 && !mv.effects.some((e) => e.kind === 'counter'))
+    ok(mv.category === MQ.CATEGORY[mv.type], `mov ${id}: categoría acorde al tipo (${mv.category})`);
+  ok(mv.pow > 0 || mv.effects.length > 0, `mov ${id}: tiene poder o efecto`);
   ok(mv.pp > 0 && mv.pp <= 99, `mov ${id}: PP válidos (${mv.pp})`);
-  if (mv.fx && mv.fx.status) ok(MQ.STATUS[mv.fx.status], `mov ${id}: estado '${mv.fx.status}' existe`);
+  ok(mv.acc === null || (mv.acc > 0 && mv.acc <= 100), `mov ${id}: precisión válida (${mv.acc})`);
+  for (const fx of mv.effects) {
+    ok(FX_KINDS.has(fx.kind), `mov ${id}: efecto '${fx.kind}' reconocido`);
+    if (fx.kind === 'status') ok(MQ.STATUS[fx.status] || fx.status === 'mareo', `mov ${id}: estado '${fx.status}' existe`);
+    if (fx.kind === 'stage') ok(['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva'].includes(fx.stat), `mov ${id}: stat de etapa válida`);
+    if (fx.kind === 'weather') ok(MQ.WEATHER[fx.weather], `mov ${id}: clima '${fx.weather}' existe`);
+  }
 }
-ok(MQ.MOVES.forcejeo && MQ.MOVES.forcejeo.recoil > 0, 'Forcejeo existe con retroceso');
-ok(MQ.MOVES.arrullo && MQ.MOVES.arrullo.fx.status === 'slp', 'Arrullo duerme');
+ok(MQ.MOVES.forcejeo && MQ.MOVES.forcejeo.effects.some((e) => e.kind === 'recoil'), 'Forcejeo existe con retroceso');
+ok(MQ.MOVES.arrullo && MQ.MOVES.arrullo.effects.some((e) => e.kind === 'status' && e.status === 'slp'), 'Arrullo duerme');
+ok(Object.keys(MQ.NATURES).length === 25, 'las 25 naturalezas están');
+ok(Object.keys(MQ.ABILITIES).length === 41, 'las 41 habilidades están');
 for (const [atk, row] of Object.entries(MQ.CHART))
   for (const def of Object.keys(row)) ok(MQ.TYPES[def], `tabla de tipos: ${atk}->${def} válido`);
 
@@ -100,7 +139,7 @@ for (const [mid, m] of Object.entries(MQ.MAPS)) {
     if (n.trainer) {
       for (const [sid, lvl] of n.trainer.team) {
         ok(MQ.SPECIES[sid], `${mid}: trainer ${n.trainer.id} usa especie válida ${sid}`);
-        ok(lvl >= 1 && lvl <= 60, `${mid}: trainer ${n.trainer.id} nivel razonable`);
+        ok(lvl >= 1 && lvl <= 70, `${mid}: trainer ${n.trainer.id} nivel razonable`);
       }
     }
   }
@@ -172,9 +211,11 @@ ok(MQ.effect('Monte', MQ.SPECIES.frontinito.types) === 2, 'triángulo: Turpialí
 
 // ---- 4. simulación de combate completo ----
 section('Combate');
-// presiona A en todo, pero en el menú de movimientos elige uno con daño
+// presiona A en todo, pero en el menú de movimientos elige uno con daño y PP
 const pickDamage = (b) => {
-  const i = b.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0);
+  let i = b.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (b.mine.pp[m] ?? 0) > 0);
+  if (i < 0) i = b.mine.moves.findIndex((m) => (b.mine.pp[m] ?? 0) > 0);
+  if (i < 0) { b.press('b'); return; } // sin PP: vuelve al menú y PELEAR fuerza el Forcejeo
   for (let k = 0; k < Math.max(0, i); k++) b.press('down');
   b.press('a');
 };
@@ -189,7 +230,9 @@ function autoBattle(opts, presses = 3000) {
     if (b.tb.active) { b.press('a'); continue; }
     if (b.phase === 'menu') { b.press('a'); continue; }           // PELEAR
     if (b.phase === 'moves') { pickDamage(b); continue; }
-    if (b.phase === 'party' || b.phase === 'bag' || b.phase === 'learn') { b.press('a'); continue; }
+    if (b.phase === 'shift') { b.press('b'); continue; } // no cambio: sigue el pleito
+    if (b.phase === 'party') { if (Math.random() < 0.5) b.press('down'); b.press('a'); continue; }
+    if (b.phase === 'bag' || b.phase === 'learn') { b.press('a'); continue; }
   }
   return result;
 }
@@ -240,7 +283,7 @@ ok(MQ.player.money === 300, `dinero del entrenador pagado (${MQ.player.money})`)
 {
   MQ.player = MQ.newPlayer('T', 'player');
   const m = MQ.makeMon('frontinito', 15);
-  m.xp = MQ.xpForLevel(16) - 1;
+  m.xp = MQ.xpForLevel(16, MQ.xpGroupOf('frontinito')) - 1;
   MQ.player.party = [m];
   let result = null;
   const b = new MQ.BattleScene({ wild: { id: 'caribito', lvl: 3 } }, (r) => { result = r; });
@@ -254,6 +297,90 @@ ok(MQ.player.money === 300, `dinero del entrenador pagado (${MQ.player.money})`)
   ok(m.lvl >= 16, `subió de nivel (${m.lvl})`);
   ok(m.id === 'ucumari', `evolucionó a ucumari (=${m.id})`);
 }
+
+// ---- 4b. fuzz: combates aleatorios por todo el bestiario ----
+// Ejercita el motor Gen-3 entero (los 204 movimientos, habilidades, estados,
+// clima) con combates auto-jugados: nada debe reventar ni colgarse.
+section('Fuzz Gen-3');
+{
+  const WEATHERS = [null, 'lluvia', 'sol', 'neblina', 'apagon', 'horapico'];
+  let stalls = 0, errors = 0;
+  for (let t = 0; t < 60; t++) {
+    const pid = MQ.DEX_ORDER[Math.floor(Math.random() * 150)];
+    const eid = MQ.DEX_ORDER[Math.floor(Math.random() * 150)];
+    const lvl = 5 + Math.floor(Math.random() * 50);
+    MQ.player = MQ.newPlayer('Fuzz', 'player');
+    MQ.player.party = [MQ.makeMon(pid, lvl + 3), MQ.makeMon(MQ.DEX_ORDER[Math.floor(Math.random() * 150)], lvl)];
+    // a veces con objeto equipado
+    const holds = ['tajadaplatano', 'garracunaguaro', 'monedalocha', 'campanavagon', 'azabachepulsera', 'polvomariposa', 'franelabarrio', 'mamon', 'merey', null];
+    MQ.player.party[0].item = holds[Math.floor(Math.random() * holds.length)];
+    MQ.player.bag = { ficha: 3, fichaferia: 2, ficharayada: 2, fichamadrugadora: 2, malta: 2, xarrechera: 1 };
+    let result = null;
+    let b;
+    try {
+      b = new MQ.BattleScene({ wild: { id: eid, lvl },
+        weather: WEATHERS[Math.floor(Math.random() * WEATHERS.length)],
+        dark: Math.random() < 0.5 }, (r) => { result = r; });
+      for (let i = 0; i < 4000 && !result; i++) {
+        b.update();
+        if (b.tb.active) { b.press('a'); continue; }
+        if (b.phase === 'menu') {
+          // mezcla acciones: pelear, mochila (fichas/x-items), huir a veces
+          const roll = Math.random();
+          if (roll < 0.6) b.press('a');
+          else if (roll < 0.85) { b.press('down'); b.press('a'); }
+          else { b.press('down'); b.press('down'); b.press('down'); b.press('a'); }
+          continue;
+        }
+        if (b.phase === 'moves') {
+          if (!b.mine.moves.some((m) => (b.mine.pp[m] ?? 0) > 0)) { b.press('b'); continue; }
+          for (let k = 0; k < Math.floor(Math.random() * 4); k++) b.press('down');
+          b.press('a'); continue;
+        }
+        if (b.phase === 'shift') { b.press('b'); continue; }
+        if (b.phase === 'party' || b.phase === 'bag' || b.phase === 'learn') {
+          if (Math.random() < 0.3) b.press('down');
+          b.press('a');
+          continue;
+        }
+      }
+    } catch (e) {
+      errors++;
+      ok(false, `fuzz ${t}: ${pid}@${lvl + 3} vs ${eid}@${lvl} revienta: ${e.message}`);
+      continue;
+    }
+    if (!result) {
+      stalls++;
+      ok(false, `fuzz ${t}: ${pid}@${lvl + 3} vs ${eid}@${lvl} se cuelga (phase=${b.phase} q=${b.queue.length} tb=${b.tb.active})`);
+    }
+  }
+  ok(stalls === 0 && errors === 0, `fuzz: 60 combates aleatorios sin cuelgues ni errores (${stalls} cuelgues, ${errors} errores)`);
+}
+
+// migración de partidas v1: espanto de 4 stats gana chispa, calle y naturaleza
+{
+  const legacy = { id: 'chigui', lvl: 12, xp: 1728, hp: 20, maxhp: 34, atk: 15, def: 17, spd: 12, moves: ['trancazo', 'aguacerito'], status: null, pp: {}, shiny: false };
+  MQ.migrateMon(legacy);
+  ok(legacy.ivs && MQ.STATS6.every((s) => legacy.ivs[s] >= 0 && legacy.ivs[s] <= 31), 'migración: IVs 0-31');
+  ok(legacy.spe > 0 && legacy.spa > 0 && legacy.spd > 0, 'migración: seis stats presentes');
+  ok(MQ.NATURES[legacy.nature], 'migración: naturaleza válida');
+  ok(legacy.hp > 0 && legacy.hp <= legacy.maxhp, 'migración: PS conservan proporción');
+  ok(legacy.ability && MQ.ABILITIES[legacy.ability], 'migración: habilidad asignada');
+}
+
+// las estadísticas Gen 3: IVs/EVs/naturaleza mueven el resultado
+{
+  const base = MQ.calcStats('frontinito', 50, null, null, 'chevere');
+  const full = MQ.calcStats('frontinito', 50, { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, { atk: 252 }, 'guapo');
+  ok(full.atk > base.atk, `IVs+EVs+naturaleza suben el ataque (${base.atk} -> ${full.atk})`);
+  ok(full.hp > base.hp, 'IVs suben los PS');
+  const minus = MQ.calcStats('frontinito', 50, null, null, 'conchudo');
+  ok(minus.atk < base.atk, 'naturaleza -ATQ baja el ataque');
+}
+
+// curva de experiencia por grupo
+ok(MQ.xpForLevel(20, 'rapido') < MQ.xpForLevel(20, 'parejo'), 'grupo rápido requiere menos XP');
+ok(MQ.xpForLevel(20, 'lento') > MQ.xpForLevel(20, 'pausado'), 'grupo lento requiere más XP');
 
 // ---- 5. mundo: caminar, warp, scripts ----
 section('Overworld');
@@ -313,6 +440,427 @@ section('Overworld');
   ok(MQ.player.map === 'tunel3', `con ficha: pasa al túnel 3 (=${MQ.player.map})`);
 }
 
+// línea de vista estilo FireRed: Ramón te ve, suelta el ¡!, camina hasta ti y te reta
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 12)];
+  MQ.player.flags.starter = true;
+  MQ.player.map = 'tunel1'; MQ.player.x = 17; MQ.player.y = 2; MQ.player.dir = 'down';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  const ram = w.map.npcs.find((n) => n.trainer && n.trainer.id === 'ramon');
+  ram.dir = 'right'; // que vigile el pasillo despejado (al sur hay un pilar)
+  w.arrived();
+  ok(w.engage && w.engage.npc === ram && w.engage.phase === 'alert', 'Ramón te vio: suelta el ¡!');
+  let guard = 0;
+  while (w.engage && guard++ < 400) w.update();
+  ok(!w.engage && !!w.script, 'tras el ¡! camina hasta ti y arranca el reto');
+  ok(ram.x === 16 && ram.y === 2, `Ramón caminó hasta quedar al lado (${ram.x},${ram.y})`);
+  ok(MQ.player.dir === 'left', 'el jugador voltea a mirarlo');
+  let steps = 0;
+  while ((w.tb.active || w.script || MQ.scenes.length > 1) && steps++ < 3000) {
+    const t = MQ.scenes[MQ.scenes.length - 1];
+    t.update && t.update();
+    if (t.tb && t.tb.active) { t.press('a'); continue; }
+    if (t.phase === 'menu') { t.press('a'); continue; }
+    if (t.phase === 'moves') {
+      let idx = t.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (t.mine.pp[m] ?? 0) > 0);
+      if (idx < 0) idx = 0;
+      for (let k = 0; k < idx; k++) t.press('down');
+      t.press('a'); continue;
+    }
+    if (t.phase === 'shift') { t.press('b'); continue; }
+    if (t.phase === 'party' || t.phase === 'learn' || t.phase === 'bag') { t.press('a'); continue; }
+  }
+  ok(MQ.player.flags.t_ramon, 'el combate por línea de vista se ganó');
+  ok(ram.x === 14 && ram.y === 2, `Ramón vuelve solo a su puesto (${ram.x},${ram.y})`);
+  MQ.player.x = 17; MQ.player.y = 2;
+  w.arrived();
+  ok(!w.engage, 'un entrenador vencido ya no persigue a nadie');
+  ram.dir = 'down'; // la mirada canónica pa' los demás tests
+}
+
+// los paqueticos del andén: sólidos, se recogen una sola vez, y todos en piso legal
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 10)];
+  MQ.player.flags.starter = true;
+  MQ.player.map = 'tunel1';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  const ball = w.map.npcs.find((n) => n.itemBall);
+  ok(!!ball, 'tunel1 tiene un paquetico tirado');
+  ok(!w.walkable(ball.x, ball.y), 'el paquetico es sólido (bloquea el paso)');
+  MQ.player.x = ball.x; MQ.player.y = ball.y + 1; MQ.player.dir = 'up';
+  w.interact();
+  ok((MQ.player.bag[ball.itemBall] || 0) >= (ball.n || 1), `el paquetico cayó en la mochila (${ball.itemBall})`);
+  ok(MQ.player.flags[ball.hideIf], 'la bandera evita que reaparezca');
+  ok(!w.npcAt(ball.x, ball.y), 'el paquetico ya no está en el piso');
+  while (w.tb.active) w.press('a');
+
+  let count = 0;
+  for (const [id, m] of Object.entries(MQ.MAPS)) {
+    for (const n of m.npcs || []) {
+      if (!n.itemBall) continue;
+      count++;
+      ok(MQ.ITEMS[n.itemBall], `paquetico en ${id}: ítem real (${n.itemBall})`);
+      ok(MQ.WALKABLE.has((m.grid[n.y] || '')[n.x] || '#'), `paquetico en ${id} (${n.x},${n.y}) en piso caminable`);
+      ok(n.hideIf && n.hideIf.startsWith('item_'), `paquetico en ${id} con bandera propia`);
+    }
+  }
+  ok(count >= 14, `hay ${count} paqueticos regados por la red`);
+}
+
+// lo enterrado y el Rastreador: escondites sin brillo + la antena que los huele
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 10)];
+  MQ.player.flags.starter = true;
+  MQ.player.map = 'tunel1';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  // sacar la ficha de detrás del pilar (14,4) mirando desde (13,4)
+  MQ.player.x = 13; MQ.player.y = 4; MQ.player.dir = 'right';
+  const before = MQ.player.bag.ficha || 0;
+  w.interact();
+  ok((MQ.player.bag.ficha || 0) === before + 1, 'lo enterrado sale con A mirando el pilar');
+  ok(MQ.player.flags.hid_tunel1_14_4, 'el escondite levanta su bandera');
+  while (w.tb.active) w.press('a');
+  w.interact();
+  ok((MQ.player.bag.ficha || 0) === before + 1, 'el escondite no se saca dos veces');
+  while (w.tb.active) w.press('a');
+
+  // todos los escondites del mundo: en casilla real y con ítem real
+  let hidCount = 0;
+  for (const [id, m] of Object.entries(MQ.MAPS)) {
+    for (const h of m.hidden || []) {
+      hidCount++;
+      ok(MQ.ITEMS[h.item], `escondite en ${id}: ítem real (${h.item})`);
+      ok(((m.grid[h.y] || '')[h.x] || '') !== '', `escondite en ${id} (${h.x},${h.y}) dentro del mapa`);
+      const vecino = MQ.WALKABLE.has((m.grid[h.y] || '')[h.x] || '#') ||
+        [[0, 1], [0, -1], [1, 0], [-1, 0]].some(([dx, dy]) => MQ.WALKABLE.has((m.grid[h.y + dy] || '')[h.x + dx] || '#'));
+      ok(vecino, `escondite en ${id} (${h.x},${h.y}) alcanzable`);
+    }
+  }
+  ok(hidCount >= 10, `hay ${hidCount} escondites enterrados por la red`);
+
+  // el Zahorí regala el Rastreador
+  const za = MQ.MAPS.st_bellomonte.npcs.find((n) => n.script === 'regalo:rastreador');
+  ok(!!za, 'el Zahorí espera en Bello Monte');
+  w.runScript(MQ.SCRIPTS['regalo:rastreador']());
+  for (let i = 0; i < 30 && (w.tb.active || w.script); i++) { w.update(); if (w.tb.active) w.press('a'); }
+  ok(MQ.player.bag.rastreador === 1, 'el Zahorí entrega el Rastreador');
+
+  // la antena: apunta al escondite más cercano sin sacar
+  MQ.player.x = 5; MQ.player.y = 5; // tunel2 papelón está en (9,5)... aquí seguimos en tunel1
+  w.openBag();
+  ok(!!w.menu, 'la mochila abre con el Rastreador dentro');
+  const idx = w.menu.items.findIndex((it) => it.value === 'rastreador');
+  ok(idx >= 0, 'el Rastreador aparece en la mochila');
+  for (let k = 0; k < idx; k++) w.press('down');
+  w.press('a');
+  ok(!w.menu && w.tb.active, 'el Rastreador habla (ya no queda nada en tunel1: se queda mudo)');
+  while (w.tb.active) w.press('a');
+}
+
+// el Carnet, las Cholas y el susto a mitad de bolos (a la FireRed)
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 10)];
+  MQ.player.flags.starter = true;
+  MQ.player.map = 'propatria'; MQ.player.x = 6; MQ.player.y = 8; MQ.player.dir = 'left';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  // el Maratonista regala las Cholas
+  const mar = MQ.MAPS.propatria.npcs.find((n) => n.script === 'regalo:cholas');
+  ok(!!mar && mar.x === 5 && mar.y === 8, 'el Maratonista espera en Propatria');
+  w.interact();
+  for (let i = 0; i < 30 && (w.tb.active || w.script); i++) { w.update(); if (w.tb.active) w.press('a'); }
+  ok(MQ.player.bag.cholas === 1 && MQ.player.flags.cholas, 'las Cholas llegan a la mochila');
+  // trotar: con B sostenido el paso gasta menos cuadros
+  const stepFrames = (b) => {
+    MQ.player.x = 10; MQ.player.y = 3; MQ.player.dir = 'right';
+    MQ.input.held.b = b; MQ.input.held.right = true;
+    w.update(); // arranca el paso
+    let n = 1;
+    while (w.moving > 0 && n < 20) { w.update(); n++; }
+    MQ.input.held.right = false; MQ.input.held.b = false;
+    return n;
+  };
+  const lento = stepFrames(false), rapido = stepFrames(true);
+  ok(rapido < lento, `el trote apura el paso (${rapido} < ${lento} cuadros)`);
+  // el Carnet abre y cierra
+  MQ.player.frames = 216000 * 2 + 3600 * 34; // 2:34 de viaje
+  w.carnetView = true;
+  w.draw(MQ.ctx);
+  w.press('a');
+  ok(!w.carnetView, 'el Carnet se cierra con A');
+  // el susto cuesta la mitad, como manda FireRed
+  MQ.player.money = 501;
+  MQ.player.respawn = { map: 'propatria', x: 6, y: 8 };
+  MQ.respawn(w);
+  ok(MQ.player.money === 250, `el susto cobra la mitad (${MQ.player.money})`);
+  while (w.tb.active) w.press('a');
+}
+
+// el retador da la cara: figura antes del espanto, y otra vez al ser vencido
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 30)];
+  MQ.player.flags.starter = true;
+  let res = null;
+  const b = new MQ.BattleScene({ trainer: { id: 'x_probador', cls: 'Probador', name: 'Canario', look: 'obrero',
+    team: [['cachicamo', 3]], money: 10, intro: 'Dale pues.', win: 'Bien jugado.', lose: 'Ja.' } }, (r) => { res = r; });
+  ok(b.showTrainer === true, 'la figura del retador abre el combate');
+  let steps = 0;
+  while (b.phase !== 'menu' && steps++ < 200) { b.update(); if (b.tb.active) b.press('a'); }
+  ok(b.showTrainer === false, 'la figura se retira al sacar su espanto');
+  steps = 0;
+  while (!res && steps++ < 3000) {
+    b.update();
+    if (b.tb.active) { b.press('a'); continue; }
+    if (b.phase === 'menu') { b.press('a'); continue; }
+    if (b.phase === 'moves') {
+      let idx = b.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (b.mine.pp[m] ?? 0) > 0);
+      if (idx < 0) idx = 0;
+      for (let k = 0; k < idx; k++) b.press('down');
+      b.press('a'); continue;
+    }
+    if (b.phase === 'shift') { b.press('b'); continue; }
+    if (b.phase === 'party' || b.phase === 'learn' || b.phase === 'bag') { b.press('a'); continue; }
+  }
+  ok(res === 'win', 'el Probador cae ante el frontino');
+  ok(b.showTrainer === true, 'el vencido vuelve a dar la cara en la despedida');
+}
+
+// AJUSTES: máquina de escribir, estilo CAMBIO/SEGUIDO y el menú que los gobierna
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 40), MQ.makeMon('chigui', 38)];
+  MQ.player.flags.starter = true;
+  // máquina de escribir: el texto se revela al dibujar y A completa la página
+  const tb = new MQ.Textbox();
+  tb.open(MQ.ctx, 'Un texto largo del andén que la máquina de escribir revela letra por letra, con calma criolla.');
+  ok(tb.reveal === 0, 'la página arranca sin revelar');
+  tb.draw(MQ.ctx); tb.draw(MQ.ctx);
+  ok(tb.reveal > 0 && tb.reveal < tb.lines.join('').length, 'el texto se va escribiendo');
+  tb.advance();
+  ok(tb.reveal === tb.lines.join('').length && tb.active, 'A completa la página sin pasarla');
+  while (tb.active) tb.advance();
+  ok(!tb.active, 'la caja cierra al agotar las páginas');
+
+  // estilo CAMBIO: aviso de relevo con cambio gratis (sin turno regalado)
+  let res = null;
+  const b = new MQ.BattleScene({ trainer: { id: 'x_duo', cls: 'Probadora', name: 'Dúo', look: 'chama',
+    team: [['cachicamo', 3], ['bachaquito', 3]], money: 10, intro: 'Van dos.', win: 'Bien.', lose: 'Ja.' } }, (r) => { res = r; });
+  let sawShift = false, shifted = false, steps = 0;
+  while (!res && steps++ < 4000) {
+    b.update();
+    if (b.tb.active) { b.press('a'); continue; }
+    if (b.phase === 'shift') {
+      sawShift = true;
+      if (!shifted) { b.press('a'); shifted = true; } // Sí, cambio
+      else b.press('b');
+      continue;
+    }
+    if (b.phase === 'party') { b.press('down'); b.press('a'); continue; }
+    if (b.phase === 'menu') { b.press('a'); continue; }
+    if (b.phase === 'moves') {
+      let idx = b.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (b.mine.pp[m] ?? 0) > 0);
+      if (idx < 0) idx = 0;
+      for (let k = 0; k < idx; k++) b.press('down');
+      b.press('a'); continue;
+    }
+    if (b.phase === 'learn' || b.phase === 'bag') { b.press('a'); continue; }
+  }
+  ok(sawShift, 'el estilo CAMBIO avisa el relevo rival');
+  ok(res === 'win', 'la Probadora cae con cambio de por medio');
+  ok(b.mi === 1, 'el cambio de cortesía entró de verdad');
+
+  // en SEGUIDO no hay aviso
+  MQ.player.battleStyle = 'seguido';
+  MQ.player.party.forEach(MQ.fullHeal);
+  res = null; sawShift = false; steps = 0;
+  const b2 = new MQ.BattleScene({ trainer: { id: 'x_duo2', cls: 'Probadora', name: 'Dúo II', look: 'chama',
+    team: [['cachicamo', 3], ['bachaquito', 3]], money: 10, intro: 'Van dos.', win: 'Bien.', lose: 'Ja.' } }, (r) => { res = r; });
+  while (!res && steps++ < 4000) {
+    b2.update();
+    if (b2.tb.active) { b2.press('a'); continue; }
+    if (b2.phase === 'shift') { sawShift = true; b2.press('b'); continue; }
+    if (b2.phase === 'menu') { b2.press('a'); continue; }
+    if (b2.phase === 'moves') {
+      let idx = b2.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (b2.mine.pp[m] ?? 0) > 0);
+      if (idx < 0) idx = 0;
+      for (let k = 0; k < idx; k++) b2.press('down');
+      b2.press('a'); continue;
+    }
+    if (b2.phase === 'party' || b2.phase === 'learn' || b2.phase === 'bag') { b2.press('a'); continue; }
+  }
+  ok(res === 'win' && !sawShift, 'en SEGUIDO el relevo entra sin preguntar');
+  MQ.player.battleStyle = 'cambio';
+
+  // el menú AJUSTES rota las opciones
+  MQ.player.map = 'propatria';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  w.openSettings();
+  ok(!!w.menu && w.menu.items[0].label.includes('MEDIO'), 'AJUSTES abre con TEXTO: MEDIO');
+  w.press('a');
+  ok(MQ.player.textSpeed === 'rapido' && w.menu.items[0].label.includes('RÁPIDO'), 'TEXTO rota a RÁPIDO');
+  w.press('down'); w.press('a');
+  ok(MQ.player.battleStyle === 'seguido' && w.menu.items[1].label.includes('SEGUIDO'), 'COMBATE rota a SEGUIDO');
+  w.press('b');
+  ok(!w.menu, 'AJUSTES cierra con B');
+  MQ.player.textSpeed = 'medio'; MQ.player.battleStyle = 'cambio';
+}
+
+// la experiencia se reparte: participantes (Gen 3) y la Media Arepa
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 30), MQ.makeMon('chigui', 28), MQ.makeMon('morrocoy', 26)];
+  MQ.player.flags.starter = true;
+  MQ.player.party[2].item = 'mediaarepa'; // el tercero acompaña sin pelear
+  const [xp0, xp1, xp2] = MQ.player.party.map((m) => m.xp);
+  let res = null;
+  const b = new MQ.BattleScene({ wild: { id: 'cachicamo', lvl: 5 } }, (r) => { res = r; });
+  let didSwitch = false, steps = 0;
+  while (!res && steps++ < 4000) {
+    b.update();
+    if (b.tb.active) { b.press('a'); continue; }
+    if (b.phase === 'menu') {
+      if (!didSwitch) { b.press('down'); b.press('down'); } // EQUIPO (cambiar primero)
+      b.press('a'); continue;
+    }
+    if (b.phase === 'party') { didSwitch = true; b.press('down'); b.press('a'); continue; }
+    if (b.phase === 'moves') {
+      let idx = b.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (b.mine.pp[m] ?? 0) > 0);
+      if (idx < 0) idx = 0;
+      for (let k = 0; k < idx; k++) b.press('down');
+      b.press('a'); continue;
+    }
+    if (b.phase === 'shift' || b.phase === 'bag' || b.phase === 'learn') { b.press('a'); continue; }
+  }
+  ok(res === 'win', 'el combate con cambio se ganó');
+  const [g0, g1, g2] = MQ.player.party.map((m, i) => m.xp - [xp0, xp1, xp2][i]);
+  ok(g0 > 0 && g1 > 0, `los dos participantes ganan experiencia (${g0}, ${g1})`);
+  ok(g2 > 0, `la Media Arepa le reparte al de la banca (${g2})`);
+  ok(g2 >= g0 + g1 - 2, 'la mitad del banquero equivale a la mitad de los que pelearon');
+  ok((MQ.player.party[2].evs && Object.values(MQ.player.party[2].evs).some((v) => v > 0)), 'la calle también le llega al de la Media Arepa');
+
+  // la Panadera la regala una sola vez
+  MQ.player.map = 'sabanagrande';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  w.runScript(MQ.SCRIPTS['regalo:mediaarepa']());
+  for (let i = 0; i < 40 && (w.tb.active || w.script); i++) { w.update(); if (w.tb.active) w.press('a'); }
+  ok(MQ.player.bag.mediaarepa === 1, 'la Panadera entrega la Media Arepa');
+  w.runScript(MQ.SCRIPTS['regalo:mediaarepa']());
+  for (let i = 0; i < 40 && (w.tb.active || w.script); i++) { w.update(); if (w.tb.active) w.press('a'); }
+  ok(MQ.player.bag.mediaarepa === 1, 'y una sola vez');
+}
+
+// el Viejo del Andén: la demostración de fichaje no deja nada en tu mochila
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 8)];
+  MQ.player.flags.starter = true;
+  MQ.player.bag.ficha = 3;
+  MQ.player.map = 'canoamarillo';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  const viejo = MQ.MAPS.canoamarillo.npcs.find((n) => n.script === 'viejo:demo');
+  ok(!!viejo, 'el Viejo espera en Caño Amarillo');
+  w.runScript(MQ.SCRIPTS['viejo:demo']());
+  let steps = 0;
+  while ((w.tb.active || w.script || MQ.scenes.length > 1) && steps++ < 3000) {
+    const t = MQ.scenes[MQ.scenes.length - 1];
+    t.update && t.update();
+    if (t.tb && t.tb.active) t.press('a');
+  }
+  ok(steps < 3000, 'la demostración corre sola de punta a punta');
+  ok(MQ.player.flags.viejodemo, 'la lección quedó aprendida (bandera)');
+  ok(MQ.player.party.length === 1, 'el bachaquito del Viejo no se queda contigo');
+  ok(MQ.player.bag.ficha === 3, 'la ficha que vuela es del Viejo, no tuya');
+  ok(!MQ.player.dexCaught.bachaquito, 'fichar ajeno no marca tu Cuaderno');
+  ok(MQ.player.dexSeen.bachaquito, 'pero verlo sí cuenta como visto');
+  // la segunda visita es puro consejo
+  w.runScript(MQ.SCRIPTS['viejo:demo']());
+  for (let i = 0; i < 20 && (w.tb.active || w.script); i++) { w.update(); if (w.tb.active) w.press('a'); }
+  ok(MQ.scenes.length === 1, 'el consejo repetido no abre combate');
+}
+
+// el Fanático: el hincha de los Jefes, con su dato antes y su fiesta después
+{
+  let pares = 0;
+  for (const [id, m] of Object.entries(MQ.MAPS)) {
+    const fans = (m.npcs || []).filter((n) => n.name === 'el Fanático');
+    if (!fans.length) continue;
+    ok(fans.length === 2, `el Fanático en ${id} tiene sus dos caras (${fans.length})`);
+    const [antes, despues] = fans[0].hideIf ? fans : [fans[1], fans[0]];
+    ok(antes.hideIf && despues.showIf && antes.hideIf === despues.showIf, `el Fanático en ${id} alterna con la misma ficha`);
+    ok(/^ficha[1-8]$/.test(antes.hideIf), `el Fanático en ${id} escolta a un Jefe real (${antes.hideIf})`);
+    ok(antes.x === despues.x && antes.y === despues.y, `el Fanático en ${id} no se desdobla de sitio`);
+    ok(MQ.WALKABLE.has((m.grid[antes.y] || '')[antes.x] || '#'), `el Fanático en ${id} pisa piso real`);
+    pares++;
+  }
+  ok(pares === 8, `el Fanático cubre las 8 estaciones de Jefe (${pares})`);
+  // antes de la ficha habla el del dato; con la ficha, el de la fiesta
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 10)];
+  MQ.player.flags.starter = true;
+  MQ.player.map = 'capitolio';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  const pre = w.npcAt(10, 9);
+  ok(pre && pre.hideIf === 'ficha1' && pre.text[0].includes('Rumba'), 'sin ficha: el Fanático sopla el dato');
+  MQ.setFlag('ficha1');
+  const post = w.npcAt(10, 9);
+  ok(post && post.showIf === 'ficha1' && post.text[0].includes('GANASTE'), 'con ficha: el Fanático celebra');
+}
+
+// el vigilante que gira: te encuentra hasta parado (spinner estilo FireRed)
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 40)];
+  MQ.player.flags.starter = true;
+  MQ.player.map = 'tn_ciudaduniversitaria__labandera';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  const don = w.map.npcs.find((n) => n.trainer && n.trainer.id === 'ajedrez1');
+  ok(don && don.spin, 'Don Emiliano es de los que giran');
+  // parado en su mirada: spotNow lo encuentra
+  don.dir = 'down';
+  let py = 0;
+  for (let y = don.y + 1; y <= don.y + 4; y++) {
+    if (!MQ.WALKABLE.has(w.tile(don.x, y)) || w.npcAt(don.x, y)) break;
+    py = y;
+  }
+  ok(py > 0, 'hay casilla libre en la mirada de Don Emiliano');
+  MQ.player.x = don.x; MQ.player.y = py; MQ.player.dir = 'up';
+  ok(w.spotNow(), 'parado en su línea de vista: te encuentra');
+  ok(w.engage && w.engage.npc === don, 'el ¡! es de Don Emiliano');
+  w.engage = null;
+  // la rotación del turno (frame % 50) también dispara la mirada
+  // (el giro es probabilístico: se reintenta el tic del turno hasta que caiga)
+  don.dir = 'up';
+  const oldPick = MQ.pick;
+  MQ.pick = (arr) => (arr.length === 4 && arr[0] === 'up' ? 'down' : oldPick(arr));
+  for (let tries = 0; tries < 200 && !w.engage; tries++) { w.frame = 49; w.update(); }
+  MQ.pick = oldPick;
+  ok(don.dir === 'down', 'el giro del turno lo volteó hacia ti');
+  ok(w.engage && w.engage.npc === don, 'al girar te ve sin que muevas un pie');
+  w.engage = null;
+}
+
 // guion del altar y del tren
 {
   MQ.player = MQ.newPlayer('Tester', 'player');
@@ -327,21 +875,63 @@ section('Overworld');
   ok(MQ.player.flags.fichaoro, 'altar otorga la ficha de oro');
   ok(MQ.player.bag.fichaoro === 1, 'ficha de oro en mochila');
 
-  // disparo del tren fantasma: caminar al tile (42,4)
+  // la vieja entrada de Plaza Venezuela: el Tren pasa de largo (Q6A), sin combate
   MQ.player.x = 42; MQ.player.y = 4;
   w.checkTrigger();
-  let steps = 0;
-  while ((w.tb.active || w.script || MQ.scenes.length > 1) && steps++ < 6000) {
-    const t = MQ.scenes[MQ.scenes.length - 1];
-    t.update && t.update();
-    if (t.tb && t.tb.active) { t.press('a'); continue; }
-    if (t.phase === 'menu') { t.press('down'); t.press('a'); continue; } // MOCHILA
-    if (t.phase === 'bag') { t.press('a'); continue; }                    // ficha de oro
-    if (t.pages) { t.press('a'); continue; }                              // EndScene
-  }
-  ok(MQ.player.flags.tren, 'el Tren Fantasma fue enfrentado y fichado');
-  ok(MQ.player.dexCaught.trenfantasma, 'tren fantasma en el dex');
-  ok(MQ.player.flags.ending || MQ.scenes.length >= 1, 'el final corre sin romperse');
+  for (let i = 0; i < 200 && (w.tb.active || w.script); i++) { w.update(); if (w.tb.active) w.press('a'); }
+  ok(!MQ.player.flags.tren, 'el Tren ya no se enfrenta en la entrada vieja');
+  ok(MQ.scenes.length === 1, 'el pase de largo no deja escenas colgadas');
+}
+
+// el final de verdad: el andén de Miranda (Línea Fantasma, tras Consejo + bendición)
+{
+  MQ.player = MQ.newPlayer('Tester', 'player');
+  // Tepuy pega 4x al Espanto/Catatumbo del Tren y resiste su STAB a 0.25x
+  MQ.player.party = [MQ.makeMon('waraira', 72), MQ.makeMon('tepuyon', 70)];
+  MQ.player.flags.starter = true;
+  ['ficha1', 'ficha2', 'ficha3', 'ficha4', 'ficha5', 'ficha6', 'ficha7', 'ficha8'].forEach((f) => MQ.setFlag(f));
+  MQ.setFlag('consejo'); MQ.setFlag('fichaoro');
+  MQ.player.map = 'gh_miranda_l5';
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  w.enterMap('gh_miranda_l5');
+  const drive = (label) => {
+    let steps = 0;
+    while ((w.tb.active || w.script || MQ.scenes.length > 1) && steps++ < 8000) {
+      const t = MQ.scenes[MQ.scenes.length - 1];
+      t.update && t.update();
+      if (t.tb && t.tb.active) { t.press('a'); continue; }
+      if (t.phase === 'menu') {
+        // primera vuelta: pelea; segunda vuelta: mochila (ficha de oro)
+        if (label === 'catch') { t.press('down'); t.press('a'); } else t.press('a');
+        continue;
+      }
+      if (t.phase === 'moves') {
+        let idx = t.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (t.mine.pp[m] ?? 0) > 0);
+        if (idx < 0) idx = 0;
+        for (let k = 0; k < Math.max(0, idx); k++) t.press('down');
+        t.press('a'); continue;
+      }
+      if (t.phase === 'shift') { t.press('b'); continue; }
+      if (t.phase === 'party') { if (Math.random() < 0.5) t.press('down'); t.press('a'); continue; }
+      if (t.phase === 'bag' || t.phase === 'learn') { t.press('a'); continue; }
+      if (t.pages) { t.press('a'); continue; } // EndScene
+    }
+  };
+  MQ.player.x = 16; MQ.player.y = 5;
+  w.checkTrigger();
+  drive('fight');
+  ok(MQ.player.flags.tren, 'el Tren Fantasma fue ayudado en Miranda');
+  ok(MQ.player.flags.ending, 'el final corre (EndScene)');
+  ok(!MQ.player.dexCaught.trenfantasma, 'la primera vuelta no lo ficha (canon: sin villano)');
+  // la segunda vuelta: ahora sí decide viajar contigo
+  MQ.player.party.forEach(MQ.fullHeal);
+  MQ.player.bag = { fichaoro: 1 };
+  MQ.player.x = 16; MQ.player.y = 5;
+  w.checkTrigger();
+  drive('catch');
+  ok(MQ.player.dexCaught.trenfantasma, 'la segunda vuelta lo ficha: el dex se puede completar (150/150)');
 }
 
 // guion de inicio (starter)
@@ -437,8 +1027,352 @@ section('Overworld');
   ok(w.mapView === false, 'el mapa se cierra con B');
 }
 
+// ---- 5b. la red completa (world2: 88 mapas del world bible) ----
+section('Red');
+{
+  ok(Object.keys(MQ.MAPS).length >= 90, `la red completa está montada (${Object.keys(MQ.MAPS).length} mapas)`);
+  // regiones representadas
+  for (const mid of ['st_elsilencio', 'st_zoologico', 'st_larinconada', 'st_zonarental', 'gh_miranda_l5', 'sf_cumbre', 'cb_sanagustin', 'st_sanantonio'])
+    ok(MQ.MAPS[mid], `mapa ${mid} existe`);
+  // toda reja usa una bandera conocida
+  const KNOWN_FLAGS = new Set(['starter', 'ficha1', 'ficha2', 'ficha3', 'ficha4', 'ficha5', 'ficha6', 'ficha7', 'ficha8',
+    'fichas4', 'fichas5', 'fichas7', 'fichas8', 'tren', 'fichaoro', 'consejo', 'ending',
+    'oficio_machete', 'oficio_nado', 'oficio_demolicion', 'oficio_teleferico']);
+  for (const [mid, m] of Object.entries(MQ.MAPS))
+    for (const w of m.warps || [])
+      if (w.requires) ok(KNOWN_FLAGS.has(w.requires), `${mid}: reja usa bandera conocida (${w.requires})`);
+  // las líneas del tren: cada parada es una estación real
+  ok(MQ.LINES && Object.keys(MQ.LINES).length >= 6, 'las 6 líneas del tren existen');
+  for (const [lid, line] of Object.entries(MQ.LINES))
+    for (const s of line.stops) ok(MQ.MAPS[s] && MQ.MAPS[s].station, `línea ${lid}: parada ${s} es estación`);
+  // banderas derivadas de fichas
+  MQ.player = MQ.newPlayer('T', 'player');
+  ['ficha1', 'ficha2', 'ficha3', 'ficha4', 'ficha5', 'ficha6', 'ficha7', 'ficha8'].forEach((f) => MQ.setFlag(f));
+  ok(MQ.player.flags.fichas4 && MQ.player.flags.fichas5 && MQ.player.flags.fichas7 && MQ.player.flags.fichas8,
+    'las 8 fichas derivan fichas4/5/7/8');
+  // el transfer Capitolio -> El Silencio se cruza a pie con 4 fichas
+  MQ.player = MQ.newPlayer('T', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 20)];
+  MQ.player.flags.starter = true;
+  ['ficha1', 'ficha2', 'ficha3', 'ficha4'].forEach((f) => MQ.setFlag(f));
+  MQ.player.map = 'capitolio'; MQ.player.x = 18; MQ.player.y = 9; MQ.player.dir = 'down';
+  MQ.scenes.length = 0;
+  const w2 = new MQ.WorldScene();
+  MQ.pushScene(w2);
+  MQ.input.held.down = true;
+  for (let i = 0; i < 300 && MQ.player.map === 'capitolio'; i++) w2.update();
+  MQ.input.held.down = false;
+  ok(MQ.player.map === 'st_elsilencio', `transfer a El Silencio funciona (=${MQ.player.map})`);
+  // el tren de la Línea 2 ofrece destinos visitados
+  MQ.player.visited.st_elsilencio = true; MQ.player.visited.st_capuchinos = true;
+  const ts = MQ.MAPS.st_elsilencio.trainSpawn;
+  MQ.player.x = ts.x; MQ.player.y = ts.y;
+  w2.openTrain();
+  ok(!!w2.menu && w2.menu.items.some((it) => it.value === 'st_capuchinos'), 'el tren de la Línea 2 ofrece Capuchinos');
+  w2.press('b');
+  // el módulo de atención de una estación generada cura
+  MQ.player.map = 'st_elsilencio';
+  w2.enterMap('st_elsilencio');
+  MQ.player.x = 3; MQ.player.y = 7; MQ.player.dir = 'up';
+  MQ.player.party[0].hp = 1;
+  w2.interact();
+  for (let i = 0; i < 60 && (w2.tb.active || w2.script); i++) { w2.update(); if (w2.tb.active) w2.press('a'); }
+  ok(MQ.player.party[0].hp === MQ.player.party[0].maxhp, 'el Doctorcito de El Silencio cura');
+  // una reja de oficio niega el paso
+  MQ.player.map = 'st_altamira' in MQ.MAPS ? MQ.player.map : MQ.player.map;
+  MQ.player.map = 'altamira';
+  w2.enterMap('altamira');
+  const door = MQ.MAPS.altamira.warps.find((w) => w.to === 'sf_puertaavila');
+  ok(door && door.requires === 'oficio_machete', 'la Puerta del Ávila pide el machete');
+}
+
+// ---- 5c. la gente de la red (world3: jefes, tutores, estáticos, consejo) ----
+section('Gente');
+{
+  // los 4 jefes nuevos existen con su recompensa
+  const bosses = { boss5: ['st_zoologico', 'ficha5'], boss6: ['st_layaguara', 'ficha6'],
+    boss7: ['st_larinconada', 'ficha7'], boss8: ['st_parquecentral', 'ficha8'] };
+  for (const [bid, [mid, reward]] of Object.entries(bosses)) {
+    const npc = (MQ.MAPS[mid].npcs || []).find((n) => n.trainer && n.trainer.id === bid);
+    ok(npc, `jefe ${bid} vive en ${mid}`);
+    ok(npc && npc.trainer.reward === reward, `jefe ${bid} entrega ${reward}`);
+    ok(npc && npc.trainer.team.length >= 4, `jefe ${bid} tiene equipo serio (${npc && npc.trainer.team.length})`);
+  }
+  // jefes 7-8 con equipo de 6 (regla del spec §3)
+  ok(MQ.MAPS.st_larinconada.npcs.find((n) => n.trainer && n.trainer.id === 'boss7').trainer.team.length === 6, 'la Amazona lleva 6');
+  ok(MQ.MAPS.st_parquecentral.npcs.find((n) => n.trainer && n.trainer.id === 'boss8').trainer.team.length === 6, 'la Ingeniera lleva 6');
+  // el Consejo: 4 ánimas encadenadas por showIf + el cierre
+  const zr = MQ.MAPS.st_zonarental.npcs || [];
+  for (let i = 1; i <= 4; i++) ok(zr.find((n) => n.trainer && n.trainer.id === 'consejo' + i), `ánima ${i} del Consejo existe`);
+  ok(zr.find((n) => n.script === 'consejo:cierre'), 'la voz del Consejo cierra el rito');
+  // tutor de oficio funciona: enseña la bandera y abre la reja
+  MQ.player = MQ.newPlayer('T', 'player');
+  MQ.player.party = [MQ.makeMon('frontinito', 20)];
+  MQ.player.flags.starter = true;
+  MQ.scenes.length = 0;
+  const w3 = new MQ.WorldScene();
+  MQ.pushScene(w3);
+  w3.enterMap('calvario');
+  const tutor = MQ.MAPS.calvario.npcs.find((n) => n.script === 'tutor:machete');
+  ok(tutor, 'el Viejo Machetero está en el Calvario');
+  MQ.player.x = tutor.x; MQ.player.y = tutor.y + 1; MQ.player.dir = 'up';
+  w3.interact();
+  for (let i = 0; i < 120 && (w3.tb.active || w3.script || w3.menu); i++) {
+    w3.update();
+    if (w3.tb.active) { w3.press('a'); continue; }
+    if (w3.menu) { w3.press('a'); continue; }
+  }
+  ok(MQ.player.flags.oficio_machete, 'el tutor enseña el oficio del machete');
+  // el jefe 5 se puede vencer y entrega la Ficha del Monte
+  MQ.player = MQ.newPlayer('T', 'player');
+  MQ.player.party = [MQ.makeMon('waraira', 60), MQ.makeMon('florentin', 60)];
+  MQ.player.flags.starter = true;
+  MQ.scenes.length = 0;
+  const w4 = new MQ.WorldScene();
+  MQ.pushScene(w4);
+  w4.enterMap('st_zoologico');
+  const jefe = MQ.MAPS.st_zoologico.npcs.find((n) => n.trainer && n.trainer.id === 'boss5');
+  MQ.player.x = jefe.x; MQ.player.y = jefe.y + 1; MQ.player.dir = 'up';
+  w4.interact();
+  let guard = 0;
+  while ((w4.tb.active || w4.script || MQ.scenes.length > 1) && guard++ < 8000) {
+    const t = MQ.scenes[MQ.scenes.length - 1];
+    t.update && t.update();
+    if (t.tb && t.tb.active) { t.press('a'); continue; }
+    if (t.phase === 'menu') { t.press('a'); continue; }
+    if (t.phase === 'moves') {
+      let idx = t.mine.moves.findIndex((m) => MQ.MOVES[m].pow > 0 && (t.mine.pp[m] ?? 0) > 0);
+      if (idx < 0) idx = t.mine.moves.findIndex((m) => (t.mine.pp[m] ?? 0) > 0);
+      if (idx < 0) { t.press('b'); continue; }
+      for (let k = 0; k < Math.max(0, idx); k++) t.press('down');
+      t.press('a'); continue;
+    }
+    if (t.phase === 'shift') { t.press('b'); continue; }
+    if (t.phase === 'party') { if (Math.random() < 0.5) t.press('down'); t.press('a'); continue; }
+    if (t.phase === 'bag' || t.phase === 'learn') { t.press('a'); continue; }
+  }
+  ok(MQ.player.flags.ficha5, `el Baquiano entrega la Ficha del Monte (guard=${guard})`);
+  ok(MQ.player.flags.t_boss5, 'el jefe queda vencido');
+  // el estático del Silbón aparece solo con su reja y se esfuma al ficharlo
+  const sil = MQ.MAPS['tn_capuchinos__teatros'].npcs.find((n) => n.mon === 'silbon');
+  ok(sil && sil.showIf === 'fichas7' && sil.hideIf === 'static_silbon', 'el Silbón estático respeta sus rejas');
+}
+
 // scripts de historia existen y devuelven listas
-for (const k of ['intro', 'abuela', 'heal', 'rival1', 'rival2', 'rival3', 'altar', 'trenfantasma']) {
+// la Tía que Cuida: dejar, caminar y recoger más grande
+{
+  MQ.player = MQ.newPlayer('T', 'player');
+  MQ.player.party = [MQ.makeMon('chigui', 20), MQ.makeMon('frontinito', 18)];
+  MQ.player.flags.starter = true;
+  MQ.player.money = 2000;
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  w.enterMap('st_caricuao');
+  const tia = MQ.MAPS.st_caricuao.npcs.find((n) => n.script === 'tia:cuida');
+  const talk = () => {
+    MQ.player.x = tia.x; MQ.player.y = tia.y + 1; MQ.player.dir = 'up';
+    w.interact();
+    for (let i = 0; i < 200 && (w.tb.active || w.script || w.menu); i++) {
+      w.update();
+      if (w.tb.active) { w.press('a'); continue; }
+      if (w.menu) { w.press('a'); continue; }
+    }
+  };
+  talk();
+  ok(!!MQ.player.daycare && MQ.player.party.length === 1, 'la Tía recibe al espanto');
+  MQ.player.steps = (MQ.player.steps || 0) + 1024; // cuatro niveles de caminata
+  talk();
+  ok(!MQ.player.daycare && MQ.player.party.length === 2, 'la Tía lo devuelve');
+  ok(MQ.player.party[1].lvl === 24, `el espanto creció con los pasos (N${MQ.player.party[1].lvl})`);
+  // el Carretón ronda Los Teques tras el final
+  MQ.player.flags.ending = true;
+  const lt = MQ.MAPS['tn_independencia__carrizal'];
+  ok(lt.region === 'losteques', 'los túneles del páramo conocen su región');
+  // la Torre y el rematch de Cheo están en su sitio
+  ok(MQ.MAPS.in_latorre.npcs.some((n) => n.script === 'torre:reto'), 'la Relojera espera en la Torre');
+  ok(MQ.MAPS.st_sanantonio.npcs.some((n) => n.script === 'rival5' && n.showIf === 'ending'), 'Cheo entrena en San Antonio tras el final');
+  // pistas musicales por región
+  for (const [mid, track] of [['st_elsilencio', 'oeste'], ['st_labandera', 'sur'], ['st_teatros', 'teatros'], ['st_carrizal', 'paramo'], ['cb_laceiba', 'cable'], ['sf_neblina', 'avila']])
+    ok(MQ.MAPS[mid].music === track, `${mid} suena a ${track} (=${MQ.MAPS[mid].music})`);
+}
+
+// ---- 5d. el kit FireRed: casetes, anzuelos, patineta, safari ----
+section('Kit');
+{
+  MQ.player = MQ.newPlayer('T', 'player');
+  MQ.player.party = [MQ.makeMon('chigui', 12)]; // 3 movimientos: hay campo pa'l casete
+  MQ.player.flags.starter = true;
+  MQ.player.bag = { casete01: 1, anzuelobueno: 1, patineta: 1 };
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  const drain = () => { for (let i = 0; i < 30 && w.tb.active; i++) w.press('a'); };
+  // casete: enseña Trancón desde la mochila
+  w.enterMap('propatria');
+  w.openBag();
+  w.press('a'); // casete01
+  w.press('a'); // chigui
+  if (w.menu) w.press('a'); // (por si abre el menú de olvido)
+  drain();
+  w.menu = null;
+  ok(MQ.player.party[0].moves.includes('trancon'), 'el casete enseña Trancón');
+  ok(!MQ.player.bag.casete01, 'la cinta se gasta (un solo uso)');
+  // pesca en Los Caobos (enc.sf_caobos tiene tabla de anzuelos)
+  w.enterMap('sf_caobos');
+  const g = MQ.MAPS.sf_caobos.grid;
+  let spot = null;
+  outer: for (let y = 1; y < g.length - 1; y++)
+    for (let x = 1; x < g[y].length - 1; x++)
+      if ((g[y][x] === 'W' || g[y][x] === 'f') && MQ.WALKABLE.has(g[y + 1][x])) { spot = [x, y]; break outer; }
+  if (!spot) { // el generador no puso agua: siembra una fuente para pescar
+    MQ.MAPS.sf_caobos.grid[10] = g[10].slice(0, 10) + 'f' + g[10].slice(11);
+    spot = [10, 10];
+    MQ.MAPS.sf_caobos.grid[11] = g[11].slice(0, 10) + '.' + g[11].slice(11);
+  }
+  MQ.player.x = spot[0]; MQ.player.y = spot[1] + 1; MQ.player.dir = 'up';
+  drain();
+  w.openBag();
+  {
+    const idx = w.menu.items.findIndex((it) => it.value === 'anzuelobueno');
+    for (let k = 0; k < idx; k++) w.press('down');
+    w.press('a');
+  }
+  ok(w.encFlash > 0 && w.pendingEnc, `el anzuelo engancha algo (${w.pendingEnc && w.pendingEnc.id})`);
+  w.encFlash = 0; w.pendingEnc = null;
+  // patineta: acelera fuera de estaciones
+  w.enterMap('tunel1');
+  drain();
+  w.openBag();
+  {
+    const idx = w.menu.items.findIndex((it) => it.value === 'patineta');
+    for (let k = 0; k < idx; k++) w.press('down');
+    w.press('a');
+  }
+  drain();
+  ok(MQ.player.skating === true, 'la patineta rueda en el túnel');
+  // safari: los pasos se agotan y te devuelven a la taquilla
+  MQ.player.skating = false;
+  MQ.player.safariSteps = 2;
+  w.enterMap('in_safari');
+  MQ.player.x = 5; MQ.player.y = 6;
+  w.arrived();
+  w.arrived();
+  ok(MQ.player.map === 'st_zoologico', `el safari te devuelve al agotar pasos (=${MQ.player.map})`);
+  // la Coplera y el Olvidadizo están en su andén
+  ok(MQ.MAPS.canoamarillo.npcs.some((n) => n.script === 'coplera'), 'la Coplera canta en Caño Amarillo');
+  ok(MQ.MAPS.bellasartes.npcs.some((n) => n.script === 'olvidadizo'), 'el Olvidadizo olvida en Bellas Artes');
+  ok(MQ.MAPS.sabanagrande.npcs.some((n) => n.script === 'regalo:patineta'), 'la patineta se regala en el bulevar');
+}
+
+// ---- 5e-pre. anti-softlock: el juego entero se completa jugando (world bible §9) ----
+section('Camino crítico');
+{
+  // Fuentes de banderas: en qué mapa se gana cada bandera (jefes, tutores, ritos)
+  // y qué requiere ganarla ahí mismo. Punto fijo: expandir alcance -> ganar
+  // banderas -> expandir de nuevo, hasta estabilizar. Nada de teletransporte.
+  const SOURCES = [
+    { map: 'casa', gives: 'starter' },
+    { map: 'propatria', gives: 'oficio_luz' },
+    { map: 'calvario', gives: 'oficio_machete' },
+    { map: 'capitolio', gives: 'ficha1' },
+    { map: 'bellasartes', gives: 'oficio_empuje', needs: ['ficha2'] },
+    { map: 'plazavenezuela', gives: 'ficha2' },
+    { map: 'chacaito', gives: 'ficha3' },
+    { map: 'mercado', gives: 'ficha4' },
+    { map: 'st_elsilencio', gives: 'oficio_demolicion' },
+    { map: 'st_zoologico', gives: 'ficha5' },
+    { map: 'st_layaguara', gives: 'ficha6' },
+    { map: 'st_layaguara', gives: 'oficio_nado', needs: ['ficha6'] },
+    { map: 'st_larinconada', gives: 'ficha7' },
+    { map: 'st_parquecentral', gives: 'ficha8' },
+    { map: 'st_parquecentral', gives: 'oficio_teleferico' },
+    { map: 'st_zonarental', gives: 'consejo', needs: ['fichas8'] },
+    { map: 'lineafantasma', gives: 'fichaoro' },
+    { map: 'gh_miranda_l5', gives: 'tren' },
+    { map: 'gh_miranda_l5', gives: 'ending', needs: ['tren'] },
+  ];
+  const flags = new Set();
+  const derive = () => {
+    const owned = ['ficha1', 'ficha2', 'ficha3', 'ficha4', 'ficha5', 'ficha6', 'ficha7', 'ficha8'].filter((f) => flags.has(f)).length;
+    for (const n of [4, 5, 7, 8]) if (owned >= n) flags.add('fichas' + n);
+  };
+  const reachable = new Set(['casa']);
+  let changed = true;
+  let rounds = 0;
+  while (changed && rounds++ < 250) {
+    changed = false;
+    // expandir por warps cuyas rejas ya se cumplen
+    const frontier = [...reachable];
+    for (const mid of frontier) {
+      for (const w of MQ.MAPS[mid].warps || []) {
+        if (w.requires && !flags.has(w.requires)) continue;
+        if (!reachable.has(w.to)) { reachable.add(w.to); changed = true; }
+      }
+    }
+    // ganar banderas donde ya llegamos
+    for (const s of SOURCES) {
+      if (!reachable.has(s.map) || flags.has(s.gives)) continue;
+      if (s.needs && !s.needs.every((f) => flags.has(f))) continue;
+      flags.add(s.gives);
+      derive();
+      changed = true;
+    }
+  }
+  ok(flags.has('starter') && flags.has('fichas4'), 'Acto 1 completable (4 fichas)');
+  ok(flags.has('ficha5') && flags.has('ficha6'), 'Acto 2 completable (Zoológico y Guaire)');
+  ok(flags.has('oficio_nado'), 'el Nado llega antes de su reja (anti-softlock §9)');
+  ok(flags.has('ficha7') && flags.has('ficha8'), 'Acto 3 completable (Sur y Torre)');
+  ok(flags.has('consejo') && flags.has('fichaoro'), 'Consejo y bendición alcanzables');
+  ok(reachable.has('gh_miranda_l5') && flags.has('ending'), 'el final se alcanza JUGANDO, sin teletransporte');
+  const unreachable = Object.keys(MQ.MAPS).filter((m) => !reachable.has(m));
+  ok(unreachable.length === 0, `toda la red se abre al completar el juego (faltan: ${unreachable.join(',') || 'ninguno'})`);
+}
+
+// ---- 5e. el Cronista, el Bíper y los salvajes con carga ----
+{
+  // los hitos del Cuaderno premian (50 -> madrugadoras, 100 -> tornasol bendito)
+  MQ.player = MQ.newPlayer('T', 'player');
+  MQ.player.party = [MQ.makeMon('chigui', 10)];
+  MQ.player.flags.starter = true;
+  for (let i = 0; i < 50; i++) MQ.player.dexCaught[MQ.DEX_ORDER[i]] = true;
+  MQ.scenes.length = 0;
+  const w = new MQ.WorldScene();
+  MQ.pushScene(w);
+  w.enterMap('bellasartes');
+  const cron = MQ.MAPS.bellasartes.npcs.find((n) => n.script === 'cronista');
+  const habla = () => {
+    MQ.player.x = cron.x; MQ.player.y = cron.y + 1; MQ.player.dir = 'up';
+    w.interact();
+    for (let i = 0; i < 60 && (w.tb.active || w.script); i++) { w.update(); if (w.tb.active) w.press('a'); }
+  };
+  habla();
+  ok(MQ.player.flags.dex50 && MQ.player.bag.fichamadrugadora === 5, 'el Cronista premia los 50 fichados');
+  for (let i = 50; i < 100; i++) MQ.player.dexCaught[MQ.DEX_ORDER[i]] = true;
+  habla();
+  ok(MQ.player.flags.tornasolbendito, 'los 100 fichados bendicen el tornasol');
+  ok(MQ.shinyOdds() === 1365, `las probabilidades tornasol mejoran (1/${MQ.shinyOdds()})`);
+  // el bíper: carga con pasos y reabre revanchas del mapa
+  MQ.player.bag.biper = 1;
+  MQ.player.flags.t_ramon = true;
+  MQ.player.biperCharge = 100;
+  w.enterMap('tunel1');
+  w.openBag();
+  {
+    const idx = w.menu.items.findIndex((it) => it.value === 'biper');
+    for (let k = 0; k < idx; k++) w.press('down');
+    w.press('a');
+  }
+  ok(!MQ.player.flags.t_ramon, 'el Bíper reabre la revancha de Ramón');
+  ok(MQ.player.biperCharge === 0, 'el Bíper queda descargado');
+  for (let i = 0; i < 30 && w.tb.active; i++) w.press('a');
+  // los salvajes a veces cargan fruta (5%) o potenciador (1%)
+  let holds = 0;
+  for (let i = 0; i < 600; i++) if (MQ.wildHold('chigui')) holds++;
+  ok(holds > 3 && holds < 120, `los salvajes cargan objeto a la tasa esperada (${holds}/600)`);
+}
+
+for (const k of ['intro', 'abuela', 'heal', 'rival1', 'rival2', 'rival3', 'rival4', 'rival5', 'altar', 'trenfantasma', 'trenpasa', 'coleccionista', 'torre:reto', 'tia:cuida', 'coplera', 'olvidadizo', 'padrino', 'regalo:patineta', 'cronista', 'regalo:biper']) {
   MQ.player = MQ.newPlayer('T', 'player');
   MQ.player.party = [MQ.makeMon('frontinito', 5)];
   const s = MQ.SCRIPTS[k]();

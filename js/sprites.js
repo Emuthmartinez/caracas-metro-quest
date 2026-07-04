@@ -88,6 +88,7 @@
     const kind = size <= 16 ? 'overworld' : 'front';
     if (MQ.drawSprite(ctx, id, kind, x, y, size, flip, tint)) return;
     const art = sp.art, pal = sp.pal;
+    if (!art || !pal) return; // sin PNG y sin pixel art: mejor invisible que reventado
     for (let r = 0; r < art.length; r++) {
       const row = art[r];
       for (let c = 0; c < row.length; c++) {
@@ -110,9 +111,11 @@
     ctx.translate(cx, cy);
     ctx.scale(mul, mul);
     if (!MQ.drawSprite(ctx, id, 'front', -size / 2, -size / 2, size, flip, tint, alpha)) {
-      const w = sp.art[0].length * scale, h = sp.art.length * scale;
-      ctx.globalAlpha *= alpha;
-      MQ.drawMon(ctx, id, -w / 2, -h / 2, scale, flip, tint);
+      if (sp.art && sp.art.length) {
+        const w = sp.art[0].length * scale, h = sp.art.length * scale;
+        ctx.globalAlpha *= alpha;
+        MQ.drawMon(ctx, id, -w / 2, -h / 2, scale, flip, tint);
+      }
     }
     ctx.restore();
   };

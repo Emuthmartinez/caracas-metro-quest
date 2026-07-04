@@ -1,14 +1,21 @@
-// Metro Quest — combate por turnos en el andén.
+// Metro Quest — combate por turnos en el andén, ahora con el motor Gen-3 completo:
+// físico/especial por tipo, etapas ±6, críticos por etapa, 7 estados, clima,
+// habilidades, objetos equipados y la captura Gen-3 exacta (systems-spec §1-2).
 (() => {
   const MQ = (globalThis.MQ = globalThis.MQ || {});
 
   const stageMul = (s) => Math.max(2, 2 + s) / Math.max(2, 2 - s);
+  const accMul = (s) => Math.max(3, 3 + s) / Math.max(3, 3 - s);
   const name = (m) => MQ.SPECIES[m.id].name;
   const FALL = 16;        // cuadros que tarda un espanto en caer al debilitarse
-  // posición de cada combatiente en el andén de combate (esquina sup-der / inf-izq)
   const E_X = MQ.W - 84, E_Y = 28, M_X = 18, M_Y = 130, SC = 4;
-  const artW = (id) => (MQ.SPECIES[id].art[0].length * SC);
-  const artH = (id) => (MQ.SPECIES[id].art.length * SC);
+  const artH = (id) => ((MQ.SPECIES[id].art || ['']).length * SC);
+  const CRIT_ODDS = [16, 8, 4, 3, 2];   // etapas de crítico Gen 3 (1/x)
+  const zeroStages = () => ({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 });
+  const freshVol = () => ({ mareo: 0, trap: 0, noescape: false, charging: null,
+    protectCount: 0, protected: false, endure: false, recharge: false,
+    flinch: false, leech: false, curse: false, critUp: 0, loaf: false,
+    lastPhys: 0, lastSpec: 0 });
 
   MQ.addMon = (mon) => {
     const p = MQ.player;
@@ -21,39 +28,49 @@
     constructor(opts, onEnd) {
       this.opts = opts; this.onEnd = onEnd;
       this.tb = new MQ.Textbox();
-      this.queue = [];          // [{t:texto, fn}]
+      this.queue = [];
       this.phase = 'msg';
       this.menu = null;
       this.over = false;
       this.anim = { shake: 0, flash: 0, px: 0, ex: 0, intro: 36, efall: 0, mfall: 0 };
-      this.cap = null;          // ceremonia de captura en curso
+      this.cap = null;
       this.fc = 0;
+      this.fleeTries = 0;
+      this.moneyMul = 1;
+      // clima: del mapa (nativo, no expira) o de movimientos/habilidades (5 rondas)
+      this.weather = opts.weather ? { kind: opts.weather, turns: -1 } : null;
+      this.phaz = {}; this.ehaz = {};   // cardonal por lado
 
       const p = MQ.player;
-      p.party.forEach(MQ.ensurePP); // migra partidas viejas sin PP
+      p.party.forEach(MQ.ensurePP); // migra partidas viejas
       this.trainer = opts.trainer || null;
       if (this.trainer) {
-        this.eteam = this.trainer.team.map(([id, lvl]) => MQ.makeMon(id, lvl));
+        this.eteam = this.trainer.team.map(([id, lvl, item]) => MQ.makeMon(id, lvl, { item }));
         this.ei = 0;
         this.enemy = this.eteam[0];
         MQ.audio.music(this.trainer.boss ? 'boss' : 'battle');
       } else {
-        this.enemy = MQ.makeMon(opts.wild.id, opts.wild.lvl, opts.wild.shiny ?? (MQ.rand(MQ.SHINY_ODDS) === 0));
+        this.enemy = MQ.makeMon(opts.wild.id, opts.wild.lvl,
+          { shiny: opts.wild.shiny ?? (MQ.rand(MQ.shinyOdds()) === 0), hidden: MQ.rand(64) === 0,
+            item: MQ.wildHold(opts.wild.id) });
         MQ.audio.music(opts.wild.id === 'trenfantasma' ? 'boss' : 'battle');
       }
       p.dexSeen[this.enemy.id] = true;
       this.mi = p.party.findIndex((m) => m.hp > 0);
       this.mine = p.party[this.mi];
-      this.pst = { atk: 0, def: 0, spd: 0 };
-      this.est = { atk: 0, def: 0, spd: 0 };
-      // precarga de sprites: rivales (front) y propios (back) para que no haya pop-in
+      this.parts = new Set([this.mi]); // los que pelearon contra el rival de turno
+      this.pst = zeroStages(); this.est = zeroStages();
+      this.pvol = freshVol(); this.evol = freshVol();
       const foes = this.eteam ? this.eteam.map((m) => m.id) : [this.enemy.id];
       MQ.sprites.preload(foes, ['front']);
       MQ.sprites.preload(p.party.map((m) => m.id), ['front', 'back']);
 
       if (this.trainer) {
+        // el retador da la cara primero, como manda la tradición (FireRed)
+        this.showTrainer = true;
         this.say(`¡${this.trainer.cls} ${this.trainer.name || ''} te reta!`.replace('  ', ' '));
         this.say(this.trainer.intro);
+        this.act(() => { this.showTrainer = false; });
         this.say(`${this.trainer.name || this.trainer.cls} saca a ${name(this.enemy)}.`, () => MQ.audio.cry(this.enemy.id));
       } else {
         MQ.audio.cry(this.enemy.id);
@@ -62,15 +79,61 @@
           ? `¡Un ${name(this.enemy)} TORNASOL salvaje apareció! ¡De esos no se ven todos los días!`
           : `¡Un ${name(this.enemy)} salvaje apareció en la oscuridad!`);
       }
-      this.say(`¡Dale, ${name(this.mine)}!`, () => { MQ.audio.cry(this.mine.id); this.toMenu(); });
+      // la demostración del Viejo: él pelea, tú miras (el Old Man de toda la vida)
+      this.demo = opts.demo || null;
+      if (this.demo) {
+        this.say('VIEJO: Mira bien, chamo, que esto se enseña una sola vez y con estilo.');
+        this.say('VIEJO: Primero se le baja la vida. Con cariño, pero firme...');
+        this.act(() => { this.enemy.hp = Math.max(1, Math.floor(this.enemy.maxhp * 0.3)); this.anim.shake = 12; MQ.audio.sfx('hit'); });
+        this.say('VIEJO: ¿Ves? Cansadito. Y si además está dormido o quebrantado, mejor todavía.');
+        this.say('VIEJO: Ahora sí. ¡La ficha con la muñeca floja!', () => this.throwFicha(MQ.ITEMS.ficha));
+        return;
+      }
+      this.announceWeather();
+      this.entryEffects(this.enemy, false);
+      this.say(`¡Dale, ${name(this.mine)}!`, () => {
+        MQ.audio.cry(this.mine.id);
+        this.entryEffects(this.mine, true);
+        this.act(() => this.toMenu());
+      });
     }
 
     say(t, fn) { this.queue.push({ t, fn }); }
+    // encola una acción sin texto: corre cuando le toca el turno en la cola
+    act(fn) { this.queue.push({ t: null, fn }); }
 
     pump() {
       if (this.tb.active) return;
       const m = this.queue.shift();
-      if (m) { this.phase = 'msg'; this.tb.open(MQ.ctx, m.t, () => { m.fn && m.fn(); this.pump(); }); }
+      if (!m) return;
+      if (m.t === null) { m.fn && m.fn(); this.pump(); return; }
+      this.phase = 'msg';
+      this.tb.open(MQ.ctx, m.t, () => { m.fn && m.fn(); this.pump(); });
+    }
+
+    announceWeather() {
+      if (this.weather) this.say(MQ.WEATHER[this.weather.kind].desc);
+    }
+
+    // — habilidades y peligros al entrar al andén —
+    entryEffects(mon, isMine) {
+      const foeSt = isMine ? this.est : this.pst;
+      const foe = isMine ? this.enemy : this.mine;
+      const haz = isMine ? this.phaz : this.ehaz;
+      if (haz.cardonal && mon.ability !== 'nadoaereo') {
+        const d = Math.max(1, Math.floor(mon.maxhp / 8));
+        mon.hp = Math.max(1, mon.hp - d);
+        this.say(`¡El cardonal pincha a ${name(mon)} al entrar!`);
+      }
+      if (mon.ability === 'malacara' && foe.hp > 0 && foe.ability !== 'brazofirme') {
+        foeSt.atk = MQ.clamp(foeSt.atk - 1, -6, 6);
+        this.say(`La mala cara de ${name(mon)} intimida: el ataque rival baja.`);
+      }
+      const wAb = { niebladensa: 'neblina', llamadordeaguas: 'lluvia', horacero: 'apagon' }[mon.ability];
+      if (wAb && (!this.weather || this.weather.kind !== wAb)) {
+        this.weather = { kind: wAb, turns: -1 };
+        this.say(`${name(mon)} trae consigo ${MQ.WEATHER[wAb].name.toLowerCase()}. ${MQ.WEATHER[wAb].desc}`);
+      }
     }
 
     toMenu() {
@@ -85,6 +148,8 @@
 
     pickAction(a) {
       if (a === 'PELEAR') {
+        if (this.pvol.charging) { this.turn(this.pvol.charging); return; }
+        if (this.pvol.recharge) { this.turn(null); return; }
         if (!this.mine.moves.some((id) => (this.mine.pp[id] ?? 0) > 0)) {
           this.say(`¡A ${name(this.mine)} no le quedan fuerzas pa' más! Le toca FORCEJEO.`, () => this.turn('forcejeo'));
           this.pump();
@@ -107,7 +172,11 @@
 
     openBag() {
       const p = MQ.player;
-      const items = Object.keys(p.bag).filter((k) => p.bag[k] > 0).map((k) => ({
+      const usable = (k) => {
+        const it = MQ.ITEMS[k];
+        return it.ball || it.heal || it.cure || it.revive || it.battleStage;
+      };
+      const items = Object.keys(p.bag).filter((k) => p.bag[k] > 0 && usable(k)).map((k) => ({
         label: MQ.ITEMS[k].name, sub: 'x' + p.bag[k], value: k }));
       if (!items.length) { this.say('La mochila está vacía. Ni un confite.', () => this.toMenu()); this.pump(); return; }
       this.phase = 'bag';
@@ -120,63 +189,90 @@
       const p = MQ.player, item = MQ.ITEMS[k];
       if (item.ball) {
         if (this.trainer) { this.say('¡A los espantos ajenos no se les lanza ficha! Eso es de mala educación.', () => this.toMenu()); this.pump(); return; }
+        if (this.opts.noCatch) { this.say(`${name(this.enemy)} no vino a que lo fichen: vino a que lo ayuden. Guarda la ficha para cuando él decida.`, () => this.toMenu()); this.pump(); return; }
         p.bag[k]--;
         this.throwFicha(item);
+      } else if (item.battleStage) {
+        p.bag[k]--;
+        MQ.audio.sfx('heal');
+        if (item.battleStage === 'crit') {
+          this.pvol.critUp = Math.min(4, this.pvol.critUp + 1);
+          this.say(`¡${name(this.mine)} afina la puntería con la ${item.name}!`, () => this.enemyTurn());
+        } else {
+          this.pst[item.battleStage] = MQ.clamp(this.pst[item.battleStage] + 1, -6, 6);
+          this.say(`¡${MQ.STAT_NAMES[item.battleStage]} de ${name(this.mine)} sube con la ${item.name}!`, () => this.enemyTurn());
+        }
+        this.pump();
       } else if (item.heal) {
         if (this.mine.hp <= 0) { this.toMenu(); return; }
         p.bag[k]--;
         const h = Math.min(item.heal, this.mine.maxhp - this.mine.hp);
         this.mine.hp += h;
+        if (item.cure) { this.mine.status = null; this.pvol.mareo = 0; }
         MQ.audio.sfx('heal');
         this.say(`${name(this.mine)} recupera ${h} PS. ¡Qué sabroso!`, () => this.enemyTurn());
         this.pump();
       } else if (item.cure) {
-        if (!this.mine.status) { this.say('No tiene ningún mal que curar. ¡Está más sano que tú!', () => this.toMenu()); this.pump(); return; }
+        if (!this.mine.status && !this.pvol.mareo) { this.say('No tiene ningún mal que curar. ¡Está más sano que tú!', () => this.toMenu()); this.pump(); return; }
         p.bag[k]--;
-        this.mine.status = null;
+        this.mine.status = null; this.mine.psn2T = 0; this.pvol.mareo = 0;
         MQ.audio.sfx('heal');
         this.say(`El agua de coco obra el milagro: ¡${name(this.mine)} quedó como nuevo!`, () => this.enemyTurn());
         this.pump();
       } else if (item.revive) {
         const t = p.party.find((m) => m.hp <= 0);
-        if (!t) { this.say('Nadie necesita la cocada... todavía.', () => this.toMenu()); this.pump(); return; }
+        if (!t) { this.say('Nadie necesita el cariaquito... todavía.', () => this.toMenu()); this.pump(); return; }
         p.bag[k]--;
-        t.hp = Math.floor(t.maxhp * item.revive);
+        t.hp = Math.max(1, Math.floor(t.maxhp * item.revive));
         MQ.audio.sfx('heal');
-        this.say(`¡${name(t)} despertó con la cocada! Azúcar es azúcar.`, () => this.enemyTurn());
+        this.say(`¡${name(t)} despertó! Milagros de los de antes.`, () => this.enemyTurn());
         this.pump();
       }
     }
 
-    // La ceremonia de la ficha: vuela en arco, el espanto se encoge dentro,
-    // la ficha cae y tambalea; si lo respeta se queda quieta con estrellitas,
-    // si no, revienta y el espanto sale de vuelta. El alma de un juego de fichar.
+    // ---- captura Gen 3 (spec §1.5) ---------------------------------------------
     throwFicha(item) {
       const sp = MQ.SPECIES[this.enemy.id];
-      const noCatch = this.opts.noCatch;
-      const hpFrac = this.enemy.hp / this.enemy.maxhp;
-      // dormido ayuda el doble; paralizado o envenenado, la mitad más
-      const statusMul = this.enemy.status === 'slp' ? 2 : this.enemy.status ? 1.5 : 1;
-      const pr = Math.max(0.03, (sp.catch / 255) * (1 - 0.66 * hpFrac) * item.ball * statusMul);
-      const willCatch = !noCatch && (item.ball >= 255 || Math.random() < pr);
-      // cuántas veces tambalea antes de fallar: cuanto más cerca, más aguanta
-      const shakes = willCatch ? 3 : MQ.clamp(Math.round(pr * 3), 0, 2);
-      const col = item.ball >= 255
-        ? { a: '#ffe66e', b: '#f5a623' }          // Ficha de Oro
-        : item.ball >= 1.8
-          ? { a: '#f5d76e', b: '#d9a441' }        // Ficha Dorada (pulida)
-          : { a: '#e0b24a', b: '#a8782a' };       // Ficha del Metro (latón)
+      const e = this.enemy;
+      // multiplicador de ficha, con condiciones (rayada: estado; madrugadora: oscuridad)
+      let ball = item.ball;
+      if (item.ballIf) {
+        if (item.ballIf.status && e.status) ball = item.ballIf.status;
+        if (item.ballIf.dark && this.opts.dark) ball = item.ballIf.dark;
+      }
+      const statusMul = (e.status === 'slp' || e.status === 'pav') ? 2
+        : e.status ? 1.5 : 1;
+      let willCatch, shakes;
+      if (this.demo) { willCatch = true; shakes = 4; } // al Viejo no le falla la muñeca
+      else if (this.opts.noCatch) { willCatch = false; shakes = 0; }
+      else if (ball >= 255) { willCatch = true; shakes = 4; }
+      else {
+        const a = Math.max(1, Math.floor(
+          Math.floor((3 * e.maxhp - 2 * e.hp) * sp.catch * ball / (3 * e.maxhp)) * statusMul));
+        if (a >= 255) { willCatch = true; shakes = 4; }
+        else {
+          const b = Math.floor(1048560 / Math.sqrt(Math.sqrt(16711680 / a)));
+          shakes = 0;
+          for (let i = 0; i < 4; i++) if (MQ.rand(65536) < b) shakes++; else break;
+          willCatch = shakes === 4;
+        }
+      }
+      const col = ball >= 255
+        ? { a: '#ffe66e', b: '#f5a623' }
+        : item.ball >= 2 || ball >= 2
+          ? { a: '#f5d76e', b: '#d9a441' }
+          : { a: '#e0b24a', b: '#a8782a' };
       this.phase = 'capture';
       this.menu = null;
-      this.cap = { stage: 'toss', t: 0, item, willCatch, shakes, wob: 0, mul: 1, flash: 0, col };
+      this.cap = { stage: 'toss', t: 0, item, willCatch, shakes: Math.min(shakes, 3), wob: 0, mul: 1, flash: 0, col };
       MQ.audio.sfx('toss');
-      this.say(`¡Le lanzas una ${item.name}!`);
+      this.say(this.demo ? '¡El Viejo lanza su ficha como quien saluda!' : `¡Le lanzas una ${item.name}!`);
       this.pump();
     }
 
     tickCapture() {
       const c = this.cap;
-      if (this.tb.active) return;   // deja leer "¡Le lanzas una ...!"
+      if (this.tb.active) return;
       c.t++;
       switch (c.stage) {
         case 'toss':
@@ -214,10 +310,17 @@
     }
 
     captured() {
-      const e = this.enemy, item = this.cap.item;
+      const e = this.enemy;
       this.cap = null;
       this.phase = 'msg';
       MQ.audio.cry(e.id);
+      if (this.demo) {
+        // el Viejo ficha, presume y suelta: la lección no se queda en la mochila
+        this.say('¡PLIN! La ficha se quedó quieta a la primera.');
+        this.say('VIEJO: ¿Viste? Vida baja y muñeca floja. Y como mi manada ya está completa... anda, chiquito, libre.', () => this.finish('win'));
+        this.pump();
+        return;
+      }
       const mon = { ...e }; delete mon._disp;
       const dest = MQ.addMon(mon);
       this.say(`¡PLIN! La ficha se quedó quieta. ¡${name(e)} aceptó tu ficha!`);
@@ -226,7 +329,6 @@
         : `Tu equipo está full. ${name(e)} te espera en el LOCKER de la estación.`,
         () => this.finish('catch'));
       this.pump();
-      void item;
     }
 
     captureFailed() {
@@ -247,21 +349,66 @@
         onPick: (it) => {
           const m = p.party[it.value];
           if (m.hp <= 0) { MQ.audio.sfx('bump'); return; }
-          if (it.value === this.mi && !forced) { MQ.audio.sfx('bump'); return; }
-          this.mi = it.value; this.mine = m;
-          this.anim.mfall = 0;
-          this.pst = { atk: 0, def: 0, spd: 0 };
-          this.say(`¡Échale pichón, ${name(m)}!`, () => forced ? this.toMenu() : this.enemyTurn());
-          this.pump();
+          // el que está en el andén no cuenta: cambiarse a sí mismo regalaría
+          // etapas limpias y una segunda mala cara (todos los llamadores de
+          // forced garantizan otro vivo, así que siempre hay pick válido)
+          if (it.value === this.mi) { MQ.audio.sfx('bump'); return; }
+          if (!forced && (this.pvol.trap > 0 || this.pvol.noescape)) {
+            this.say('¡No hay cambio: lo tienen agarrado!', () => this.toMenu());
+            this.pump();
+            return;
+          }
+          this.switchMine(it.value, forced);
         },
         onCancel: () => { if (!forced) this.toMenu(); } });
     }
 
+    switchMine(idx, forced) {
+      const prev = this.mine;
+      if (prev && prev.hp > 0 && prev.ability === 'serenodelavila' && prev.status) {
+        prev.status = null; prev.psn2T = 0;
+      }
+      this.mi = idx; this.mine = MQ.player.party[idx];
+      this.parts && this.parts.add(idx);
+      this.anim.mfall = 0;
+      this.pst = zeroStages();
+      this.pvol = freshVol();
+      this.say(`¡Échale pichón, ${name(this.mine)}!`, () => {
+        this.entryEffects(this.mine, true);
+        this.act(() => {
+          // el cambio de cortesía (estilo CAMBIO) no regala turno: entra el rival y a pelear
+          if (this.shiftPending) { this.shiftPending = false; this.sendNextEnemy(); }
+          else if (forced) this.toMenu();
+          else this.enemyTurn();
+        });
+      });
+      this.pump();
+    }
+
+    // el rival que sigue entra al andén
+    sendNextEnemy() {
+      this.showTrainer = false; // la figura cede el puesto al espanto que entra
+      this.parts = new Set([this.mi]); // cuenta nueva: participantes contra el que entra
+      this.say(`${this.trainer.name || this.trainer.cls} saca a ${name(this.enemy)}. ¡La cosa sigue!`, () => {
+        MQ.audio.cry(this.enemy.id);
+        this.entryEffects(this.enemy, false);
+        this.act(() => this.toMenu());
+      });
+      this.pump();
+    }
+
     tryFlee() {
       if (this.trainer) { this.say('¡De un duelo no se huye, chamo! Eso no se hace.', () => this.toMenu()); this.pump(); return; }
-      if (this.opts.noFlee) { this.say('¡El Tren Fantasma bloquea el túnel! No hay pa\' dónde correr.', () => this.toMenu()); this.pump(); return; }
-      const odds = 0.6 + (this.mine.spd - this.enemy.spd) / 80;
-      if (Math.random() < odds) {
+      if (this.opts.noFlee) { this.say(`¡${name(this.enemy)} cierra todos los caminos! No hay pa' dónde correr.`, () => this.toMenu()); this.pump(); return; }
+      if (this.pvol.trap > 0 || this.pvol.noescape) {
+        this.say('¡Estás atrapado! No hay carrerita que valga.', () => this.enemyTurn());
+        this.pump();
+        return;
+      }
+      this.fleeTries++;
+      const pSpe = this.effSpe(this.mine, this.pst), eSpe = Math.max(1, this.effSpe(this.enemy, this.est));
+      const F = Math.floor(pSpe * 128 / eSpe) + 30 * this.fleeTries;
+      if (MQ.rand(256) < F) {
         MQ.audio.sfx('flee');
         this.say('Saliste en carrerita. ¡El que corre vive pa\' contar el cuento!', () => this.finish('flee'));
       } else {
@@ -270,21 +417,45 @@
       this.pump();
     }
 
+    // ---- velocidad efectiva (etapas, parálisis, clima, habilidades) -------------
+    effSpe(m, st) {
+      let s = m.spe * stageMul(st.spe);
+      if (m.status === 'par') s /= 2;
+      const w = this.weather && this.weather.kind;
+      if (m.ability === 'solanero' && w === 'sol') s *= 2;
+      if (m.ability === 'aguaje' && w === 'lluvia') s *= 2;
+      return s;
+    }
+
     // ---- turno ----------------------------------------------------------------
     turn(moveId) {
       this.phase = 'msg';
-      const parMul = (m) => (m.status === 'par' ? 0.5 : 1);
-      const pSpd = this.mine.spd * stageMul(this.pst.spd) * parMul(this.mine);
-      const eSpd = this.enemy.spd * stageMul(this.est.spd) * parMul(this.enemy);
-      const mineFirst = pSpd === eSpd ? Math.random() < 0.5 : pSpd > eSpd;
+      const eMove = this.enemyPick();
+      const pPrio = moveId ? MQ.MOVES[moveId].priority || 0 : 0;
+      const ePrio = eMove ? MQ.MOVES[eMove].priority || 0 : 0;
+      let mineFirst;
+      if (pPrio !== ePrio) mineFirst = pPrio > ePrio;
+      else {
+        const pSpe = this.effSpe(this.mine, this.pst), eSpe = this.effSpe(this.enemy, this.est);
+        const pQC = this.mine.item === 'garracunaguaro' && Math.random() < 0.2;
+        const eQC = this.enemy.item === 'garracunaguaro' && Math.random() < 0.2;
+        if (pQC !== eQC) mineFirst = pQC;
+        else mineFirst = pSpe === eSpe ? Math.random() < 0.5 : pSpe > eSpe;
+      }
+      this.pvol.protected = false; this.evol.protected = false;
+      this.pvol.endure = false; this.evol.endure = false;
+      this.pvol.lastPhys = 0; this.pvol.lastSpec = 0;
+      this.evol.lastPhys = 0; this.evol.lastSpec = 0;
       if (mineFirst) {
         this.doMove(this.mine, this.enemy, moveId, true, () => {
           if (this.enemy.hp <= 0) return this.enemyFaint();
-          this.doMove(this.enemy, this.mine, this.enemyPick(), false, () => this.afterRound());
+          if (this.mine.hp <= 0) return; // retroceso/contacto: mineFaint ya encoló
+          this.doMove(this.enemy, this.mine, eMove, false, () => this.afterRound());
         });
       } else {
-        this.doMove(this.enemy, this.mine, this.enemyPick(), false, () => {
+        this.doMove(this.enemy, this.mine, eMove, false, () => {
           if (this.mine.hp <= 0) return this.afterRound();
+          if (this.enemy.hp <= 0) return this.enemyFaint();
           this.doMove(this.mine, this.enemy, moveId, true, () => this.afterRound());
         });
       }
@@ -292,117 +463,597 @@
     }
 
     enemyTurn() { // el enemigo pega tras ítem/cambio
+      this.pvol.protected = false; this.evol.protected = false;
       this.doMove(this.enemy, this.mine, this.enemyPick(), false, () => this.afterRound());
       this.pump();
     }
 
     enemyPick() {
+      if (this.evol.charging) return this.evol.charging;
+      if (this.evol.recharge) return null;
       const avail = this.enemy.moves.filter((id) => (this.enemy.pp[id] ?? 0) > 0);
       if (!avail.length) return 'forcejeo';
       const scored = avail.map((id) => {
         const m = MQ.MOVES[id];
         let s = Math.random() * 20;
-        if (m.pow) s += m.pow * MQ.effect(m.type, MQ.SPECIES[this.mine.id].types);
-        else if (m.fx && m.fx.status) s += this.mine.status ? 0 : 40;
-        else s += this.est.atk + this.pst.atk > -2 ? 25 : 0;
+        if (m.pow) {
+          const stab = MQ.SPECIES[this.enemy.id].types.includes(m.type) ? 1.5 : 1;
+          s += m.pow * stab * MQ.effect(m.type, MQ.SPECIES[this.mine.id].types);
+        } else if (m.effects.some((e) => e.kind === 'status')) {
+          s += this.mine.status ? 0 : 40;
+        } else if (m.effects.some((e) => e.kind === 'stage')) {
+          s += this.est.atk + this.est.spa > 2 ? 0 : 25;
+        } else s += 10;
         return [s, id];
       }).sort((a, b) => b[0] - a[0]);
       return scored[0][1];
     }
 
-    applyStatus(target, st, then) {
-      if (target.hp <= 0) { then(); return; }
-      if (target.status) { this.say('...pero no surte efecto.', then); return; }
-      target.status = st;
-      if (st === 'slp') target.slpT = 1 + MQ.rand(3); // 1-3 turnos
-      MQ.audio.sfx('weak');
-      this.say(`¡${name(target)} ${MQ.STATUS[st].verb}!`, then);
+    // ---- estados: aplicar con inmunidades -----------------------------------
+    statusBlocked(target, st) {
+      const sp = MQ.SPECIES[target.id];
+      const imm = { slp: 'trasnochao', psn: 'estomagodeacero', psn2: 'estomagodeacero',
+        par: 'destrabao', que: 'pielmojada', pav: 'espiritualegre' };
+      if (target.ability === imm[st]) return `${MQ.ABILITIES[target.ability].name} lo protege`;
+      if (st === 'pav' && sp.types.includes('Espanto')) return 'a un espanto no le cae la pava';
+      return null;
     }
 
+    applyStatus(target, st, then) {
+      if (target.hp <= 0) { then(); return; }
+      const blocked = this.statusBlocked(target, st);
+      if (blocked) { this.say(`...pero ${blocked}.`, then); return; }
+      if (target.status) { this.say('...pero no surte efecto.', then); return; }
+      target.status = st;
+      if (st === 'slp') target.slpT = 1 + MQ.rand(3);
+      if (st === 'psn2') target.psn2T = 0;
+      MQ.audio.sfx('weak');
+      this.say(`¡${name(target)} ${MQ.STATUS[st].verb}!`, () => this.fruitCheck(target, then));
+    }
+
+    applyMareo(target, vol, then) {
+      if (target.hp <= 0 || vol.mareo > 0) { then(); return; }
+      if (target.ability === 'asuritmo') { this.say(`...pero ${name(target)} va a su ritmo.`, then); return; }
+      vol.mareo = 1 + MQ.rand(4);
+      MQ.audio.sfx('weak');
+      this.say(`¡${name(target)} ${MQ.VOLATILE.mareo.verb}!`, () => this.fruitCheck(target, then));
+    }
+
+    // fruta equipada: se auto-cura al recibir el estado que le toca
+    fruitCheck(m, then) {
+      const it = m.item && MQ.ITEMS[m.item];
+      if (!it || it.hold !== 'fruta') { then(); return; }
+      const vol = m === this.mine ? this.pvol : this.evol;
+      let used = false;
+      if (it.cures === 'mareo' && vol.mareo > 0) { vol.mareo = 0; used = true; }
+      else if (it.cures && (m.status === it.cures || (it.cures === 'psn' && m.status === 'psn2'))) {
+        m.status = null; m.psn2T = 0; used = true;
+      }
+      if (!used) { then(); return; }
+      m.item = null;
+      MQ.audio.sfx('heal');
+      this.say(`¡${name(m)} se come su ${it.name} y se cura solito!`, then);
+    }
+
+    applyStage(target, st, stat, delta, then) {
+      if (target.hp <= 0) { then(); return; }
+      if (delta < 0) {
+        if (stat === 'atk' && target.ability === 'brazofirme') { this.say(`El brazo firme de ${name(target)} no baja.`, then); return; }
+        if (stat === 'acc' && target.ability === 'ojopelao') { this.say(`${name(target)} tiene el ojo pelao: su puntería no baja.`, then); return; }
+      }
+      const before = st[stat];
+      st[stat] = MQ.clamp(st[stat] + delta, -6, 6);
+      if (st[stat] === before) { this.say(`...pero ${MQ.STAT_NAMES[stat]} no puede ${delta > 0 ? 'subir' : 'bajar'} más.`, then); return; }
+      MQ.audio.sfx(delta > 0 ? 'heal' : 'weak');
+      const grado = Math.abs(delta) >= 2 ? (delta > 0 ? ' muchísimo' : ' un mundo') : '';
+      this.say(`${MQ.STAT_NAMES[stat]} de ${name(target)} ${delta > 0 ? 'sube' : 'baja'}${grado}.`, then);
+    }
+
+    // ---- el corazón: ejecutar un movimiento -------------------------------------
     doMove(atk, def, moveId, isMine, then) {
-      const mv = MQ.MOVES[moveId];
       const aSt = isMine ? this.pst : this.est;
       const dSt = isMine ? this.est : this.pst;
-      // dormido: pierde el turno hasta despertar
+      const aVol = isMine ? this.pvol : this.evol;
+      const dVol = isMine ? this.evol : this.pvol;
+
+      // recarga pendiente (Olla de Presión / Sobrecarga)
+      if (aVol.recharge) {
+        aVol.recharge = false;
+        this.say(`${name(atk)} recupera el aliento...`, then);
+        return;
+      }
+      // flojera (Pereza): descansa ronda por medio
+      if (atk.ability === 'flojera') {
+        if (aVol.loaf) {
+          aVol.loaf = false;
+          this.say(`${name(atk)} está flojeando... mañana sí.`, then);
+          return;
+        }
+        aVol.loaf = true; // este turno trabaja; el que viene, flojea
+      }
+      // amedrentado este turno
+      if (aVol.flinch) {
+        aVol.flinch = false;
+        this.say(`¡${name(atk)} se amedrentó y no pudo moverse!`, then);
+        return;
+      }
+      // dormido
       if (atk.status === 'slp') {
         atk.slpT = (atk.slpT || 1) - 1;
         if (atk.slpT > 0) { this.say(`${name(atk)} está dormido... sueña con el llano.`, then); return; }
         atk.status = null;
         this.say(`¡${name(atk)} despertó!`);
       }
-      // paralizado: 25% de quedarse pegado
+      // empavado: no actúa; 20% se le quita solo
+      if (atk.status === 'pav') {
+        if (Math.random() < 0.2) {
+          atk.status = null;
+          this.say(`¡${name(atk)} tocó madera y se le quitó la pava!`);
+        } else {
+          this.say(`${name(atk)} está empavado. No se atreve ni a moverse.`, then);
+          return;
+        }
+      }
+      // paralizado: 25% pierde el turno
       if (atk.status === 'par' && Math.random() < 0.25) {
         MQ.audio.sfx('weak');
         this.say(`¡${name(atk)} está paralizado! El corrientazo no lo deja moverse.`, then);
         return;
       }
-      if (moveId !== 'forcejeo' && atk.pp && atk.pp[moveId] !== undefined) atk.pp[moveId]--;
+      // mareado: 1-4 rondas, 50% se pega solo
+      if (aVol.mareo > 0) {
+        aVol.mareo--;
+        if (aVol.mareo === 0) {
+          this.say(`¡A ${name(atk)} se le pasó el mareo!`);
+        } else if (Math.random() < 0.5) {
+          const A = atk.atk, D = Math.max(1, atk.def);
+          let dmg = Math.max(1, Math.floor((((2 * atk.lvl / 5 + 2) * 40 * A / D) / 50 + 2) * (0.85 + Math.random() * 0.15)));
+          atk.hp = Math.max(0, atk.hp - dmg);
+          this.anim.shake = 8;
+          MQ.audio.sfx('hit');
+          this.say(`¡${name(atk)} está tan mareado que se pegó solito! (${dmg})`, () => {
+            if (atk.hp <= 0) return isMine ? this.mineFaint(then) : this.enemyFaint();
+            then();
+          });
+          return;
+        }
+      }
+
+      const mv = moveId && MQ.MOVES[moveId];
+      if (!mv) { this.say(`${name(atk)} duda un momento...`, then); return; }
+
+      // carga (Botija / Salto Ángel): primer turno se prepara (y ahí gasta el PP)
+      const chargeFx = mv.effects.find((e) => e.kind === 'charge');
+      const spendPP = () => {
+        if (moveId !== 'forcejeo' && atk.pp && atk.pp[moveId] !== undefined) {
+          const cost = def.ability === 'presenciapesada' ? 2 : 1;
+          atk.pp[moveId] = Math.max(0, atk.pp[moveId] - cost);
+        }
+      };
+      if (chargeFx && aVol.charging !== moveId) {
+        aVol.charging = moveId;
+        spendPP();
+        this.say(`¡${name(atk)} ${mv.id === 'saltoangel' ? 'se eleva hacia lo alto del túnel' : 'concentra su fuerza'}!`, then);
+        return;
+      }
+      const wasCharging = aVol.charging === moveId;
+      aVol.charging = null;
+      if (!wasCharging) spendPP();
+
       this.say(`${isMine ? '' : 'El rival: '}¡${name(atk)} usa ${mv.name}!`, () => {
-        if (Math.random() * 100 > mv.acc) {
+        // protegido
+        if (dVol.protected && mv.pow) {
+          this.say(`¡${name(def)} se resteó y aguantó el golpe!`, then);
+          return;
+        }
+        // objetivo por los aires (semi-invulnerable)
+        if (dVol.charging && MQ.MOVES[dVol.charging].effects.some((e) => e.kind === 'charge' && e.semiInvulnerable)) {
+          this.say('...¡pero no hay nadie ahí! Se fue por los aires.', then);
+          return;
+        }
+        // precisión
+        if (!this.rollAccuracy(atk, def, mv, aSt, dSt)) {
           MQ.audio.sfx('weak');
           this.say('...¡pero falló! Quedó pintado en la pared.', then);
           return;
         }
-        if (mv.pow) {
-          const sp = MQ.SPECIES[def.id];
-          const eff = MQ.effect(mv.type, sp.types);
-          const stab = MQ.SPECIES[atk.id].types.includes(mv.type) ? 1.5 : 1;
-          const crit = Math.random() < 1 / 16 ? 1.5 : 1;
-          const A = atk.atk * stageMul(aSt.atk), D = Math.max(1, def.def * stageMul(dSt.def));
-          let dmg = Math.floor((((2 * atk.lvl / 5 + 2) * mv.pow * A / D) / 50 + 2) * stab * eff * crit * (0.85 + Math.random() * 0.15));
-          dmg = Math.max(1, dmg);
-          def.hp = Math.max(0, def.hp - dmg);
-          this.anim.shake = crit > 1 ? 12 : 8;
-          MQ.audio.sfx(eff > 1 || crit > 1 ? 'eff' : eff < 1 ? 'weak' : 'hit');
-          let extra = eff > 1 ? ' ¡Le dolió hasta el apellido!' : eff < 1 ? ' No le hizo ni cosquillas...' : '';
-          if (crit > 1) extra = ' ¡GOLPE CRÍTICO! De los que no se olvidan.' + (eff > 1 ? ' Y encima le dolió doble.' : '');
-          this.say(`Hace ${dmg} de daño.${extra}`, () => {
-            const cont = () => {
-              if (def.hp <= 0) return isMine ? then() : this.mineFaint(then);
-              if (mv.fx && mv.fx.status && Math.random() < (mv.fx.chance ?? 1))
-                return this.applyStatus(def, mv.fx.status, then);
-              then();
-            };
-            if (mv.recoil && dmg > 0) {
-              atk.hp = Math.max(0, atk.hp - Math.max(1, Math.ceil(dmg * mv.recoil)));
-              this.say(`¡${name(atk)} se resiente del forcejeo!`, () => {
-                if (atk.hp <= 0) return isMine ? this.mineFaint(then) : this.enemyFaint();
-                cont();
-              });
-            } else cont();
-          });
-        } else if (mv.fx && mv.fx.status) {
-          this.applyStatus(def, mv.fx.status, then);
-        } else if (mv.fx && mv.fx.heal) {
-          const h = Math.min(Math.floor(atk.maxhp * mv.fx.heal), atk.maxhp - atk.hp);
-          atk.hp += h;
-          MQ.audio.sfx('heal');
-          this.say(h > 0 ? `${name(atk)} recupera ${h} PS. Eso cura el alma.` : 'Pero ya estaba full...', then);
-        } else if (mv.fx && mv.fx.stage) {
-          const [stat, d, who] = mv.fx.stage;
-          const target = who === 'self' ? aSt : dSt;
-          target[stat] = MQ.clamp(target[stat] + d, -4, 4);
-          const tn = who === 'self' ? name(atk) : name(who === 'foe' && isMine ? this.enemy : this.mine);
-          const sn = { atk: 'ataque', def: 'defensa', spd: 'velocidad' }[stat];
-          MQ.audio.sfx(d > 0 ? 'heal' : 'weak');
-          this.say(`La ${sn} de ${tn} ${d > 0 ? 'sube' : 'baja'}.`, then);
-        } else then();
+        if (mv.pow || mv.effects.some((e) => e.kind === 'counter'))
+          this.dealDamage(atk, def, mv, isMine, aSt, dSt, aVol, dVol, then);
+        else this.statusMove(atk, def, mv, isMine, aSt, dSt, aVol, dVol, then);
       });
     }
 
+    rollAccuracy(atk, def, mv, aSt, dSt) {
+      if (mv.acc === null || mv.acc === undefined) return true;
+      const w = this.weather && this.weather.kind;
+      const cm = mv.effects.find((e) => e.kind === 'cantmiss-under');
+      if (cm && w === cm.weather) return true;
+      let chance = mv.acc * accMul(MQ.clamp(aSt.acc - dSt.eva, -6, 6));
+      if (atk.ability === 'faroles') chance *= 1.3;
+      if (w === 'neblina' && !MQ.SPECIES[atk.id].types.includes('Espanto')) chance *= 0.9;
+      if (w === 'apagon' && mv.category === 'physical') chance *= 0.9;
+      if (def.ability === 'entreelgentio' && w === 'horapico') chance /= 1.2;
+      if (def.item === 'polvomariposa') chance /= 1.1;
+      return Math.random() * 100 <= chance;
+    }
+
+    // inmunidades/absorciones por habilidad del defensor
+    absorbCheck(def, mv, dSt, isMineTarget) {
+      if (def.ability === 'oidosordo' && mv.type === 'Rumba') return `¡${name(def)} ni lo oye! Oído sordo.`;
+      if (def.ability === 'nadoaereo' && mv.type === 'Tepuy') return `¡${name(def)} nada en el aire! No lo toca.`;
+      if (def.ability === 'espirituerrante' && mv.type === 'Criollo') return `¡${name(def)} es puro espíritu! Lo atraviesa.`;
+      if (def.ability === 'pararrayos' && mv.type === 'Catatumbo') {
+        dSt.spa = MQ.clamp(dSt.spa + 1, -6, 6);
+        return `¡${name(def)} absorbe el corrientazo y se carga!`;
+      }
+      if (def.ability === 'esponja' && mv.type === 'Caribe') {
+        def.hp = Math.min(def.maxhp, def.hp + Math.floor(def.maxhp / 4));
+        return `¡${name(def)} absorbe el agua y se repone!`;
+      }
+      return null;
+    }
+
+    dealDamage(atk, def, mv, isMine, aSt, dSt, aVol, dVol, then) {
+      const absorbed = this.absorbCheck(def, mv, dSt);
+      if (absorbed) { this.say(absorbed, then); return; }
+
+      // contragolpes (El Vuelto / Contrapunteo): devuelven el doble del daño recibido
+      const counterFx = mv.effects.find((e) => e.kind === 'counter');
+      if (counterFx) {
+        const got = counterFx.category === 'physical' ? aVol.lastPhys : aVol.lastSpec;
+        if (!got) { this.say('...¡pero no había nada que devolver!', then); return; }
+        const dmg = got * 2;
+        def.hp = Math.max(0, def.hp - dmg);
+        this.anim.shake = 10;
+        MQ.audio.sfx('eff');
+        this.say(`¡${name(atk)} devuelve el vuelto! ${dmg} de daño.`, () => {
+          if (def.hp <= 0) return isMine ? then() : this.mineFaint(then);
+          then();
+        });
+        return;
+      }
+
+      const multiFx = mv.effects.find((e) => e.kind === 'multi');
+      const hits = multiFx
+        ? (multiFx.min === multiFx.max ? multiFx.min
+          : [2, 2, 2, 3, 3, 3, 4, 5][MQ.rand(8)])
+        : 1;
+
+      const sp = MQ.SPECIES[def.id];
+      const eff = MQ.effect(mv.type, sp.types);
+      if (eff === 0) { this.say('...pero no le afecta para nada.', then); return; }
+      const stab = MQ.SPECIES[atk.id].types.includes(mv.type) ? 1.5 : 1;
+
+      // crítico por etapas (base 1/16), multiplicador canon x1.5
+      const critFx = mv.effects.find((e) => e.kind === 'crit');
+      const critStage = Math.min(4, aVol.critUp + (critFx ? critFx.stages : 0));
+      const isCrit = Math.random() < 1 / CRIT_ODDS[critStage];
+      const crit = isCrit ? 1.5 : 1;
+
+      const phys = mv.category === 'physical';
+      // el crítico ignora las etapas que perjudican al atacante o ayudan al defensor
+      const aStageRaw = phys ? aSt.atk : aSt.spa;
+      const dStageRaw = phys ? dSt.def : dSt.spd;
+      const aStage = isCrit ? Math.max(0, aStageRaw) : aStageRaw;
+      const dStage = isCrit ? Math.min(0, dStageRaw) : dStageRaw;
+      let A = (phys ? atk.atk : atk.spa) * stageMul(aStage);
+      let D = Math.max(1, (phys ? def.def : def.spd) * stageMul(dStage));
+
+      // quemadura: mitad de daño físico (menos con Echao Pa'lante)
+      if (phys && atk.status === 'que' && atk.ability !== 'echaopalante') A *= 0.5;
+      if (atk.status && atk.ability === 'echaopalante' && phys) A *= 1.5;
+      // habilidad de apuro (x1.5 al tipo propio con poca vida)
+      const pinch = { raizfirme: 'Tepuy', coroalzao: 'Rumba', plenacarga: 'Catatumbo', verdor: 'Monte' };
+      let mod = 1;
+      if (pinch[atk.ability] === mv.type && atk.hp <= atk.maxhp / 3) mod *= 1.5;
+      // objeto de tipo (x1.1)
+      const it = atk.item && MQ.ITEMS[atk.item];
+      if (it && it.hold === 'boost' && it.boostType === mv.type) mod *= 1.1;
+      // bien comido (x0.5 de Sabroso y Caribe)
+      if (def.ability === 'biencomido' && (mv.type === 'Sabroso' || mv.type === 'Caribe')) mod *= 0.5;
+      // clima
+      const w = this.weather && this.weather.kind;
+      if (w === 'lluvia') mod *= mv.type === 'Caribe' ? 1.5 : mv.type === 'Sabroso' ? 0.5 : 1;
+      if (w === 'sol') mod *= mv.type === 'Sabroso' ? 1.5 : mv.type === 'Caribe' ? 0.5 : 1;
+      if (w === 'apagon' && mv.type === 'Espanto') mod *= 1.2;
+
+      let total = 0, lastDmg = 0;
+      for (let h = 0; h < hits; h++) {
+        let dmg = Math.floor((((2 * atk.lvl / 5 + 2) * mv.pow * A / D) / 50 + 2)
+          * stab * eff * crit * mod * (0.85 + Math.random() * 0.15));
+        dmg = Math.max(1, dmg);
+        // aguantes: resteo del turno, concha dura desde full, azabache de pulsera
+        if (dmg >= def.hp) {
+          if (dVol.endure) dmg = def.hp - 1;
+          else if (def.ability === 'conchadura' && def.hp === def.maxhp) dmg = def.hp - 1;
+          else if (def.item === 'azabachepulsera' && Math.random() < 0.1) {
+            dmg = def.hp - 1;
+          }
+        }
+        def.hp = Math.max(0, def.hp - dmg);
+        total += dmg; lastDmg = dmg;
+        if (def.hp <= 0) break;
+      }
+      if (phys) dVol.lastPhys = lastDmg; else dVol.lastSpec = lastDmg;
+
+      // apagón: un golpe Catatumbo con daño lo termina ("volvió la luz")
+      if (w === 'apagon' && mv.type === 'Catatumbo' && total > 0 && this.weather) {
+        this.weather = null;
+        this.say('¡El corrientazo prendió los bombillos! Volvió la luz.');
+      }
+
+      this.anim.shake = crit > 1 ? 12 : 8;
+      MQ.audio.sfx(eff > 1 || crit > 1 ? 'eff' : eff < 1 ? 'weak' : 'hit');
+      let extra = eff > 1 ? ' ¡Le dolió hasta el apellido!' : eff < 1 ? ' No le hizo ni cosquillas...' : '';
+      if (crit > 1) extra = ' ¡GOLPE CRÍTICO! De los que no se olvidan.' + (eff > 1 ? ' Y encima le dolió doble.' : '');
+      const hitsTxt = hits > 1 ? ` (x${hits} golpes)` : '';
+      this.say(`Hace ${total} de daño${hitsTxt}.${extra}`, () => {
+        const chain = [];
+        // drenaje
+        const drainFx = mv.effects.find((e) => e.kind === 'drain');
+        if (drainFx && total > 0) chain.push((next) => {
+          const h = Math.min(Math.max(1, Math.floor(total * drainFx.fraction)), atk.maxhp - atk.hp);
+          if (h > 0) { atk.hp += h; MQ.audio.sfx('heal'); this.say(`¡${name(atk)} le saca el jugo! Recupera ${h} PS.`, next); }
+          else next();
+        });
+        // campana del vagón
+        if (atk.item === 'campanavagon' && total > 0 && atk.hp > 0 && atk.hp < atk.maxhp) chain.push((next) => {
+          atk.hp = Math.min(atk.maxhp, atk.hp + Math.max(1, Math.floor(total / 8)));
+          next();
+        });
+        // retroceso
+        const recoilFx = mv.effects.find((e) => e.kind === 'recoil');
+        if (recoilFx && total > 0) chain.push((next) => {
+          atk.hp = Math.max(0, atk.hp - Math.max(1, Math.ceil(total * recoilFx.fraction)));
+          this.say(`¡${name(atk)} se resiente del envión!`, next);
+        });
+        // efectos secundarios sobre el objetivo
+        for (const fx of mv.effects) {
+          if (fx.kind === 'status' && def.hp > 0) {
+            const chance = (fx.chance ?? 100) / 100;
+            chain.push((next) => {
+              if (Math.random() >= chance) return next();
+              const target = fx.target === 'self' ? atk : def;
+              if (fx.status === 'mareo') this.applyMareo(target, target === this.mine ? this.pvol : this.evol, next);
+              else this.applyStatus(target, fx.status, next);
+            });
+          } else if (fx.kind === 'stage' && (fx.target === 'self' ? atk : def).hp > 0) {
+            const chance = (fx.chance ?? 100) / 100;
+            chain.push((next) => {
+              if (Math.random() >= chance) return next();
+              const tIsAtk = fx.target === 'self';
+              this.applyStage(tIsAtk ? atk : def, tIsAtk ? aSt : dSt, fx.stat, fx.delta, next);
+            });
+          } else if (fx.kind === 'flinch' && def.hp > 0) {
+            chain.push((next) => {
+              if (def.ability !== 'cabezafria' && Math.random() < fx.chance / 100) dVol.flinch = true;
+              next();
+            });
+          } else if (fx.kind === 'trap' && def.hp > 0) {
+            chain.push((next) => {
+              if (dVol.trap <= 0) {
+                dVol.trap = fx.turns[0] + MQ.rand(fx.turns[1] - fx.turns[0] + 1);
+                this.say(`¡${name(def)} quedó atrapado en el tumulto!`, next);
+              } else next();
+            });
+          } else if (fx.kind === 'recharge') {
+            chain.push((next) => { aVol.recharge = true; next(); });
+          } else if (fx.kind === 'switch' && fx.who === 'self' && isMine && total > 0) {
+            // Ahí Nos Vidrios: cambia tras golpear (si hay a quién)
+            chain.push((next) => {
+              const others = MQ.player.party.filter((m, i) => m.hp > 0 && i !== this.mi);
+              if (!others.length || def.hp <= 0) return next();
+              this.say(`¡${name(atk)} pega y se va: ahí nos vidrios!`, () => this.openParty(true));
+            });
+          }
+        }
+        // moneda de locha (10% amedrenta)
+        if (atk.item === 'monedalocha' && def.hp > 0) chain.push((next) => {
+          if (def.ability !== 'cabezafria' && Math.random() < 0.1) dVol.flinch = true;
+          next();
+        });
+        // habilidades de contacto del defensor
+        if (mv.contact && def.hp > 0 && atk.hp > 0) chain.push((next) => this.contactEffects(atk, def, isMine, next));
+
+        const run = (i) => {
+          if (atk.hp <= 0) return isMine ? this.mineFaint(then) : this.enemyFaint();
+          if (def.hp <= 0) return isMine ? then() : this.mineFaint(then);
+          if (i >= chain.length) return then();
+          chain[i]((/* next */) => run(i + 1));
+        };
+        run(0);
+      });
+    }
+
+    contactEffects(atk, def, isMine, then) {
+      const roll = Math.random();
+      if (def.ability === 'pieldelija') {
+        atk.hp = Math.max(0, atk.hp - Math.max(1, Math.floor(atk.maxhp / 16)));
+        this.say(`¡La piel de lija de ${name(def)} raspa a ${name(atk)}!`, () => {
+          if (atk.hp <= 0) return isMine ? this.mineFaint(then) : this.enemyFaint();
+          then();
+        });
+        return;
+      }
+      const contactStatus = { estatica: 'par', brasaviva: 'que', colmillountado: 'psn' }[def.ability];
+      if (contactStatus && roll < 0.3 && !atk.status && !this.statusBlocked(atk, contactStatus)) {
+        this.applyStatus(atk, contactStatus, then);
+        return;
+      }
+      then();
+    }
+
+    statusMove(atk, def, mv, isMine, aSt, dSt, aVol, dVol, then) {
+      const chain = [];
+      for (const fx of mv.effects) {
+        if (fx.kind === 'heal') chain.push((next) => {
+          let frac = fx.fraction;
+          if (mv.id === 'solana' && this.weather && this.weather.kind === 'sol') frac = 2 / 3;
+          const h = Math.min(Math.floor(atk.maxhp * frac), atk.maxhp - atk.hp);
+          if (h > 0) { atk.hp += h; MQ.audio.sfx('heal'); this.say(`${name(atk)} recupera ${h} PS. Eso cura el alma.`, next); }
+          else this.say('Pero ya estaba full...', next);
+        });
+        else if (fx.kind === 'status') chain.push((next) => {
+          if (Math.random() >= (fx.chance ?? 100) / 100) return next();
+          const target = fx.target === 'self' ? atk : def;
+          if (fx.status === 'mareo') this.applyMareo(target, target === this.mine ? this.pvol : this.evol, next);
+          else this.applyStatus(target, fx.status, next);
+        });
+        else if (fx.kind === 'stage') chain.push((next) => {
+          if (Math.random() >= (fx.chance ?? 100) / 100) return next();
+          const tIsAtk = fx.target === 'self';
+          this.applyStage(tIsAtk ? atk : def, tIsAtk ? aSt : dSt, fx.stat, fx.delta, next);
+        });
+        else if (fx.kind === 'crit') chain.push((next) => {
+          aVol.critUp = Math.min(4, aVol.critUp + fx.stages);
+          this.say(`¡${name(atk)} afina la puntería!`, next);
+        });
+        else if (fx.kind === 'weather') chain.push((next) => {
+          this.weather = { kind: fx.weather, turns: 5 };
+          this.say(MQ.WEATHER[fx.weather].desc, next);
+        });
+        else if (fx.kind === 'protect') chain.push((next) => {
+          // usos seguidos fallan cada vez más
+          if (Math.random() < Math.pow(0.5, aVol.protectCount)) {
+            aVol.protected = true; aVol.protectCount++;
+            this.say(`¡${name(atk)} se restea y se cubre!`, next);
+          } else { aVol.protectCount = 0; this.say('...¡pero esta vez no le salió!', next); }
+        });
+        else if (fx.kind === 'endure') chain.push((next) => {
+          if (Math.random() < Math.pow(0.5, aVol.protectCount)) {
+            aVol.endure = true; aVol.protectCount++;
+            this.say(`¡${name(atk)} aprieta los dientes: va a aguantar!`, next);
+          } else { aVol.protectCount = 0; this.say('...¡pero esta vez no le salió!', next); }
+        });
+        else if (fx.kind === 'noescape') chain.push((next) => {
+          dVol.noescape = true;
+          this.say(`¡${name(def)} quedó clavado en el sitio! No hay escape.`, next);
+        });
+        else if (fx.kind === 'money') chain.push((next) => {
+          this.moneyMul = fx.multiplier || 2;
+          this.say('¡Cae plata del techo! La vaca está echada.', next);
+        });
+        else if (fx.kind === 'curse') chain.push((next) => {
+          if (dVol.curse) return this.say('...pero el velorio ya estaba puesto.', next);
+          const pay = Math.floor(atk.maxhp / 2);
+          atk.hp = Math.max(1, atk.hp - pay);
+          dVol.curse = true;
+          this.say(`¡${name(atk)} monta un velorio con sus propias fuerzas! ${name(def)} quedó señalado.`, next);
+        });
+        else if (fx.kind === 'leech') chain.push((next) => {
+          if (dVol.leech) return this.say('...pero ya estaba enredado.', next);
+          if (MQ.SPECIES[def.id].types.includes('Monte')) return this.say(`...pero ${name(def)} conoce el monte demasiado bien.`, next);
+          dVol.leech = true;
+          this.say(`¡La enredadera se prende de ${name(def)}!`, next);
+        });
+        else if (fx.kind === 'hazard') chain.push((next) => {
+          const haz = isMine ? this.ehaz : this.phaz;
+          if (haz.cardonal) return this.say('...pero el cardonal ya estaba sembrado.', next);
+          haz.cardonal = true;
+          this.say('¡Un cardonal de púas brota en el andén rival!', next);
+        });
+        else if (fx.kind === 'switch' && fx.who === 'foe') chain.push((next) => {
+          // Voz del Andén: en lo salvaje termina el pleito; contra entrenador, cambia
+          if (!this.trainer && !isMine) return next();
+          if (!this.trainer && isMine) {
+            this.say(`¡La voz del andén se lleva a ${name(def)}! El pleito se acabó.`, () => this.finish('flee'));
+            return;
+          }
+          if (isMine && this.eteam) {
+            const others = this.eteam.filter((m, i) => m.hp > 0 && i !== this.ei);
+            if (!others.length) return this.say('...pero no hay quién lo reemplace.', next);
+            const pickIdx = this.eteam.indexOf(others[MQ.rand(others.length)]);
+            this.ei = pickIdx; this.enemy = this.eteam[pickIdx];
+            MQ.player.dexSeen[this.enemy.id] = true;
+            Object.assign(this.est, zeroStages());
+            Object.assign(this.evol, freshVol());
+            this.anim.efall = 0;
+            this.say(`¡${name(def)} sale empujado! Entra ${name(this.enemy)}.`, () => {
+              MQ.audio.cry(this.enemy.id);
+              this.entryEffects(this.enemy, false);
+              this.act(next);
+            });
+            return;
+          }
+          next();
+        });
+      }
+      if (!chain.length) chain.push((next) => this.say('...no pasa nada visible. Cosas de espantos.', next));
+      const run = (i) => {
+        if (i >= chain.length) return then();
+        if (atk.hp <= 0) return isMine ? this.mineFaint(then) : this.enemyFaint();
+        chain[i](() => run(i + 1));
+      };
+      run(0);
+    }
+
+    // ---- cierre de ronda: clima, estados, goteos ---------------------------------
     afterRound() {
       if (this.enemy.hp <= 0) return this.enemyFaint();
       if (this.mine.hp <= 0) return; // mineFaint ya encoló
-      // el veneno gotea al cierre de la ronda
       const ticks = [];
-      if (this.mine.status === 'psn') ticks.push([this.mine, true]);
-      if (this.enemy.status === 'psn') ticks.push([this.enemy, false]);
+      const w = this.weather && this.weather.kind;
+
+      for (const [m, isMine] of [[this.mine, true], [this.enemy, false]]) {
+        const vol = isMine ? this.pvol : this.evol;
+        const foe = isMine ? this.enemy : this.mine;
+        // clima: hora pico pellizca a los que no son Criollo/Tepuy
+        if (w === 'horapico') {
+          const t = MQ.SPECIES[m.id].types;
+          if (!t.includes('Criollo') && !t.includes('Tepuy'))
+            ticks.push([m, isMine, Math.max(1, Math.floor(m.maxhp / 16)), 'el gentío de la hora pico estruja a']);
+        }
+        // estados que gotean
+        if (m.status === 'psn') ticks.push([m, isMine, Math.max(1, Math.floor(m.maxhp / 8)), 'el veneno hace lo suyo con']);
+        if (m.status === 'psn2') {
+          m.psn2T = (m.psn2T || 0) + 1;
+          ticks.push([m, isMine, Math.max(1, Math.floor(m.maxhp * m.psn2T / 16)), 'el veneno de mapanare aprieta a']);
+        }
+        if (m.status === 'que') ticks.push([m, isMine, Math.max(1, Math.floor(m.maxhp / 8)), 'la quemadura arde en']);
+        if (vol.trap > 0) {
+          vol.trap--;
+          ticks.push([m, isMine, Math.max(1, Math.floor(m.maxhp / 16)), 'el agarre estruja a']);
+        }
+        if (vol.curse) ticks.push([m, isMine, Math.max(1, Math.floor(m.maxhp / 4)), 'el velorio pesa sobre']);
+        if (vol.leech && foe.hp > 0) {
+          const d = Math.max(1, Math.floor(m.maxhp / 8));
+          ticks.push([m, isMine, d, 'la enredadera chupa a', foe]);
+        }
+        // curaciones de cierre
+        if (m.item === 'tajadaplatano' && m.hp > 0 && m.hp < m.maxhp)
+          m.hp = Math.min(m.maxhp, m.hp + Math.max(1, Math.floor(m.maxhp / 16)));
+        if (m.ability === 'bebelluvia' && w === 'lluvia' && m.hp > 0 && m.hp < m.maxhp)
+          m.hp = Math.min(m.maxhp, m.hp + Math.max(1, Math.floor(m.maxhp / 16)));
+        if (m.item === 'merey' && m.hp > 0 && m.hp <= m.maxhp / 2) {
+          m.hp = Math.min(m.maxhp, m.hp + 10);
+          m.item = null;
+        }
+        if (m.ability === 'mudadepiel' && m.status && Math.random() < 0.33) {
+          m.status = null; m.psn2T = 0;
+        }
+        if (m.ability === 'pilaspuestas') {
+          const st = isMine ? this.pst : this.est;
+          st.spe = MQ.clamp(st.spe + 1, -6, 6);
+        }
+      }
+      // el clima de movimiento expira
+      if (this.weather && this.weather.turns > 0) {
+        this.weather.turns--;
+        if (this.weather.turns === 0) {
+          this.weather = null;
+          ticks.push(null); // marcador: anuncia el despeje
+        }
+      }
+
       const next = () => {
         if (!ticks.length) return this.toMenu();
-        const [m, isMine] = ticks.shift();
-        m.hp = Math.max(0, m.hp - Math.max(1, Math.floor(m.maxhp / 8)));
+        const tk = ticks.shift();
+        if (tk === null) { this.say('El andén vuelve a la calma de la hora fantasma.', next); return; }
+        const [m, isMine, dmg, verb, healTo] = tk;
+        m.hp = Math.max(0, m.hp - dmg);
+        if (healTo && healTo.hp > 0) healTo.hp = Math.min(healTo.maxhp, healTo.hp + dmg);
         MQ.audio.sfx('weak');
-        this.say(`El veneno hace lo suyo con ${name(m)}...`, () => {
+        this.say(`${verb.charAt(0).toUpperCase() + verb.slice(1)} ${name(m)}...`, () => {
           if (m.hp <= 0) return isMine ? this.mineFaint(() => {}) : this.enemyFaint();
           next();
         });
@@ -414,6 +1065,8 @@
       MQ.audio.sfx('faint');
       this.anim.mfall = 1;
       this.mine.status = null;
+      this.mine.psn2T = 0;
+      this.mine.confianza = Math.max(0, (this.mine.confianza || 70) - 5);
       this.say(`¡${name(this.mine)} se debilitó! Se fue en blanco.`, () => {
         const alive = MQ.player.party.some((m) => m.hp > 0);
         if (!alive) {
@@ -433,25 +1086,51 @@
       this.say(`¡${name(e)} rival quedó fuera de servicio!`, () => this.giveXP(e));
     }
 
+    // calle (EVs) del caído + confianza, tope Gen 3
+    applySpoils(m, e) {
+      const yieldEv = MQ.SPECIES[e.id].ev_yield || {};
+      m.evs = m.evs || MQ.zeroEVs();
+      const total = Object.values(m.evs).reduce((a, b) => a + b, 0);
+      let room = 510 - total;
+      for (const [st, n] of Object.entries(yieldEv)) {
+        const add = Math.min(n, room, 252 - (m.evs[st] || 0));
+        if (add > 0) { m.evs[st] += add; room -= add; }
+      }
+      m.confianza = Math.min(255, (m.confianza || 70) + 2);
+    }
+
     giveXP(e) {
-      const m = this.mine;
-      if (m.hp > 0) {
-        let xp = Math.floor(MQ.expYield(e.id) * e.lvl / 7 * (this.trainer ? 1.5 : 1));
+      const party = MQ.player.party;
+      // Gen 3: los que pelearon contra este rival se reparten la experiencia;
+      // si alguien carga la Media Arepa, la mitad es de los que pelearon y la
+      // otra mitad de los que la cargan sin pelear. Calle y confianza pa' todos.
+      const parts = [...(this.parts || new Set([this.mi]))].filter((i) => party[i] && party[i].hp > 0);
+      const shareIdx = party.map((m, i) => i).filter((i) => party[i].hp > 0 && party[i].item === 'mediaarepa' && !parts.includes(i));
+      const base = Math.floor(MQ.expYield(e.id) * e.lvl / 7 * (this.trainer ? 1.5 : 1));
+      const recipients = [];
+      const pool = shareIdx.length ? Math.floor(base / 2) : base;
+      for (const i of parts) recipients.push({ m: party[i], xp: Math.floor(pool / Math.max(1, parts.length)) });
+      for (const i of shareIdx) recipients.push({ m: party[i], xp: Math.floor(base / 2 / shareIdx.length) });
+      const next = () => {
+        const r = recipients.shift();
+        if (!r) return this.nextEnemyOrWin();
+        let xp = r.xp;
+        if (r.m.item === 'huevoguacharaca') xp = Math.floor(xp * 1.5);
         xp = Math.max(1, xp);
-        m.xp += xp;
-        this.say(`${name(m)} gana ${xp} puntos de experiencia.`);
-        this.levelUps(m, () => this.nextEnemyOrWin());
-      } else this.nextEnemyOrWin();
+        r.m.xp += xp;
+        this.applySpoils(r.m, e);
+        this.say(`${name(r.m)} gana ${xp} puntos de experiencia.`);
+        this.levelUps(r.m, next);
+      };
+      next();
       this.pump();
     }
 
     levelUps(m, then) {
-      if (m.lvl < 99 && m.xp >= MQ.xpForLevel(m.lvl + 1)) {
+      const group = MQ.xpGroupOf(m.id);
+      if (m.lvl < 100 && m.xp >= MQ.xpForLevel(m.lvl + 1, group)) {
         m.lvl++;
-        const st = MQ.calcStats(m.id, m.lvl);
-        const dHp = st.hp - m.maxhp;
-        m.maxhp = st.hp; m.hp = Math.min(m.maxhp, m.hp + dHp);
-        m.atk = st.atk; m.def = st.def; m.spd = st.spd;
+        MQ.recalcStats(m);
         MQ.audio.sfx('lvl');
         this.say(`¡${name(m)} sube al nivel ${m.lvl}!`);
         const learnable = MQ.SPECIES[m.id].learn.filter(([l]) => l === m.lvl).map(([, mv]) => mv);
@@ -461,6 +1140,7 @@
           if (m.moves.includes(mv)) return teach(i + 1);
           if (m.moves.length < 4) {
             m.moves.push(mv);
+            m.pp[mv] = MQ.MOVES[mv].pp;
             this.say(`¡${name(m)} aprende ${MQ.MOVES[mv].name}!`, () => teach(i + 1));
           } else {
             this.say(`${name(m)} quiere aprender ${MQ.MOVES[mv].name}, pero ya sabe 4 movimientos.`, () => {
@@ -472,6 +1152,7 @@
                   if (it.value >= 0) {
                     const old = m.moves[it.value];
                     m.moves[it.value] = mv;
+                    m.pp[mv] = MQ.MOVES[mv].pp;
                     this.say(`${name(m)} olvidó ${MQ.MOVES[old].name} y aprendió ${MQ.MOVES[mv].name}. ¡Uno, dos y... pum!`, () => teach(i + 1));
                   } else {
                     this.say(`Bueno, ${MQ.MOVES[mv].name} quedó pa' otra vida.`, () => teach(i + 1));
@@ -487,24 +1168,57 @@
     }
 
     nextEnemyOrWin() {
-      if (this.trainer && this.ei < this.eteam.length - 1) {
-        this.ei++;
+      const nextAlive = this.trainer && this.eteam.findIndex((m) => m.hp > 0);
+      if (this.trainer && nextAlive >= 0) {
+        this.ei = nextAlive;
         this.enemy = this.eteam[this.ei];
         this.anim.efall = 0;
         MQ.player.dexSeen[this.enemy.id] = true;
-        this.est = { atk: 0, def: 0, spd: 0 };
-        this.say(`${this.trainer.name || this.trainer.cls} saca a ${name(this.enemy)}. ¡La cosa sigue!`, () => { MQ.audio.cry(this.enemy.id); this.toMenu(); });
-        this.pump();
+        Object.assign(this.est, zeroStages());
+        Object.assign(this.evol, freshVol());
+        // estilo CAMBIO (el "shift" de FireRed): te avisan quién viene y puedes rotar gratis
+        const canShift = (MQ.player.battleStyle || 'cambio') === 'cambio' && this.mine.hp > 0 &&
+          MQ.player.party.some((m, i) => m.hp > 0 && i !== this.mi);
+        if (canShift) {
+          // mientras "está por sacar", el que da la cara es el retador, no el espanto
+          this.showTrainer = true;
+          this.say(`${this.trainer.name || this.trainer.cls} está por sacar a ${name(this.enemy)}. ¿Cambias tú también?`, () => {
+            this.phase = 'shift';
+            this.menu = new MQ.Menu([{ label: 'Sí, cambio' }, { label: 'No, sigo así' }], {
+              x: MQ.W - 136, y: MQ.H - 118, w: 128, rows: 2,
+              onPick: (it) => {
+                this.menu = null;
+                if (it.label.startsWith('Sí')) { this.shiftPending = true; this.openParty(true); }
+                else this.sendNextEnemy();
+              },
+              onCancel: () => { this.menu = null; this.sendNextEnemy(); },
+            });
+          });
+          this.pump();
+          return;
+        }
+        this.sendNextEnemy();
         return;
       }
       if (this.trainer) {
         MQ.audio.music('gaita');
-        MQ.player.money += this.trainer.money;
+        let money = this.trainer.money * this.moneyMul;
+        if (MQ.player.party.some((m) => m.item === 'morocota')) money *= 2;
+        MQ.player.money += money;
+        this.act(() => { this.showTrainer = true; }); // el vencido vuelve a dar la cara
         this.say(this.trainer.win);
-        this.say(`Ganas ${this.trainer.money} bolos.`, () => this.finish('win'));
+        this.say(`Ganas ${money} bolos.`, () => this.finish('win'));
       } else {
         MQ.audio.stop();
         MQ.audio.sfx('victory');
+        // buhonero: 10% de encontrarse algo tras el pleito
+        const scav = MQ.player.party.find((m) => m.hp > 0 && m.ability === 'buhonero');
+        if (scav && Math.random() < 0.1) {
+          const finds = ['malta', 'ficha', 'cafe', 'mamon', 'tamarindo'];
+          const k = finds[MQ.rand(finds.length)];
+          MQ.player.bag[k] = (MQ.player.bag[k] || 0) + 1;
+          this.say(`¡${name(scav)} se consiguió un(a) ${MQ.ITEMS[k].name} entre los rieles! Ojo de buhonero.`);
+        }
         this.say('La oscuridad vuelve a quedarse quieta.', () => this.finish('win'));
       }
       this.pump();
@@ -513,10 +1227,18 @@
     finish(result) {
       if (this.over) return;
       this.over = true;
-      // evoluciones pendientes
+      // limpia volátiles que no deben salir del andén
+      for (const m of MQ.player.party) { delete m._disp; }
+      delete this.enemy._disp;
+      // al fichar el combate termina sin experiencia: nadie evoluciona
+      // (y el recién fichado conserva su forma, como manda el clásico)
+      if (result === 'catch') { this.onEnd(result); return; }
+      // evoluciones pendientes (por nivel o por confianza)
       const evos = MQ.player.party.filter((m) => {
         const ev = MQ.SPECIES[m.id].evolve;
-        return ev && m.lvl >= ev.lvl && result !== 'lose';
+        if (!ev || result === 'lose') return false;
+        if (ev.method === 'confianza') return (m.confianza || 0) >= (ev.confianza || 220);
+        return m.lvl >= (ev.lvl || 999);
       });
       const doEvo = () => {
         const m = evos.shift();
@@ -527,17 +1249,13 @@
           MQ.sprites.preload([ev.to], ['front']);
           MQ.audio.sfx('lvl');
           this.phase = 'evo';
-          // la metamorfosis ocurre a media animación (apply); luego el remate
           this.evo = {
             from, to: ev.to, t: 0, stage: 'flash',
             apply: () => {
-              const frac = m.hp / m.maxhp;
               m.id = ev.to;
-              const st = MQ.calcStats(m.id, m.lvl);
-              m.maxhp = st.hp; m.hp = Math.max(1, Math.floor(st.hp * frac));
-              m.atk = st.atk; m.def = st.def; m.spd = st.spd;
+              MQ.recalcStats(m);
               for (const [l, mv] of MQ.SPECIES[m.id].learn)
-                if (l <= m.lvl && !m.moves.includes(mv) && m.moves.length < 4) m.moves.push(mv);
+                if (l <= m.lvl && !m.moves.includes(mv) && m.moves.length < 4) { m.moves.push(mv); m.pp[mv] = MQ.MOVES[mv].pp; }
               MQ.player.dexCaught[m.id] = true; MQ.player.dexSeen[m.id] = true;
               MQ.audio.cry(m.id);
             },
@@ -573,7 +1291,7 @@
       ctx.fillStyle = '#06040c'; ctx.fillRect(0, 0, W, H);
       const cx = W / 2, cy = H / 2 - 14, sc = 4;
       if (e.stage === 'flash') {
-        const p = e.t / 96;                                  // 0..1, acelera
+        const p = e.t / 96;
         const period = Math.max(3, 16 - Math.floor(p * 13));
         const id = (Math.floor(e.t / period) % 2) ? e.to : e.from;
         MQ.drawMonCentered(ctx, id, cx, cy, sc);
@@ -607,25 +1325,30 @@
       if (this.anim.mfall > 0 && this.anim.mfall < FALL) this.anim.mfall++;
       if (this.cap) this.tickCapture();
       if (this.evo) this.tickEvo();
-      // las barras de vida se vacían poco a poco, como debe ser
       for (const m of [this.mine, this.enemy]) {
         if (m._disp === undefined) m._disp = m.hp;
         const rate = Math.max(0.5, m.maxhp / 36);
         m._disp += MQ.clamp(m.hp - m._disp, -rate, rate);
         if (Math.abs(m.hp - m._disp) < 0.5) m._disp = m.hp;
       }
-      // pitido de alarma cuando tu espanto está grave
       if (!this.over && this.mine.hp > 0 && this.mine.hp <= this.mine.maxhp / 4 && this.fc % 48 === 0)
         MQ.audio.sfx('lowhp');
       if (!this.tb.active && this.phase === 'msg') this.pump();
     }
 
-    statusChip(ctx, st, x, y) {
-      if (!st) return;
-      const S = MQ.STATUS[st];
-      ctx.fillStyle = S.color; ctx.fillRect(x, y, 22, 9);
-      ctx.fillStyle = '#16121f'; ctx.font = MQ.FONT;
-      ctx.fillText(S.name, x + 2, y + 1);
+    statusChip(ctx, m, vol, x, y) {
+      const st = m.status;
+      if (st) {
+        const S = MQ.STATUS[st];
+        ctx.fillStyle = S.color; ctx.fillRect(x, y, 22, 9);
+        ctx.fillStyle = '#16121f'; ctx.font = MQ.FONT;
+        ctx.fillText(S.name, x + 2, y + 1);
+      } else if (vol && vol.mareo > 0) {
+        const S = MQ.VOLATILE.mareo;
+        ctx.fillStyle = S.color; ctx.fillRect(x, y, 22, 9);
+        ctx.fillStyle = '#16121f'; ctx.font = MQ.FONT;
+        ctx.fillText('MAR', x + 2, y + 1);
+      }
     }
 
     hpBar(ctx, x, y, w, m) {
@@ -649,7 +1372,7 @@
         ctx.fillStyle = '#1a140a'; ctx.beginPath(); ctx.arc(0, 0, r + 1, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = c.col.b; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = c.col.a; ctx.beginPath(); ctx.arc(0, 0, r - 2, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#1a140a'; ctx.fillRect(-1.5, -1.5, 3, 3);            // hueco de la ficha
+        ctx.fillStyle = '#1a140a'; ctx.fillRect(-1.5, -1.5, 3, 3);
         if (open) { ctx.fillStyle = 'rgba(255,240,200,0.9)'; ctx.fillRect(-r, -1.5, r * 2, 3); }
         ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fillRect(-r + 1, -r + 2, 2, 2);
         ctx.restore();
@@ -689,27 +1412,86 @@
       }
     }
 
+    // El telón del combate según dónde estés (FireRed cambia el fondo por hábitat)
+    drawBattleBg(ctx) {
+      const amb = this.opts.ambience || {};
+      const region = amb.region || '';
+      const theme = amb.theme || 'tunel';
+      const grad = ctx.createLinearGradient(0, 0, 0, MQ.H);
+      if (region === 'avila' || region === 'losteques') {
+        // el cerro: cielo dorado, silueta del Ávila y neblina baja
+        grad.addColorStop(0, region === 'losteques' ? '#2a2a3e' : '#3a2a4e');
+        grad.addColorStop(0.5, region === 'losteques' ? '#3a3e52' : '#7a4a52');
+        grad.addColorStop(1, '#2a3a34');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, MQ.W, MQ.H);
+        ctx.fillStyle = region === 'losteques' ? '#242e3a' : '#2e3e40';
+        ctx.beginPath();
+        ctx.moveTo(0, 120);
+        for (let x = 0; x <= MQ.W; x += 20) ctx.lineTo(x, 96 + Math.sin(x * 0.045 + 2) * 22);
+        ctx.lineTo(MQ.W, 152); ctx.lineTo(0, 152);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(200,210,230,0.10)';
+        ctx.fillRect(0, 118, MQ.W, 16);
+        ctx.fillStyle = '#1c2622'; ctx.fillRect(0, 150, MQ.W, MQ.H - 150);
+      } else if (theme === 'calle' && (region === 'metrocable_sanagustin' || region === 'metrocable_mariche')) {
+        // arriba del barrio: cielo abierto, techos y el cable cruzando
+        grad.addColorStop(0, '#4a6a9a'); grad.addColorStop(0.6, '#c98a5a'); grad.addColorStop(1, '#8a5a3a');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, MQ.W, MQ.H);
+        ctx.strokeStyle = '#1a1a22'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(0, 40); ctx.quadraticCurveTo(MQ.W / 2, 62, MQ.W, 36); ctx.stroke();
+        ctx.fillStyle = '#6a4432';
+        for (let x = 0; x < MQ.W; x += 46) ctx.fillRect(x, 128 - (x * 7 % 18), 38, 30);
+        ctx.fillStyle = '#8a5a3e'; ctx.fillRect(0, 150, MQ.W, MQ.H - 150);
+      } else if (theme === 'calle') {
+        // sol de esquina: cielo de hora dorada y perfil de bloques
+        grad.addColorStop(0, '#7a5a9a'); grad.addColorStop(0.55, '#d9905a'); grad.addColorStop(1, '#b07040');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, MQ.W, MQ.H);
+        ctx.fillStyle = 'rgba(255,230,150,0.5)';
+        ctx.beginPath(); ctx.arc(MQ.W - 70, 46, 16, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#5a4436';
+        for (let x = -6; x < MQ.W; x += 52) ctx.fillRect(x, 108 + (x * 13 % 24), 44, 60);
+        ctx.fillStyle = '#7a5a42'; ctx.fillRect(0, 150, MQ.W, MQ.H - 150);
+      } else if (theme === 'ghost') {
+        // la Línea Fantasma: verdor de recuerdo y motas que suben
+        grad.addColorStop(0, '#06120e'); grad.addColorStop(0.6, '#0e2a20'); grad.addColorStop(1, '#12352a');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, MQ.W, MQ.H);
+        ctx.fillStyle = 'rgba(122,255,201,0.12)';
+        for (let i = 0; i < 8; i++) {
+          const mx = (i * 47 + this.fc * 0.3) % MQ.W;
+          const my = 170 - ((i * 31 + this.fc * 0.5) % 160);
+          ctx.fillRect(mx, my, 2, 2);
+        }
+        ctx.fillStyle = '#081a12'; ctx.fillRect(0, 150, MQ.W, MQ.H - 150);
+      } else if (theme === 'metro') {
+        // andén de estación: pared clara, cenefa naranja y pilares
+        grad.addColorStop(0, '#242030'); grad.addColorStop(0.6, '#38304a'); grad.addColorStop(1, '#463a54');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, MQ.W, MQ.H);
+        ctx.fillStyle = '#e85a1a'; ctx.fillRect(0, 24, MQ.W, 3);
+        ctx.fillStyle = 'rgba(200,190,220,0.08)';
+        for (let i = 0; i < 4; i++) ctx.fillRect(30 + i * 80, 27, 16, 123);
+        ctx.fillStyle = '#2a2438'; ctx.fillRect(0, 150, MQ.W, 2);
+        ctx.fillStyle = '#3a3242'; ctx.fillRect(0, 152, MQ.W, MQ.H - 152);
+      } else {
+        // el túnel canon: pilares de luz de servicio
+        grad.addColorStop(0, '#14101e'); grad.addColorStop(0.55, '#1e1830'); grad.addColorStop(1, '#2a2238');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, MQ.W, MQ.H);
+        ctx.fillStyle = 'rgba(245,166,35,0.05)';
+        for (let i = 0; i < 5; i++) ctx.fillRect(20 + i * 64, 0, 10, 150);
+        ctx.fillStyle = '#0e0a16'; ctx.fillRect(0, 150, MQ.W, 2);
+        ctx.fillStyle = 'rgba(245,166,35,0.04)'; ctx.fillRect(0, 152, MQ.W, MQ.H - 152);
+      }
+    }
+
     draw(ctx) {
       if (this.evo) { this.drawEvo(ctx); this.tb.draw(ctx); return; }
-      // fondo: pared del túnel arriba, andén de concreto abajo
-      const grad = ctx.createLinearGradient(0, 0, 0, MQ.H);
-      grad.addColorStop(0, '#14101e'); grad.addColorStop(0.55, '#1e1830'); grad.addColorStop(1, '#2a2238');
-      ctx.fillStyle = grad; ctx.fillRect(0, 0, MQ.W, MQ.H);
-      // pilares de luz de servicio (apenas insinuados)
-      ctx.fillStyle = 'rgba(245,166,35,0.05)';
-      for (let i = 0; i < 5; i++) ctx.fillRect(20 + i * 64, 0, 10, 150);
-      // junta pared/andén y vías al fondo
-      ctx.fillStyle = '#0e0a16'; ctx.fillRect(0, 150, MQ.W, 2);
-      ctx.fillStyle = 'rgba(245,166,35,0.04)'; ctx.fillRect(0, 152, MQ.W, MQ.H - 152);
+      this.drawBattleBg(ctx);
 
-      // posiciones y geometría de cada combatiente
       const slide = this.anim.intro > 0 ? this.anim.intro * 5 : 0;
       const sh = this.anim.shake ? (Math.random() * 4 - 2) : 0;
       const eAH = artH(this.enemy.id), mAH = artH(this.mine.id);
       const eCx = E_X + 32, eCy = E_Y + eAH / 2, eBaseCy = E_Y + eAH - 2;
       const mCx = M_X + 32, mBaseCy = M_Y + mAH - 2;
 
-      // — discos del andén (las "bases" estilo clásico, con la franja naranja) —
       const base = (cx, cy, rw, rh) => {
         ctx.fillStyle = '#3a3242'; ctx.beginPath(); ctx.ellipse(cx, cy + 2, rw, rh, 0, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#8a7a62'; ctx.beginPath(); ctx.ellipse(cx, cy + 1, rw, rh, 0, 0, Math.PI * 2); ctx.fill();
@@ -728,8 +1510,6 @@
         ctx.restore();
       };
 
-      // dibuja un combatiente con cabeceo en reposo y caída al debilitarse;
-      // usa el sprite PNG (front del enemigo / back del propio) o el fallback
       const combatant = (id, kind, tlx, tly, fall, alive) => {
         const bob = (alive && fall === 0 && this.anim.intro === 0) ? Math.round(Math.sin(this.fc / 16) * 1.5) : 0;
         const yOff = fall ? Math.round((fall / FALL) * 22) : 0;
@@ -742,12 +1522,18 @@
         if (alpha < 1) ctx.restore();
       };
 
-      const capByFX = this.cap && this.cap.stage !== 'toss';   // la captura dibuja al enemigo
-      // enemigo (arriba derecha) — sombra + sprite (tornasol si es raro)
-      if (!capByFX && this.anim.efall < FALL && (this.enemy.hp > 0 || this.phase === 'msg' || this.anim.efall > 0)) {
+      const capByFX = this.cap && this.cap.stage !== 'toss';
+      if (this.showTrainer && this.trainer) {
+        // el retador de pie en el andén rival, a escala de combate
+        shadow(eCx, eBaseCy, 18, 0.3);
+        ctx.save();
+        ctx.translate(Math.round(E_X + sh + slide) + 10, Math.round(eBaseCy) - 46);
+        ctx.scale(3, 3);
+        MQ.drawPerson(ctx, 0, 0, MQ.LOOKS[this.trainer.look] || MQ.LOOKS.chamo, 'down', 0);
+        ctx.restore();
+      } else if (!capByFX && this.anim.efall < FALL && (this.enemy.hp > 0 || this.phase === 'msg' || this.anim.efall > 0)) {
         shadow(eCx, eBaseCy, 22, 0.3 * (1 - this.anim.efall / FALL));
         combatant(this.enemy.id, this.enemy.shiny ? 'shiny' : 'front', E_X + sh + slide, E_Y, this.anim.efall, this.enemy.hp > 0);
-        // destello tornasol al aparecer
         if (this.enemy.shiny && this.enemy.hp > 0 && this.fc < 60) {
           const tt = this.fc;
           ctx.fillStyle = '#bdfcff';
@@ -758,49 +1544,67 @@
           }
         }
       }
-      // mío (abajo izquierda) — sprite trasero
-      if (this.anim.mfall < FALL && (this.mine.hp > 0 || this.anim.mfall > 0)) {
+      if (this.demo) {
+        // el Viejo del Andén de espaldas, dando la clase desde tu plataforma
+        shadow(mCx, mBaseCy, 24, 0.3);
+        ctx.save();
+        ctx.translate(Math.round(M_X - sh - slide) + 24, Math.round(mBaseCy) - 52);
+        ctx.scale(3.5, 3.5);
+        MQ.drawPerson(ctx, 0, 0, MQ.LOOKS[this.demo] || MQ.LOOKS.obrero, 'up', 0);
+        ctx.restore();
+      } else if (this.anim.mfall < FALL && (this.mine.hp > 0 || this.anim.mfall > 0)) {
         shadow(mCx, mBaseCy, 28, 0.3 * (1 - this.anim.mfall / FALL));
         combatant(this.mine.id, 'back', M_X - sh - slide, M_Y, this.anim.mfall, this.mine.hp > 0);
       }
 
-      // — la ceremonia de la ficha —
       if (this.cap) this.drawCapture(ctx, eCx, eCy, eBaseCy);
 
-      // destello inicial
       if (this.anim.intro > 28 && this.anim.intro % 4 < 2) {
         ctx.fillStyle = 'rgba(245,215,110,0.35)'; ctx.fillRect(0, 0, MQ.W, MQ.H);
       }
 
-      ctx.font = MQ.FONT_B; ctx.textBaseline = 'top';
-      // panel enemigo
-      MQ.panel(ctx, 6, 8, 150, 34);
-      ctx.fillStyle = '#e8dfc8';
-      ctx.fillText((this.enemy.shiny ? '★' : '') + name(this.enemy) + '  N' + this.enemy.lvl, 14, 15);
-      this.hpBar(ctx, 14, 28, 120, this.enemy);
-      this.statusChip(ctx, this.enemy.status, 112, 14);
-      ctx.font = MQ.FONT_B;
-      const types = MQ.SPECIES[this.enemy.id].types;
-      types.forEach((t, i) => {
-        ctx.fillStyle = MQ.TYPES[t].color;
-        ctx.fillRect(140, 15 + i * 8, 8, 6);
-      });
-      // panel mío
-      MQ.panel(ctx, MQ.W - 166, 156, 160, 44);
-      ctx.fillStyle = '#e8dfc8';
-      ctx.fillText((this.mine.shiny ? '★' : '') + name(this.mine) + '  N' + this.mine.lvl, MQ.W - 158, 163);
-      this.hpBar(ctx, MQ.W - 158, 176, 130, this.mine);
-      ctx.font = MQ.FONT;
-      ctx.fillStyle = '#8a8aa0';
-      ctx.fillText(`${this.mine.hp}/${this.mine.maxhp} PS`, MQ.W - 158, 186);
-      this.statusChip(ctx, this.mine.status, MQ.W - 92, 185);
-      // barra xp
-      const cur = MQ.xpForLevel(this.mine.lvl), nxt = MQ.xpForLevel(this.mine.lvl + 1);
-      const xf = MQ.clamp((this.mine.xp - cur) / (nxt - cur), 0, 1);
-      ctx.fillStyle = '#1a1a28'; ctx.fillRect(MQ.W - 60, 188, 50, 4);
-      ctx.fillStyle = '#4a90d9'; ctx.fillRect(MQ.W - 60, 188, 50 * xf, 4);
+      // clima activo: letrero discreto arriba al centro
+      if (this.weather) {
+        ctx.font = MQ.FONT;
+        ctx.fillStyle = 'rgba(232,223,200,0.75)';
+        const wn = MQ.WEATHER[this.weather.kind].name.toUpperCase();
+        ctx.fillText(wn, (MQ.W - wn.length * 4.8) / 2, 1);
+      }
 
-      if (this.menu && (this.phase === 'menu' || this.phase === 'moves' || this.phase === 'party' || this.phase === 'bag' || this.phase === 'learn'))
+      ctx.font = MQ.FONT_B; ctx.textBaseline = 'top';
+      // el panel rival espera a que el retador saque su espanto
+      if (!this.showTrainer) {
+        MQ.panel(ctx, 6, 8, 150, 34);
+        ctx.fillStyle = '#e8dfc8';
+        const eGender = this.enemy.gender === 'm' ? '♂' : this.enemy.gender === 'f' ? '♀' : '';
+        ctx.fillText((this.enemy.shiny ? '★' : '') + name(this.enemy) + eGender + '  N' + this.enemy.lvl, 14, 15);
+        this.hpBar(ctx, 14, 28, 120, this.enemy);
+        this.statusChip(ctx, this.enemy, this.evol, 112, 14);
+        ctx.font = MQ.FONT_B;
+        const types = MQ.SPECIES[this.enemy.id].types;
+        types.forEach((t, i) => {
+          ctx.fillStyle = MQ.TYPES[t].color;
+          ctx.fillRect(140, 15 + i * 8, 8, 6);
+        });
+      }
+      if (!this.demo) {
+        MQ.panel(ctx, MQ.W - 166, 156, 160, 44);
+        ctx.fillStyle = '#e8dfc8';
+        const mGender = this.mine.gender === 'm' ? '♂' : this.mine.gender === 'f' ? '♀' : '';
+        ctx.fillText((this.mine.shiny ? '★' : '') + name(this.mine) + mGender + '  N' + this.mine.lvl, MQ.W - 158, 163);
+        this.hpBar(ctx, MQ.W - 158, 176, 130, this.mine);
+        ctx.font = MQ.FONT;
+        ctx.fillStyle = '#8a8aa0';
+        ctx.fillText(`${this.mine.hp}/${this.mine.maxhp} PS`, MQ.W - 158, 186);
+        this.statusChip(ctx, this.mine, this.pvol, MQ.W - 92, 185);
+        const group = MQ.xpGroupOf(this.mine.id);
+        const cur = MQ.xpForLevel(this.mine.lvl, group), nxt = MQ.xpForLevel(this.mine.lvl + 1, group);
+        const xf = MQ.clamp((this.mine.xp - cur) / (nxt - cur), 0, 1);
+        ctx.fillStyle = '#1a1a28'; ctx.fillRect(MQ.W - 60, 188, 50, 4);
+        ctx.fillStyle = '#4a90d9'; ctx.fillRect(MQ.W - 60, 188, 50 * xf, 4);
+      }
+
+      if (this.menu && (this.phase === 'menu' || this.phase === 'moves' || this.phase === 'party' || this.phase === 'bag' || this.phase === 'learn' || this.phase === 'shift'))
         this.menu.draw(ctx);
       this.tb.draw(ctx);
     }

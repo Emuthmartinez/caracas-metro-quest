@@ -43,11 +43,16 @@ python3 -m http.server 8000
   por sus **Fichas Doradas**, pelea con tu primo **Cheo** (que volvió de visita después
   de cinco años afuera) y baja a la **Línea Fantasma** a enfrentar al **Tren Fantasma**,
   el que se lleva los recuerdos de la ciudad.
-- 29 criaturas para fichar, 8 tipos criollos (Sabroso, Rumba, Espanto, Catatumbo,
-  Caribe, Monte, Tepuy, Criollo), combate por turnos con **golpes críticos, PP por
-  movimiento y estados alterados** (veneno, parálisis, sueño — el agua de coco lo cura
-  todo), evoluciones, tienda de buhonero, el Doctorcito que cura, tren rápido entre
-  estaciones y guardado automático en el navegador.
+- **150 criaturas** para fichar (el bestiario completo del Cuaderno), 8 tipos
+  criollos (Sabroso, Rumba, Espanto, Catatumbo, Caribe, Monte, Tepuy, Criollo) y
+  un motor de combate **Gen 3 completo**: físico/especial por tipo, seis
+  estadísticas con **la chispa** (IVs), **la calle** (EVs) y 25 naturalezas
+  criollas, 204 movimientos, 41 habilidades, objetos equipados, clima de andén
+  (palo de agua, apagón, hora pico...), siete estados alterados (el agua de coco
+  lo cura todo, y la pava se espanta con un buen joropo), captura Gen 3 con seis
+  fichas distintas, evoluciones por nivel y por confianza, tienda de buhonero,
+  el Doctorcito que cura, tren rápido entre estaciones y guardado automático en
+  el navegador (las partidas viejas migran solas).
 - Apertura cinematográfica al estilo de los clásicos (saltable con B; A activa el
   sonido) y un mapa de mecánicas + guía para extender el mundo en [DESIGN.md](DESIGN.md).
 
@@ -59,17 +64,24 @@ está en **[LORE.md](LORE.md)**.
 ```
 index.html        el juego (carga los scripts en orden)
 css/style.css     marco retro + controles táctiles
+data/             la verdad del juego: 150 criaturas, 204 movimientos, 41
+                  habilidades, 55 tablas de encuentros, 88 mapas (JSON validado)
+js/gamedata.js    los datos compilados (autogenerado: scripts/build_gamedata.py)
 js/core.js        entrada, texto, cajas de diálogo, menús
 js/audio.js       chiptune procedural (WebAudio, sin archivos)
-js/dex.js         tipos, movimientos y los 25 espantos (con su pixel art de respaldo)
+js/art.js         pixel art de respaldo pintado a mano + gritos canon (29)
+js/dex.js         da forma a los datos: especies, movimientos, naturalezas,
+                  matemáticas Gen 3, gritos y siluetas generadas, ítems
 js/sprite-manifest.js  qué sprites PNG tiene cada especie (autogenerado)
 js/sprites.js     tiles + gente (procedural) y carga de los sprites 64×64 de las criaturas
 assets/creatures/ sprites pintados a mano: front/back de combate, icono, overworld, tornasol
 js/world.js       Línea 1 completa: estaciones, túneles, NPCs, jefes
-js/battle.js      combate por turnos, fichar, experiencia, evolución
+js/battle.js      combate Gen 3: turnos, efectos, habilidades, clima, fichar,
+                  experiencia/EVs, evolución
 js/overworld.js   caminar, encuentros, tiendas, tren, menú de pausa
-js/main.js        título, historia, guardado, final
+js/main.js        título, historia, guardado (con migración), final
 LORE.md           la biblia del mundo
+docs/             specs de sistemas, world bible, bestiario, biblia de estilo
 tests/smoke.js    prueba de humo (node tests/smoke.js)
 ```
 

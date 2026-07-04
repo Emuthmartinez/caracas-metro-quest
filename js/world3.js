@@ -1,0 +1,816 @@
+// Metro Quest — la gente de la red (world bible §1-8): los Jefes 5-8 con sus
+// Fichas Doradas, el Consejo de la Hora Fantasma, los tutores de oficios, los
+// legendarios estáticos y los entrenadores de las rutas nuevas.
+// Carga después de main.js: extiende MQ.SCRIPTS y puebla los mapas generados.
+(() => {
+  const MQ = (globalThis.MQ = globalThis.MQ || {});
+  if (!MQ.MAPS.st_elsilencio) return; // sin la red no hay a quién sentar
+
+  // ---- tutores de oficios ---------------------------------------------------------
+  // Enseñan el oficio (bandera que abre rejas) y, si hay campo, el movimiento.
+  const OFICIOS = {
+    luzdecocuyo: { flag: 'oficio_luz', move: 'luzdecocuyo', name: 'LUZ DE COCUYO', desc: 'alumbra las zonas de apagón' },
+    machetazo:   { flag: 'oficio_machete', move: 'machetazo', name: 'MACHETE', desc: 'abre el monte crecido' },
+    empuje:      { flag: 'oficio_empuje', move: 'empuje', name: 'EMPUJE', desc: 'mueve vagones y cajas varadas' },
+    demolicion:  { flag: 'oficio_demolicion', move: 'demolicion', name: 'DEMOLICIÓN', desc: 'tumba derrumbes y muros flojos' },
+    nado:        { flag: 'oficio_nado', move: 'nado', name: 'NADO', desc: 'cruza los tramos inundados' },
+    teleferico:  { flag: 'oficio_teleferico', move: null, name: 'TELEFÉRICO', desc: 'llama las cabinas del Metrocable' },
+  };
+  const tutorScript = (key, intro, done) => () => {
+    const of = OFICIOS[key];
+    if (MQ.player.flags[of.flag]) return [{ say: [null, done] }];
+    return [
+      { say: [null, intro] },
+      { choice: { title: `¿Aprender ${of.name}?`, options: [
+        { label: '¡Sí, enséñame!', script: [
+          { fn: () => {
+            MQ.setFlag(of.flag);
+            const m = MQ.player.party[0];
+            if (of.move && m && !m.moves.includes(of.move) && m.moves.length < 4) {
+              m.moves.push(of.move);
+              m.pp[of.move] = MQ.MOVES[of.move].pp;
+            }
+          } },
+          { sfx: 'lvl' },
+          { say: [null, `¡Aprendiste el oficio de ${of.name}! ${of.desc.charAt(0).toUpperCase() + of.desc.slice(1)}. Las puertas que pedían este oficio ya te reconocen.`] },
+          { fn: () => MQ.save(true) },
+        ] },
+        { label: 'Ahora no', script: [{ say: [null, 'Cuando quieras, mijo. El oficio no se vence.'] }] },
+      ] } },
+    ];
+  };
+
+  Object.assign(MQ.SCRIPTS, {
+    'tutor:luz': tutorScript('luzdecocuyo',
+      'MAESTRO COCUYERO: En el oeste hay túneles donde ni el tercer riel alumbra. Yo le enseño a su espanto a cargar la luz del cocuyo.',
+      'MAESTRO COCUYERO: Con esa lucecita no hay apagón que lo pare, chamo.'),
+    'tutor:machete': tutorScript('machetazo',
+      'VIEJO MACHETERO: El monte del Calvario y la Puerta del Ávila están cerrados de maleza. Un buen MACHETE los abre con respeto.',
+      'VIEJO MACHETERO: Machete estate quieto... hasta que haga falta.'),
+    'tutor:empuje': tutorScript('empuje',
+      'MAESTRA DE OBRA: Hay vagones varados que nadie mueve desde el 99. Con el oficio del EMPUJE, su espanto los rueda solito.',
+      'MAESTRA DE OBRA: Empuje parejo, sin rabia, que rinde más.'),
+    'tutor:demolicion': tutorScript('demolicion',
+      'DEMOLEDOR JUBILADO: Un derrumbe no es una pared: es una pared cansada. El oficio de DEMOLICIÓN sabe dónde tocarla.',
+      'DEMOLEDOR JUBILADO: Tumbe con cariño, que la ciudad oye.'),
+    'tutor:nado': tutorScript('nado',
+      'PESCADORA DEL GUAIRE: El tramo de El Valle está inundado hasta el techo. Con el oficio del NADO se cruza como tonina.',
+      'PESCADORA DEL GUAIRE: Nade con la corriente, nunca contra ella.'),
+    'tutor:teleferico': tutorScript('teleferico',
+      'OPERADOR DEL METROCABLE: Las cabinas duermen desde la última lluvia brava. El oficio del TELEFÉRICO las despierta: San Agustín y Mariche lo esperan.',
+      'OPERADOR DEL METROCABLE: Arriba el cielo es de los tambores, chamo.'),
+  });
+
+  // ---- legendarios estáticos (data/encounters.static) --------------------------------
+  const staticScript = (id, lvl, intro) => () => {
+    if (MQ.player.flags['static_' + id]) return [{ say: [null, 'El aire todavía recuerda lo que estuvo aquí.'] }];
+    return [
+      { sfx: 'whistle' },
+      { say: [null, intro] },
+      { fn: () => MQ.audio.cry(id) },
+      { battle: { wild: { id, lvl }, noFlee: true },
+        // solo desaparece si lo fichaste; si lo noqueas, vuelve otra noche
+        // (el Cuaderno de 150 no puede quedar trancado por un crítico de más)
+        winScript: [
+          { fn: () => { if (MQ.player.dexCaught[id]) MQ.setFlag('static_' + id); } },
+          { fn: () => MQ.save(true) },
+        ] },
+    ];
+  };
+  Object.assign(MQ.SCRIPTS, {
+    'static:bachacon': staticScript('bachacon', 36,
+      'En lo más hondo del pozo, algo sostiene el techo con el lomo. El BACHACÓN legendario te mira: nadie le paga el condominio a él.'),
+    'static:silbon': staticScript('silbon', 48,
+      'Un silbido lejano... demasiado cerca. EL SILBÓN suelta su saco de huesos en el riel.'),
+    'static:catatumbo': staticScript('catatumbo', 70,
+      'En la cumbre del Ávila el cielo se parte sin trueno. EL CATATUMBO bajó a ver quién sube.'),
+    'static:luzcaraballo': staticScript('luzcaraballo', 68,
+      'De Chachopo a Apartaderos la niebla cuenta niños. LA LOCA LUZ CARABALLO te cuenta entre los suyos.'),
+  });
+
+  // ---- guiones de los Jefes y el Consejo ---------------------------------------------
+  // Los jefes son NPCs trainer con reward (el motor ya entrega la ficha y el flag).
+  const npcsOf = (id) => (MQ.MAPS[id].npcs = MQ.MAPS[id].npcs || []);
+
+  // ---- Jefe 5: el Baquiano del Zoológico (Monte) — Ficha del Monte ----
+  npcsOf('st_zoologico').push(
+    { x: 20, y: 8, look: 'obrero', dir: 'down', name: 'el Baquiano', boss: true,
+      trainer: { id: 'boss5', cls: 'Baquiano del Zoológico', boss: true, reward: 'ficha5', money: 1600,
+        team: [['baquiron', 31], ['babote', 32], ['dantota', 32], ['iguanota', 33], ['matapalo', 34, 'macheteviejo']],
+        intro: 'Cuando la gente dejó de venir, yo me quedé. Y como yo me quedé, los animales se quedaron. ¿Tú también sabes quedarte?',
+        win: 'Sabes quedarte y sabes pelear. La FICHA DEL MONTE es tuya: el monte te reconoce.',
+        after: 'El zoológico abre a la hora fantasma. Los animales prefieren esa tanda.',
+        lose: 'El monte no se apura. Vuelve cuando estés listo.' } },
+    { x: 12, y: 8, look: 'chama', dir: 'down', name: 'Cuidadora Yusmely',
+      text: ['El Baquiano conoce cada animal por su nombre. Y a los espantos del monte, por su apodo.',
+             'Dicen que en el safari del zoo salen especies que no se ven en ningún túnel.'] },
+  );
+
+  // ---- Jefe 6: el Pescador del Guaire (Caribe) — Ficha del Río ----
+  npcsOf('st_layaguara').push(
+    { x: 20, y: 8, look: 'obrero', dir: 'down', name: 'el Pescador', boss: true,
+      trainer: { id: 'boss6', cls: 'Pescador del Guaire', boss: true, reward: 'ficha6', money: 1900,
+        team: [['guabinota', 35], ['sapoton', 35], ['babote', 36], ['manaton', 37], ['caribazo', 38, 'aguaanauco']],
+        intro: 'Yo pesco en el río que la ciudad dio por muerto, y el río me devuelve lo que la ciudad botó. Hoy pescaste tú: un combate.',
+        win: 'El Guaire te respeta, y eso no lo dice de cualquiera. Llévate la FICHA DEL RÍO.',
+        after: 'Todo lo que la ciudad bota vuelve por el río. Hasta el cariño.',
+        lose: 'El río sigue corriendo. Tú también: a entrenar.' } },
+    { x: 8, y: 8, look: 'senora', dir: 'right', name: 'Doña Milagros',
+      text: ['El Pescador le devolvió a mi hija la cadenita que se le cayó al Guaire en el 92. Tal cual, brillandito.'] },
+  );
+
+  // ---- Jefe 7: la Amazona de La Rinconada (Criollo) — Ficha del Sur ----
+  npcsOf('st_larinconada').push(
+    { x: 20, y: 8, look: 'sifrina', dir: 'down', name: 'la Amazona', boss: true,
+      trainer: { id: 'boss7', cls: 'Amazona de La Rinconada', boss: true, reward: 'ficha7', money: 2300,
+        team: [['guachiman', 39], ['palomota', 39], ['burritosabanero', 40, 'franelabarrio'], ['camioneton', 40], ['mulamania', 41], ['reyzamuro', 42, 'polvomariposa']],
+        intro: 'Mis caballos corren la hora fantasma contra jinetes que solo yo veo. Nunca pierden. A ver si tú me haces sudar la montura.',
+        win: 'Corriste parejo, chamo. La FICHA DEL SUR es tuya: el hipódromo te anota en su libro.',
+        after: 'La sexta válida de la hora fantasma la gana siempre el mismo caballo. No preguntes cuál.',
+        lose: 'Foto final: perdiste por cinco cuerpos. Vuelve entrenado.' } },
+  );
+
+  // ---- Jefe 8: la Ingeniera de las Torres (Catatumbo) — Ficha de la Torre ----
+  npcsOf('st_parquecentral').push(
+    { x: 20, y: 8, look: 'operador', dir: 'down', name: 'la Ingeniera', boss: true,
+      trainer: { id: 'boss8', cls: 'Ingeniera de las Torres', boss: true, reward: 'ficha8', money: 2800,
+        team: [['cablebra', 43], ['plantaelectrica', 43], ['reflectoron', 44, 'bombilloahorrador'], ['cerreron', 45], ['camioneton', 45], ['torregemela', 46, 'azabachepulsera']],
+        intro: 'Estas torres no se han apagado ni una noche desde antes de que tú nacieras. ¿Sabes por qué? Porque yo no duermo. Demuéstrame que tampoco duermes tú.',
+        win: 'Quedas conectado al circuito, chamo. La FICHA DE LA TORRE: que nunca se te apague.',
+        after: 'Zona Rental te espera. Ocho fichas abren esa puerta, y lo que hay detrás no es un jefe: es la memoria.',
+        lose: 'Se te bajó el breaker. Súbelo y vuelve.' } },
+    { x: 6, y: 8, look: 'operador', dir: 'down', name: 'Operador del Metrocable', script: 'tutor:teleferico' },
+  );
+
+  // ---- el Consejo de la Hora Fantasma (Zona Rental) -----------------------------------
+  // Cuatro ánimas, en orden y sin curación entre medio, como manda el clásico.
+  const consejo = (n, id, cls, team, intro, win) => ({
+    x: 10 + n * 5, y: 8, look: 'vieja', dir: 'down', name: cls, boss: true,
+    showIf: n === 0 ? 'fichas8' : 't_consejo' + n,
+    trainer: { id: 'consejo' + (n + 1), cls, boss: true, money: 0, team, intro, win,
+      lose: 'La hora fantasma sigue sin ti, chamo.' },
+  });
+  npcsOf('st_zonarental').push(
+    consejo(0, 'obrero83', 'el Obrero del 83',
+      [['lajon', 50], ['glipton', 51], ['cachicamo', 51], ['tepuyon', 52, 'piedraabuelo']],
+      'Yo excavé estos túneles con estas manos. Pasamos la tuneladora por debajo de la memoria de la ciudad. Enséñame qué construiste tú.',
+      'Construiste un equipo. Eso también es obra. Pasa.'),
+    consejo(1, 'maestra', 'la Maestra Eterna',
+      [['guachiman', 51], ['ratonante', 52], ['gatonegro', 52], ['elcoco', 53, 'cintamorada']],
+      'Todo chamo de Caracas fue alumno mío, hasta los que juran que no. A ver la tarea: ¡combate!',
+      'Veinte puntos. Pasa al siguiente salón.'),
+    consejo(2, 'estudiante', 'el Estudiante de la UCV',
+      [['cardenalito', 52], ['bandolo', 53], ['cerreron', 53], ['arpaviva', 53, 'cuatroafinado']],
+      'Me falta un semestre desde 1987. La tesis era sobre la memoria eléctrica de las ciudades. Tú eres mi último experimento.',
+      'Hipótesis confirmada: la ciudad recuerda. Sigue.'),
+    consejo(3, 'cantora', 'la Cantora de Velorios',
+      [['furrucon', 53], ['velorion', 53], ['tamboron', 54], ['llorona', 54, 'campanavagon']],
+      'Yo canto a los muertos para que duerman y a los vivos para que lloren. Para ti tengo una canción nueva.',
+      'Mi canción termina y tú sigues de pie. El Consejo te reconoce.'),
+    { x: 33, y: 8, look: 'vieja', dir: 'down', name: 'Voz del Consejo', showIf: 't_consejo4', script: 'consejo:cierre' },
+  );
+  Object.assign(MQ.SCRIPTS, {
+    'consejo:cierre': () => {
+      if (MQ.player.flags.consejo) return [{ say: [null, 'CONSEJO: La Línea Fantasma te espera al final del andén. Ve con la bendición.'] }];
+      return [
+        { say: [null, 'CONSEJO: Cuatro ánimas te probaron y las cuatro dicen tu nombre.'] },
+        { healParty: true },
+        { flag: 'consejo' },
+        { sfx: 'victory' },
+        { say: [null, 'Las luces del andén parpadean dos veces, largas, como una reverencia. El paso a la Línea Fantasma está abierto.'] },
+        { fn: () => MQ.save(true) },
+      ];
+    },
+  });
+
+  // ---- tutores repartidos (siempre antes de su primera reja obligatoria) --------------
+  MQ.MAPS.propatria.npcs.push({ x: 22, y: 8, look: 'musico', dir: 'left', name: 'Maestro Cocuyero', script: 'tutor:luz' });
+  MQ.MAPS.calvario.npcs.push({ x: 4, y: 7, look: 'obrero', dir: 'down', name: 'Viejo Machetero', script: 'tutor:machete' });
+  MQ.MAPS.bellasartes.npcs.push({ x: 20, y: 8, look: 'obrero', dir: 'down', name: 'Maestra de Obra', script: 'tutor:empuje', showIf: 'ficha2' });
+  npcsOf('st_elsilencio').push({ x: 26, y: 8, look: 'obrero', dir: 'down', name: 'Demoledor Jubilado', script: 'tutor:demolicion' });
+  npcsOf('st_layaguara').push({ x: 26, y: 8, look: 'chama', dir: 'down', name: 'Pescadora del Guaire', script: 'tutor:nado', showIf: 'ficha6' });
+
+  // ---- los estáticos en su sitio (mismos datos de data/encounters.static) -------------
+  npcsOf('tn_layaguara__caricuao').push(
+    { x: 40, y: 2, mon: 'bachacon', name: 'algo enorme', script: 'static:bachacon',
+      hideIf: 'static_bachacon', showIf: 'oficio_demolicion' });
+  npcsOf('tn_capuchinos__teatros').push(
+    { x: 40, y: 2, mon: 'silbon', name: 'un silbido', script: 'static:silbon',
+      hideIf: 'static_silbon', showIf: 'fichas7' });
+  npcsOf('sf_cumbre').push(
+    { x: 24, y: 10, mon: 'catatumbo', name: 'el relámpago', script: 'static:catatumbo',
+      hideIf: 'static_catatumbo', showIf: 'ending' });
+  npcsOf('tn_carrizal__sanantonio').push(
+    { x: 40, y: 2, mon: 'luzcaraballo', name: 'una silueta en la niebla', script: 'static:luzcaraballo',
+      hideIf: 'static_luzcaraballo', showIf: 'ending' });
+
+  // ---- entrenadores de las rutas nuevas ------------------------------------------------
+  const T2 = (id, x, look, name, cls, team, intro, win, lose) =>
+    ({ x, y: 2, look, dir: 'down', name, trainer: { id, cls, team, money: 60 * team[team.length - 1][1] / 3 | 0, intro, win, lose } });
+  npcsOf('tn_elsilencio__capuchinos').push(
+    T2('ucv1', 22, 'chamo', 'Andrés', 'Estudiante de la UCV',
+      [['bachaquito', 31], ['cunaguaro', 32]],
+      'Estudio biología y esto de aquí abajo no sale en ningún libro. ¡Dame data!',
+      'Anotado: me faltaba muestra de derrota.',
+      'La ciencia avanza. Tú no.'),
+    T2('moto1', 55, 'obrero', 'Wilmer', 'Motorizado',
+      [['camioneton', 32], ['cachorro', 31], ['guachiman', 33]],
+      '¡Epa! Por aquí no se pasa sin pagar peaje... de combate.',
+      'Pasa pues, y saluda al oeste de mi parte.',
+      'El que sabe la ruta, cobra la ruta.'));
+  npcsOf('tn_capuchinos__layaguara').push(
+    T2('obr2', 30, 'obrero', 'Petra', 'Operadora del Metro',
+      [['pilica', 33], ['bombillito', 33], ['cablebrita', 34]],
+      'Turno nocturno en zona de apagón. Uno se entretiene como puede.',
+      'Buen combate. Cuida esa luz que llevas.',
+      'A oscuras también se gana.'));
+  npcsOf('tn_caricuao__zoologico').push(
+    T2('cuid1', 25, 'chama', 'Marisol', 'Cuidadora',
+      [['baquirito', 32], ['dantica', 33]],
+      'Voy al zoo a llevarle mango a los que se quedaron. ¿Combate de camino?',
+      'Los animales te van a caer bien.',
+      'El monte cuida a los suyos.'));
+  npcsOf('tn_caricuao__lasadjuntas').push(
+    T2('sen2', 35, 'senora', 'Doña Chela', 'Abuela del Oeste',
+      [['morrocoy', 34], ['pereza', 35]],
+      'Mijo, a esta hora por aquí solo andamos las abuelas y los espantos. Y a veces somos lo mismo.',
+      'Toma pa\' que meriendes... mentira, gana tú primero.',
+      'La paciencia, mijo. La paciencia.'));
+  npcsOf('tn_plazavenezuela__ciudaduniversitaria').push(
+    T2('ucv2', 28, 'chama', 'Coraima', 'Estudiante de Arquitectura',
+      [['torrecita', 35], ['fichita', 34], ['bejuquito', 35]],
+      'Villanueva diseñó hasta la sombra de la UCV. Yo diseño victorias.',
+      'Síntesis de las artes: perdí con estilo.',
+      'Patrimonio de la Humanidad, chamo.'));
+  npcsOf('tn_ciudaduniversitaria__labandera').push(
+    T2('ajedrez1', 40, 'vieja', 'Don Emiliano', 'Ajedrecista del Bulevar',
+      [['glipton', 36], ['maraquita', 35], ['capachon', 36]],
+      'Jaque en cuatro. Siempre es en cuatro. ¿Empezamos?',
+      'Jaque mate... al revés. Bien jugado.',
+      'Te lo dije: en cuatro.'));
+  npcsOf('tn_labandera__elvalle').push(
+    T2('buho1', 33, 'buhonero', 'Richard', 'Buhonero Mayor',
+      [['arepon', 37], ['tequenon', 37], ['cafecito', 36]],
+      '¡Lleve lleve! Hoy tengo oferta: combate gratis y la derrota se la lleva usted.',
+      'Se me acabó la mercancía. Usted gana.',
+      '¡Lleve su derrota, casero!'));
+  npcsOf('tn_elvalle__larinconada').push(
+    T2('guardia1', 50, 'guardia', 'Sargento Mora', 'Guardia del Hipódromo',
+      [['guachiman', 38], ['zamuron', 39], ['mapanare', 39]],
+      'Nadie ve a la Amazona sin pasar por mí. Reglamento.',
+      'Reglamento cumplido. Adelante.',
+      'El reglamento siempre gana.'));
+  npcsOf('tn_teatros__nuevocirco').push(
+    T2('musico2', 30, 'musico', 'la Contralto', 'Cantante del Municipal',
+      [['paraulata', 42], ['arpaviva', 43]],
+      'El teatro está oscuro pero la acústica sigue perfecta. Escucha mi aria de combate.',
+      'Bravo. El aplauso es tuyo.',
+      'La ópera no perdona.'));
+  npcsOf('tn_nuevocirco__parquecentral').push(
+    T2('oper3', 45, 'operador', 'Técnico Ledezma', 'Operador de las Torres',
+      [['reflectoron', 44], ['cablebra', 44]],
+      'Reviso el cableado que sube a las torres. Tú pareces un pico de tensión.',
+      'Circuito estable. Sigue.',
+      'Sobrecarga controlada.'));
+  npcsOf('tn_aliprimera__guaicaipuro').push(
+    T2('teq1', 30, 'chamo', 'Yonaikel', 'Viajero de Los Teques',
+      [['frailejon', 62], ['neblinon', 63]],
+      'Yo bajo a Caracas todos los días y subo todas las noches. La niebla ya me saluda.',
+      'La niebla también te saluda a ti ya.',
+      'De Chachopo a Apartaderos...'));
+  npcsOf('tn_independencia__carrizal').push(
+    T2('teq2', 45, 'vieja', 'Doña Encarnación', 'Abuela del Páramo',
+      [['condoron', 64], ['tepuyon', 65]],
+      'Aquí arriba el frío guarda mejor los recuerdos. ¿Trajiste los tuyos?',
+      'Llévate un poquito de páramo en el bolsillo.',
+      'El páramo no suelta lo suyo.'));
+
+  // los que giran: su mirada barre el túnel a intervalos, como los spinners de FireRed
+  for (const [mapId, tid] of [['tn_ciudaduniversitaria__labandera', 'ajedrez1'], ['tn_capuchinos__layaguara', 'obr2']]) {
+    const n = npcsOf(mapId).find((x) => x.trainer && x.trainer.id === tid);
+    if (n) n.spin = true;
+  }
+
+  // ---- los paqueticos del andén (ítems tirados, estilo FireRed) -------------------------
+  // Objetos sólidos: se recogen con A, no reaparecen (bandera propia por sitio).
+  const drop = (mapId, x, y, item, n) =>
+    npcsOf(mapId).push({ x, y, itemBall: item, n: n || 1, hideIf: `item_${mapId}_${x}_${y}` });
+  drop('tunel1', 6, 2, 'malta');
+  drop('tunel2', 13, 2, 'ficha', 3);
+  drop('tunel3', 21, 2, 'azabache');
+  drop('tunel4', 25, 2, 'cafe');
+  drop('tn_elsilencio__capuchinos', 24, 2, 'golfeado');
+  drop('tn_capuchinos__layaguara', 44, 2, 'xaguante');
+  drop('tn_caricuao__zoologico', 64, 2, 'aguacoco');
+  drop('tn_plazavenezuela__ciudaduniversitaria', 12, 2, 'sancocho');
+  drop('tn_ciudaduniversitaria__labandera', 52, 2, 'cafecerrero');
+  drop('tn_labandera__elvalle', 32, 2, 'carnemechada');
+  drop('tn_petare__paloverde', 72, 2, 'fichaplus');
+  drop('tn_lasmercedes__tamanaco', 20, 2, 'hervido');
+  drop('sf_caobos', 24, 2, 'morocota');       // la pepita dorada del parque
+  drop('sf_sabasnieves', 36, 2, 'semeruco');  // frutica del sendero
+  drop('gh_chuao', 14, 2, 'polvomariposa');
+  drop('cb_laceiba', 14, 3, 'bombilloahorrador');
+
+  // ---- lo enterrado (ítems ocultos, estilo FireRed: sin brillo, sin pista visible) ------
+  // Se sacan con A mirando el escondite o parado encima; el Rastreador los huele.
+  const bury = (mapId, x, y, item, n) =>
+    ((MQ.MAPS[mapId].hidden = MQ.MAPS[mapId].hidden || []).push({ x, y, item, n: n || 1, flag: `hid_${mapId}_${x}_${y}` }));
+  bury('tunel1', 14, 4, 'ficha');             // detrás del pilar que vigila Ramón
+  bury('tunel2', 9, 5, 'papelon');
+  bury('tunel4', 26, 5, 'xpilas');
+  bury('tn_zonarental__bellomonte', 24, 7, 'cocada');
+  bury('st_bellomonte', 16, 13, 'monedalocha'); // la moneda de la estación sin tren
+  bury('gh_tamanaco', 22, 11, 'cintamorada');
+  bury('sf_parquedeleste', 31, 19, 'estampa');
+  bury('sf_neblina', 14, 22, 'guanabana');
+  bury('in_safari', 11, 7, 'huevoguacharaca'); // el tesoro del safari
+  bury('cb_sanagustin', 9, 9, 'tajadaplatano');
+
+  // el Zahorí de Bello Monte: la estación sin tren guarda al que encuentra lo perdido
+  Object.assign(MQ.SCRIPTS, {
+    'regalo:rastreador': () => {
+      if (MQ.player.bag.rastreador || MQ.player.flags.rastreador) return [
+        { say: ['el Zahorí', 'La antena no miente: hay paqueticos que se ven y tesoritos que no. Camina y pregúntale a la mochila.'] },
+      ];
+      return [
+        { say: ['el Zahorí', 'Yo encontraba agua con dos alambres de percha. En el Metro encontré otra cosa: lo que la gente entierra pa\' olvidarlo.'] },
+        { give: { item: 'rastreador', n: 1 } },
+        { flag: 'rastreador' },
+        { sfx: 'catch' },
+        { say: ['', '★ ¡Obtienes el RASTREADOR! ★'] },
+        { say: ['el Zahorí', 'Úsalo desde la MOCHILA: si vibra, algo escondido espera. Revisa el pilar, el rincón, el piso mismo donde pisas.'] },
+      ];
+    },
+  });
+  npcsOf('st_bellomonte').push({ x: 20, y: 8, look: 'vieja', dir: 'down', name: 'el Zahorí', script: 'regalo:rastreador' });
+
+  // el Maratonista de Propatria: las "running shoes" criollas, desde el primer andén
+  Object.assign(MQ.SCRIPTS, {
+    'regalo:cholas': () => {
+      if (MQ.player.bag.cholas || MQ.player.flags.cholas) return [
+        { say: ['el Maratonista', '¿Y ese trote, chamo? Sostén B y no lo sueltes. El que trota el andén alcanza la hora fantasma.'] },
+      ];
+      return [
+        { say: ['el Maratonista', 'Yo corrí el Maratón del Metro del 83, cuando la ciudad estrenaba tren y todos estrenábamos esperanza.'] },
+        { give: { item: 'cholas', n: 1 } },
+        { flag: 'cholas' },
+        { sfx: 'catch' },
+        { say: ['', '★ ¡Obtienes LAS CHOLAS! ★'] },
+        { say: ['el Maratonista', 'Sostén B mientras caminas y trota. Las suelas ya saben el camino: tú solo síguelas.'] },
+      ];
+    },
+  });
+  npcsOf('propatria').push({ x: 5, y: 8, look: 'chamo', dir: 'right', name: 'el Maratonista', script: 'regalo:cholas' });
+
+  // el Viejo del Andén: la demostración de fichaje (el Old Man de FireRed)
+  Object.assign(MQ.SCRIPTS, {
+    'viejo:demo': () => {
+      if (MQ.player.flags.viejodemo) return [
+        { say: ['el Viejo del Andén', 'Vida baja y muñeca floja, chamo. Todo lo demás es literatura.'] },
+      ];
+      return [
+        { say: ['el Viejo del Andén', '¿Andas fichando espantos a la carrera y sin técnica? Se nota, se siente. Ven acá, que el Viejo te enseña gratis.'] },
+        { battle: { wild: { id: 'bachaquito', lvl: 3 }, demo: 'obrero' },
+          winScript: [
+            { flag: 'viejodemo' },
+            { say: ['el Viejo del Andén', 'Cuarenta años fichando en este andén y la muñeca nunca me falló. Ahora te toca a ti.'] },
+            { fn: () => MQ.save(true) },
+          ] },
+      ];
+    },
+  });
+  npcsOf('canoamarillo').push({ x: 6, y: 7, look: 'obrero', dir: 'down', name: 'el Viejo del Andén', script: 'viejo:demo' });
+
+  // la Panadera del Bulevar: la Media Arepa (el Exp Share criollo)
+  Object.assign(MQ.SCRIPTS, {
+    'regalo:mediaarepa': () => {
+      if (MQ.player.bag.mediaarepa || MQ.player.flags.mediaarepa) return [
+        { say: ['la Panadera', 'La arepa entera es pa\'l que pelea; la media, pa\'l que acompaña. Así se cría un equipo.'] },
+      ];
+      return [
+        { say: ['la Panadera', 'Mi horno lleva prendido desde el 83. ¿Sabes qué aprendí? Que nadie crece comiendo solo.'] },
+        { give: { item: 'mediaarepa', n: 1 } },
+        { flag: 'mediaarepa' },
+        { sfx: 'catch' },
+        { say: ['', '★ ¡Obtienes la MEDIA AREPA! ★'] },
+        { say: ['la Panadera', 'Dásela a cargar a uno de tu equipo: aunque no pelee, le llega su mitad de la experiencia. Compartir es de panas.'] },
+      ];
+    },
+  });
+  npcsOf('sabanagrande').push({ x: 16, y: 8, look: 'senora', dir: 'down', name: 'la Panadera', script: 'regalo:mediaarepa' });
+
+  // ---- el Fanático: el hincha de los Jefes (el "gym guide" de toda la vida) ----------
+  // Antes del combate sopla el dato del equipo rival; después, celebra como si
+  // hubiera peleado él. Mismo chamo en las ocho estaciones, nadie sabe cómo llega.
+  const fan = (mapId, x, y, ficha, antes, despues) => npcsOf(mapId).push(
+    { x, y, look: 'chamo', dir: 'down', name: 'el Fanático', hideIf: ficha,
+      text: ['¡Epa, epa! ¡Futuro campeón de la hora fantasma! ' + antes] },
+    { x, y, look: 'chamo', dir: 'down', name: 'el Fanático', showIf: ficha,
+      text: [despues] });
+  fan('capitolio', 10, 9, 'ficha1',
+    'Vas por la Doña, ¿no? Puro Espanto y Monte del llano. Métele Rumba, que a los espantos el tambor los espanta.',
+    '¡GANASTE! ¡Yo lo vi primero que nadie! Cuando seas leyenda del Metro, acuérdate del Fanático.');
+  fan('plazavenezuela', 10, 7, 'ficha2',
+    'El Rumbero no pierde el compás: Rumba y Monte toda la noche. Un chispazo Catatumbo y se le corta el son, te lo firmo.',
+    '¡Le cortaste el son al mismísimo Rumbero! Esto hay que celebrarlo... cuando cobre.');
+  fan('chacaito', 10, 9, 'ficha3',
+    'Valentina pelea importado: Tepuy y Caribe con asesoría. El Monte no paga visa: verde contra piedra y agua, hazme caso.',
+    '¡O sea, le ganaste a Valentina! Qué nota, chamo. Ella va a decir que te dejó ganar: mentira.');
+  fan('mercado', 4, 7, 'ficha4',
+    'Doña Petra carga cuarenta años de bultos: Tepuy y Monte que no se cansan. El agua ablanda la piedra: Caribe, mi pana.',
+    '¡Sudaste la Ficha del Pueblo! Doña Petra no regala nada, por eso la suya vale doble.');
+  fan('st_zoologico', 17, 10, 'ficha5',
+    'El Baquiano conoce el monte mejor que el monte: equipo parejo, sin hueco fácil. Lleva de todo un poco y frutas pa\' aguantar.',
+    '¡El monte te reconoció! Ahora los animales te saludan a ti también, fíjate.');
+  fan('st_layaguara', 17, 10, 'ficha6',
+    'El Pescador saca del Guaire pura agua brava: Caribe y Rumba. Un catatumbazo en el agua y se acabó la pesca.',
+    '¡Le ganaste al que le gana al río! El Guaire va a hablar de esto por años.');
+  fan('st_larinconada', 17, 10, 'ficha7',
+    'La Amazona corre con Criollo y Rumba, caballos que nunca pierden. Lo Sabroso los distrae y lo Espanto los espanta: ahí está la gracia.',
+    '¡Cinco cuerpos de ventaja le sacaste! La sexta válida ahora lleva tu nombre.');
+  fan('st_parquecentral', 17, 10, 'ficha8',
+    'La Ingeniera nunca duerme: Catatumbo y Sabroso a toda potencia. El cerro aguanta el rayo: Tepuy, chamo, Tepuy.',
+    '¡Apagaste... digo, VENCISTE a la Ingeniera! Ocho fichas, chamo... prepárate pa\' la memoria.');
+
+  // ---- la reja del safari (Zoológico) — versión de taquilla -----------------------------
+  Object.assign(MQ.SCRIPTS, {
+    'safari:taquilla': () => {
+      if (MQ.player.money < 500) return [{ say: [null, 'TAQUILLA: La entrada del safari cuesta 500 bolos, mijo. El mantenimiento de la hora fantasma no se paga solo.'] }];
+      return [
+        { say: [null, 'TAQUILLA: Bienvenido al Safari del Zoológico de Caricuao. 500 bolos la entrada, e incluye 15 Fichas de Feria. Los espantos de adentro no se ven en ningún otro lado.'] },
+        { choice: { title: '¿Pagar 500 bolos?', options: [
+          { label: '¡De una!', script: [
+            { money: -500 },
+            { give: { item: 'fichaferia', n: 15 } },
+            { fn: () => { MQ.player.safariSteps = 500; } },
+            { sfx: 'catch' },
+            { say: [null, 'TAQUILLA: Sus fichas. Recuerde: adentro no se pelea con espantos ajenos y el mango de los tapires no se toca.'] },
+          ] },
+          { label: 'Ahora no', script: [{ say: [null, 'TAQUILLA: El safari no se va a ninguna parte. Bueno... ya no.'] }] },
+        ] } },
+      ];
+    },
+  });
+  npcsOf('in_safari').push({ x: 10, y: 11, look: 'buhonero', dir: 'down', name: 'Taquillero', script: 'safari:taquilla' });
+
+  // ---- el arco de Cheo, re-sentado en la red grande (world bible §1-4) -----------------
+  // Cheo 3 se muda a Las Adjuntas: anda tanteando la línea que se va de la ciudad,
+  // como hizo él una vez. El guion canon rival3 se reutiliza tal cual.
+  npcsOf('st_lasadjuntas').push(
+    { x: 26, y: 8, look: 'rival', dir: 'down', name: 'Cheo', hideIf: 'rival3', script: 'rival3' });
+
+  // Cheo final: después de las cuatro ánimas, antes de que el Consejo te bendiga.
+  const CHEO_COUNTER_FINAL = { frontinito: 'caribazo', turpialin: 'centellon', cocuyin: 'chiguiral' };
+  const starterOf = () => (MQ.firstStarter ? MQ.firstStarter() : 'frontinito');
+  Object.assign(MQ.SCRIPTS, {
+    rival4: () => {
+      const counter = CHEO_COUNTER_FINAL[starterOf()] || 'caribazo';
+      return [
+        { say: ['Cheo', 'Primo. Cuatro ánimas me dejaron pasar y una sola pregunta me trajo hasta aquí: ¿qué se siente quedarse?'] },
+        { say: ['Cheo', 'Yo me fui cinco años y volví de visita. Tú te quedaste y la ciudad entera te conoce por tu nombre. Vamos a ver quién aprendió más.'] },
+        { battle: { trainer: { id: 'cheofinal', cls: 'Tu primo', name: 'Cheo', boss: true, money: 4000,
+          team: [['palomota', 52], ['vagonima', 53, 'cintamorada'], ['reyzamuro', 54], ['elpabellon', 54, 'ajidulce'], ['guacamayon', 55], [counter, 56, 'azabachepulsera']],
+          intro: 'Sin llorar, ¿oíste? Ni tú ni yo.',
+          win: 'Coño, primo... Ganaste tú. Ganaste tú y ganó esta ciudad, que aunque me fui nunca supo soltarme.',
+          lose: 'Todavía no, primo. Todavía no.' } },
+          winScript: [
+            { flag: 'rival4' },
+            { say: ['Cheo', 'Lo que quería decirte desde que aterricé: me quedo. Me quedo, primo. Que el Tren reparta los recuerdos: yo prefiero hacer los míos aquí.'] },
+            { healParty: true },
+            { fn: () => MQ.save(true) },
+          ] },
+      ];
+    },
+  });
+  npcsOf('st_zonarental').push(
+    { x: 30, y: 8, look: 'rival', dir: 'down', name: 'Cheo', showIf: 't_consejo4', hideIf: 'rival4', script: 'rival4' });
+  // la Voz del Consejo solo cierra el rito cuando Cheo dijo lo que vino a decir
+  const voz = MQ.MAPS.st_zonarental.npcs.find((n) => n.script === 'consejo:cierre');
+  if (voz) voz.showIf = 'rival4';
+
+  // ---- el final: el andén de Miranda (Línea Fantasma) ----------------------------------
+  for (const x of [14, 15, 16, 17, 18]) {
+    MQ.MAPS.gh_miranda_l5.triggers.push({ x, y: 5, once: null, script: 'trenfantasma' });
+    // el camino al final queda despejado
+    const g = MQ.MAPS.gh_miranda_l5.grid;
+    MQ.MAPS.gh_miranda_l5.grid[5] = g[5].slice(0, x) + '.' + g[5].slice(x + 1);
+  }
+
+  // ---- los Bachaqueros de Recuerdos y el Coleccionista (Nuevo Circo) --------------------
+  Object.assign(MQ.SCRIPTS, {
+    coleccionista: () => {
+      if (MQ.player.flags.recuerdos) return [
+        { say: ['el Coleccionista', 'Cada botella volvió con su dueño. Yo estoy aprendiendo a hacer recuerdos nuevos. Cuesta, ¿sabes? Pero huelen mejor.'] },
+      ];
+      return [
+        { say: ['el Coleccionista', 'Yo también me fui, chamo. Y cuando quise empacar mis recuerdos... no me cupieron. Así que empecé a guardar los de los demás.'] },
+        { say: ['el Coleccionista', 'Arepas de sábado, la voz de una abuela, el eco de un estadio. Todo embotellado, todo etiquetado, todo... robado, si somos sinceros.'] },
+        { say: ['el Coleccionista', 'Tu manera de pelear me recordó algo que yo tenía olvidado: que esto no se colecciona. Se vive. Ayúdame a destaparlas.'] },
+        { sfx: 'sparkle' },
+        { say: ['', 'El Coleccionista destapa botella por botella. El mercado entero huele a hallaca, a lluvia de mayo, a gasolina de moto y a torta de cumpleaños, todo a la vez.'] },
+        { flag: 'recuerdos' },
+        { give: { item: 'morocota', n: 1 } },
+        { say: ['el Coleccionista', 'Toma: una morocota de las de antes. El único recuerdo mío que sí quiero que cargue otro.'] },
+        { fn: () => MQ.save(true) },
+      ];
+    },
+  });
+  npcsOf('in_mercadocirco').push(
+    { x: 6, y: 6, look: 'buhonero', dir: 'down', name: 'Bachaquero de Recuerdos',
+      trainer: { id: 'bachaq1', cls: 'Bachaquero de Recuerdos', money: 1200,
+        team: [['ratonante', 44], ['maletica', 44], ['camioneton', 45]],
+        intro: 'El jefe no recibe. Los recuerdos entran, no salen. ¿O es que tú quieres discutir el inventario?',
+        win: 'Está bien, está bien... Pasa. Total, últimamente el jefe ni mira las botellas.',
+        lose: 'Sin recibo no hay reclamo, chamo.' } },
+    { x: 12, y: 6, look: 'senora', dir: 'down', name: 'el Coleccionista', showIf: 't_bachaq1', script: 'coleccionista' });
+
+  // ---- el post-juego (world bible §7-8) --------------------------------------------
+  // La Torre (Independencia): tres duelos seguidos, sin curarse entre medio.
+  Object.assign(MQ.SCRIPTS, {
+    'torre:reto': () => [
+      { say: ['la Relojera', `Bienvenido a LA TORRE. Tres retadores, uno detrás del otro, sin Doctorcito entre medio.${(MQ.player.torreWins || 0) > 0 ? ` El reloj lleva tu cuenta: ${MQ.player.torreWins} ronda${MQ.player.torreWins === 1 ? '' : 's'} limpia${MQ.player.torreWins === 1 ? '' : 's'}.` : ' El reloj de arriba lleva la cuenta desde 1953.'}`] },
+      { choice: { title: '¿Aceptar el reto?', options: [
+        { label: '¡Que suene el reloj!', script: [
+          { battle: { trainer: { id: 'torre1', cls: 'Retador de la Torre', name: 'Ávido', money: 0,
+            team: [['reyzamuro', 60], ['cablebra', 60], ['hallacon', 61]],
+            intro: 'Piso uno. Sin calentamiento.', win: 'Sube.', lose: 'El reloj no espera.' } },
+            winScript: [
+              { battle: { trainer: { id: 'torre2', cls: 'Retadora de la Torre', name: 'Milagros', money: 0,
+                team: [['guacamayon', 62], ['elpabellon', 62], ['dientona', 63]],
+                intro: 'Piso dos. Aquí se acaban los turistas.', win: 'El último piso es tuyo.', lose: 'Hasta aquí llegó tu cuerda.' } },
+                winScript: [
+                  { battle: { trainer: { id: 'torre3', cls: 'Guardián del Reloj', name: 'el Puntual', money: 3000,
+                    team: [['rabipelado', 64], ['matapalo', 64], ['arpaviva', 65], ['waraira', 66, 'tajadaplatano']],
+                    intro: 'Piso tres. Yo le doy cuerda al reloj desde antes del Metro. A ver si llegas puntual a tu propia victoria.',
+                    win: 'Puntual. La Torre te reconoce: llévate esto.', lose: 'Llegaste tarde. Como casi todos.' } },
+                    winScript: [
+                      { fn: () => { MQ.player.torreWins = (MQ.player.torreWins || 0) + 1; } },
+                      { give: { item: 'estampa', n: 3 } },
+                      { give: { item: 'cariaquitodoble', n: 2 } },
+                      { give: { item: 'morocota', n: 1 } },
+                      { sfx: 'victory' },
+                      { say: ['la Relojera', 'Tres pisos, cero excusas. Vuelve cuando quieras: el reloj siempre tiene cuerda pa\' otra ronda.'] },
+                      { healParty: true },
+                      { fn: () => MQ.save(true) },
+                    ] },
+                ] },
+            ] },
+        ] },
+        { label: 'Hoy no', script: [{ say: ['la Relojera', 'El reloj sabe esperar. Es lo único que sabe hacer.'] }] },
+      ] } },
+    ],
+    // la Tía que Cuida (Caricuao): deja un espanto y ella lo cría con los pasos
+    'tia:cuida': () => {
+      const p = MQ.player;
+      if (p.daycare) {
+        const gained = Math.min(Math.floor((p.steps - p.daycare.steps) / 256), 100 - p.daycare.mon.lvl);
+        const cost = 100 + gained * 100;
+        const name = MQ.SPECIES[p.daycare.mon.id].name;
+        if (p.money < cost) return [
+          { say: ['la Tía', `¡Llegaste! ${name} está ${gained > 0 ? `más grande: subió ${gained} nivel${gained === 1 ? '' : 'es'}` : 'igualito, pero bien comido'}. Son ${cost} bolos de cariño... y no te alcanzan, mijo. Aquí te lo sigo cuidando sin apuro.`] },
+        ];
+        return [
+          { say: ['la Tía', `¡Llegaste! ${name} está ${gained > 0 ? `más grande: subió ${gained} nivel${gained === 1 ? '' : 'es'} caminando conmigo` : 'igualito, pero bien comido'}. Son ${cost} bolos de cariño.`] },
+          { choice: { title: `¿Recogerlo (${cost}b)?`, options: [
+            { label: 'Sí, gracias Tía', script: [
+              { fn: () => {
+                p.money -= cost;
+                const m = p.daycare.mon;
+                m.lvl = Math.min(100, m.lvl + gained);
+                m.xp = MQ.xpForLevel(m.lvl, MQ.xpGroupOf(m.id));
+                MQ.recalcStats(m);
+                if (p.party.length < 6) p.party.push(m); else p.locker.push(m);
+                p.daycare = null;
+                MQ.save(true);
+              } },
+              { say: ['la Tía', 'Pórtense bien los dos. Y coman, que andan en los huesos.'] },
+            ] },
+            { label: 'Todavía no', script: [{ say: ['la Tía', 'Aquí lo sigo cuidando. Este ya es de la familia.'] }] },
+          ] } },
+        ];
+      }
+      if (MQ.player.party.length < 2) return [
+        { say: ['la Tía', 'Yo te cuido un espanto con gusto, mijo... pero no te vas a quedar solo en la hora fantasma. Trae compañía primero.'] },
+      ];
+      return [
+        { say: ['la Tía', 'Yo crié a siete muchachos y a doce espantos. Déjame uno: yo lo camino, lo consiento y me lo engordo a nivel puro.'] },
+        { choice: { title: '¿Dejar al primero del equipo?', options: [
+          { label: 'Cuídemelo, Tía', script: [
+            { fn: () => {
+              const m = MQ.player.party.shift();
+              MQ.player.daycare = { mon: m, steps: MQ.player.steps || 0 };
+              MQ.save(true);
+            } },
+            { say: ['la Tía', 'Ya está en buenas manos. Camina bastante, que cada paso tuyo también lo cría.'] },
+          ] },
+          { label: 'Mejor no', script: [{ say: ['la Tía', 'Cuando quieras. La puerta de la Tía no tiene candado.'] }] },
+        ] } },
+      ];
+    },
+    // Cheo, ya quedado, entrena contigo en San Antonio cada vez que subas
+    rival5: () => {
+      const counter = CHEO_COUNTER_FINAL[starterOf()] || 'caribazo';
+      return [
+        { say: ['Cheo', 'Primo. Ahora que me quedé, subo aquí los fines de semana a entrenar con la niebla. ¿Le damos?'] },
+        { battle: { trainer: { id: 'cheorematch', cls: 'Tu primo', name: 'Cheo', boss: true, money: 5000,
+          team: [['palomota', 62], ['vagonima', 63, 'cintamorada'], ['reyzamuro', 63], ['elpabellon', 64, 'ajidulce'], ['guacamayon', 65], [counter, 66, 'azabachepulsera']],
+          intro: 'Sin llorar. Ya lloramos aquella vez.',
+          win: 'Cada vez que me ganas, más seguro estoy de que hice bien en quedarme.',
+          lose: 'Hoy gané yo. El páramo me tiene fuerte, primo.' } },
+          winScript: [{ healParty: true }, { fn: () => MQ.save(true) }] },
+      ];
+    },
+  });
+  npcsOf('in_latorre').push({ x: 10, y: 11, look: 'vieja', dir: 'down', name: 'la Relojera', script: 'torre:reto' });
+  npcsOf('st_caricuao').push({ x: 26, y: 8, look: 'senora', dir: 'down', name: 'la Tía que Cuida', script: 'tia:cuida' });
+  npcsOf('st_sanantonio').push({ x: 20, y: 8, look: 'rival', dir: 'down', name: 'Cheo', showIf: 'ending', script: 'rival5' });
+
+  // ---- la gente de las estaciones nuevas (world bible §2-8, una voz por identidad) -----
+  const say = (id, x, look, name, lines) => npcsOf(id).push({ x, y: 8, look, dir: 'down', name, text: lines });
+  say('st_elsilencio', 6, 'senora', 'Señora de las Arcadas',
+    ['Estas torres gemelas fueron las primeras en mirar la ciudad desde arriba. Ahora miran la hora fantasma, que es más entretenida.',
+     'El oeste empieza aquí, mijo. De aquí pa\'llá, el monte se va comiendo las fábricas con paciencia de abuela.']);
+  say('st_capuchinos', 6, 'vieja', 'Beata de la Capilla',
+    ['¿Oyes ese silencio? Es la capilla de arriba, que se cuela por la rejilla. Hasta los espantos bajan la voz.',
+     'Por ese túnel se va a los Teatros... cuando la Línea 4 quiera abrirte. Las puertas de esta ciudad tienen su genio.']);
+  say('st_caricuao', 10, 'chamo', 'Chamo del Parque',
+    ['Caricuao es puro parque y familia. Hasta los rabipelados saludan.',
+     'La Tía que Cuida cría espantos ajenos como propios. El mío volvió gordo y con mejor carácter que yo.']);
+  say('st_ciudaduniversitaria', 6, 'chama', 'Estudiante de Letras',
+    ['La UCV es Patrimonio de la Humanidad, ¿sabías? Las nubes de Calder están ahí arriba, flotando en el Aula Magna.',
+     'Dicen que el Estudiante Eterno sigue inscrito desde el 87. Lo he visto en la cola del comedor. Nunca avanza.']);
+  say('st_labandera', 6, 'buhonero', 'Maletero del Terminal',
+    ['¡La Bandera! De aquí salen los buses a todo el país. El andén de la hora fantasma es el más apretado de la red: hasta los espantos viajan con maleta.',
+     '¿Pa\' dónde va tanta gente? Pa\' donde se pueda, mijo. Y algunos, de vuelta.']);
+  say('st_teatros', 6, 'musico', 'Acomodadora del Municipal',
+    ['El Teatro Municipal guarda su terciopelo a oscuras. La acústica de este andén es un regalo suyo.',
+     'La hermana de la Coplera enseña por aquí los movimientos definitivos de los iniciales. Solo a quien de verdad canta con su espanto.']);
+  say('st_nuevocirco', 6, 'obrero', 'Cronista del Redondel',
+    ['El Nuevo Circo fue plaza de toros, terminal, refugio... Ahora es de los bachaqueros de recuerdos. Toda ruina consigue inquilino.',
+     'Dicen que el jefe de ellos ni vende ya. Solo colecciona. Eso es peor.']);
+  say('st_parquecentral', 12, 'chama', 'Vecina de las Torres',
+    ['Vivo en el piso 40. Cuando hay apagón, la Ingeniera sube por las escaleras a encender la ciudad a mano.',
+     'Del techo sale el Metrocable a San Agustín: la cuna de la salsa, mijo. Arriba se rumbea hasta en la niebla.']);
+  say('st_bellomonte', 6, 'operador', 'Operador de Medio Turno',
+    ['Bello Monte: la estación que quedó a medio hacer. Las luces prenden, los trenes no llegan. Casi.',
+     'De aquí pa\'bajo ya no es Metro: es memoria con rieles. Persígnate o silba, lo que te salga primero.']);
+  say('st_aliprimera', 6, 'musico', 'Cantor del Páramo',
+    ['Alí decía que los que mueren por la vida no pueden llamarse muertos. Por eso esta línea canta bajito.',
+     'De aquí subiendo, la niebla cuenta a los que pasan. No te asustes si te saluda por tu nombre.']);
+  say('st_independencia', 10, 'vieja', 'Portera de la Torre',
+    ['La Torre del reloj lleva la cuenta de todo: las horas, los retos y los que se fueron sin despedirse.',
+     'Tres pisos, tres retadores. El de arriba le da cuerda al tiempo. Literal.']);
+  say('st_zoologico', 26, 'chamo', 'Niño del Safari',
+    ['¡En el safari vi un güío ASÍ de grande! Bueno, era una manguera. Pero AL LADO había un güío.',
+     'El Baquiano deja entrar a la hora fantasma porque dice que los animales prefieren visitas que no griten.']);
+  // ---- la Coplera (recuerda movimientos), el Olvidadizo (los borra) y el Padrino ----
+  Object.assign(MQ.SCRIPTS, {
+    coplera: () => {
+      const p = MQ.player;
+      const options = [];
+      for (let i = 0; i < p.party.length && options.length < 3; i++) {
+        const m = p.party[i];
+        MQ.migrateMon(m);
+        const known = new Set(m.moves);
+        const forgotten = MQ.SPECIES[m.id].learn
+          .filter(([l, mv]) => l <= m.lvl && !known.has(mv))
+          .map(([, mv]) => mv);
+        if (!forgotten.length) continue;
+        options.push({ label: MQ.SPECIES[m.id].name.slice(0, 12), script: [
+          { choice: { title: '¿Qué copla recuerda?', options: forgotten.slice(0, 3).map((mv) => ({
+            label: MQ.MOVES[mv].name.slice(0, 16), script: [
+              { fn: () => {
+                if ((p.bag.cocada || 0) < 1) return;
+                p.bag.cocada--;
+                if (m.moves.length >= 4) m.moves.shift();
+                m.moves.push(mv);
+                m.pp[mv] = MQ.MOVES[mv].pp;
+              } },
+              { sfx: 'lvl' },
+              { say: ['la Coplera', (p.bag.cocada ?? 0) >= 0 ? 'La copla vuelve donde siempre vivió. Dulce el trato: la cocada me la como yo.' : 'Sin cocada no hay copla, mi amor.'] },
+            ] })) } },
+        ] });
+      }
+      if (!(p.bag.cocada > 0)) return [
+        { say: ['la Coplera', 'Yo le recuerdo a tu espanto cualquier copla que haya olvidado... por una COCADA. La memoria trabaja mejor con azúcar.'] },
+      ];
+      if (!options.length) return [
+        { say: ['la Coplera', 'Tus espantos se saben todas sus coplas. Qué orgullo y qué aburrimiento.'] },
+      ];
+      return [
+        { say: ['la Coplera', 'Una cocada, una copla olvidada. ¿A quién le canto?'] },
+        { choice: { title: '¿A quién?', options } },
+      ];
+    },
+    olvidadizo: () => {
+      const p = MQ.player;
+      const options = [];
+      for (let i = 0; i < p.party.length && options.length < 3; i++) {
+        const m = p.party[i];
+        if (m.moves.length < 2) continue;
+        options.push({ label: MQ.SPECIES[m.id].name.slice(0, 12), script: [
+          { choice: { title: '¿Olvidar cuál?', options: m.moves.slice(0, 3).map((mv, mi) => ({
+            label: MQ.MOVES[mv].name.slice(0, 16), script: [
+              { fn: () => { const idx = m.moves.indexOf(mv); if (idx >= 0 && m.moves.length > 1) m.moves.splice(idx, 1); } },
+              { sfx: 'weak' },
+              { say: ['el Olvidadizo', '¿Qué era lo que iba a olvidar? Ah, ya. Ya está. ¿Qué era lo que ya está?'] },
+            ] })) } },
+        ] });
+      }
+      if (!options.length) return [
+        { say: ['el Olvidadizo', 'Un movimiento solo no se olvida, chamo. Eso ya sería negligencia.'] },
+      ];
+      return [
+        { say: ['el Olvidadizo', 'Yo olvido por encargo. Oficios, coplas, deudas... bueno, deudas no. ¿Quién quiere olvidar?'] },
+        { choice: { title: '¿De quién?', options } },
+      ];
+    },
+    padrino: () => {
+      const p = MQ.player;
+      const m = p.party[0];
+      if (!m) return [{ say: ['el Padrino', 'Tráeme un espanto y te lo bautizo como Dios manda.'] }];
+      if ((m.confianza || 0) >= 200) return [
+        { say: ['el Padrino', `${MQ.SPECIES[m.id].name} ya viene bautizado y rebautizado. Ese nombre le queda como anillo.`] },
+      ];
+      return [
+        { say: ['el Padrino', `A ver, a ver... ${MQ.SPECIES[m.id].name}. Buen porte, buena pinta. Yo lo bautizo de nuevo con padrino y todo: eso da suerte.`] },
+        { sfx: 'sparkle' },
+        { fn: () => { m.confianza = Math.min(255, (m.confianza || 70) + 15); MQ.save(true); } },
+        { say: ['el Padrino', '¡Bautizado! Va a andar más seguro de sí mismo. El nombre es el mismo, pero ahora lo lleva con padrino.'] },
+      ];
+    },
+    'regalo:patineta': () => {
+      if (MQ.player.bag.patineta || MQ.player.flags.patineta) return [
+        { say: ['Chamo del Bulevar', '¿Qué tal rueda? Cuídala: esa tabla aprendió sola a esquivar huecos.'] },
+      ];
+      return [
+        { say: ['Chamo del Bulevar', '¡Épale! Te vi caminando toda la Línea 1 a pie. Toma mi patineta vieja: yo ya me compré la nueva.'] },
+        { give: { item: 'patineta', n: 1 } },
+        { flag: 'patineta' },
+        { sfx: 'catch' },
+        { say: ['Chamo del Bulevar', 'Úsala desde la MOCHILA. En los andenes no, que el operador nos regaña a los dos.'] },
+      ];
+    },
+  });
+  MQ.MAPS.canoamarillo.npcs.push({ x: 14, y: 8, look: 'chama', dir: 'down', name: 'la Coplera', script: 'coplera' });
+  MQ.MAPS.bellasartes.npcs.push({ x: 6, y: 8, look: 'vieja', dir: 'down', name: 'el Olvidadizo', script: 'olvidadizo' });
+  MQ.MAPS.capitolio.npcs.push({ x: 10, y: 8, look: 'senora', dir: 'down', name: 'el Padrino', script: 'padrino' });
+  MQ.MAPS.sabanagrande.npcs.push({ x: 12, y: 8, look: 'chamo', dir: 'down', name: 'Chamo del Bulevar', script: 'regalo:patineta' });
+  npcsOf('st_elsilencio').push({ x: 14, y: 8, look: 'buhonero', dir: 'down', name: 'el Chismógrafo',
+    text: ['*hojea un cuaderno grasiento* Doña Bárbara ensaya su mirada en el espejo del torniquete. La Ingeniera duerme con un multímetro bajo la almohada.',
+           'El Pescador guarda todo lo que saca del Guaire en un galpón... menos una cosa, que devolvió sin abrir. La Amazona apuesta contra sus propios caballos y SIEMPRE pierde. Adrede.',
+           '¿El Baquiano? Los animales le hacen la fiesta de cumpleaños ELLOS a ÉL. Todito lo sé, chamo. El chisme es el archivo histórico del pueblo.'] });
+
+  // ---- el Cronista del Metro: premia el Cuaderno (spec §1.11) --------------------------
+  Object.assign(MQ.SCRIPTS, {
+    cronista: () => {
+      const p = MQ.player;
+      const n = Object.keys(p.dexCaught).length;
+      if (n >= 150 && !p.flags.dex150) return [
+        { say: ['el Cronista', `CIENTO CINCUENTA. El Cuaderno entero, con el Tren incluido. En cuarenta años de archivo nunca vi la colección completa.`] },
+        { flag: 'dex150' },
+        { sfx: 'victory' },
+        { say: ['', '★ El Cronista te otorga el DIPLOMA DEL CRONISTA. Tu nombre queda en el archivo histórico del Metro, entre los que se quedaron y los que volvieron. ★'] },
+        { give: { item: 'morocota', n: 3 } },
+        { fn: () => MQ.save(true) },
+      ];
+      if (n >= 100 && !p.flags.dex100) return [
+        { say: ['el Cronista', `Cien fichados. Cien historias del subterráneo con nombre y apellido. Esto merece una bendición de las raras.`] },
+        { flag: 'dex100' },
+        { flag: 'tornasolbendito' },
+        { sfx: 'sparkle' },
+        { say: ['', '★ Obtienes el TORNASOL BENDITO: desde hoy los tornasol se te aparecen tres veces más seguido (1 de cada 1365). ★'] },
+        { fn: () => MQ.save(true) },
+      ];
+      if (n >= 50 && !p.flags.dex50) return [
+        { say: ['el Cronista', `Cincuenta fichados ya. Vas en serio, chamo. Toma: estas madrugadoras las acuñaron para gente como tú.`] },
+        { flag: 'dex50' },
+        { give: { item: 'fichamadrugadora', n: 5 } },
+        { sfx: 'catch' },
+        { fn: () => MQ.save(true) },
+      ];
+      return [
+        { say: ['el Cronista', `Llevo el archivo histórico del Metro: ${n} espanto${n === 1 ? '' : 's'} fichado${n === 1 ? '' : 's'} en tu Cuaderno. A los 50, a los 100 y a los 150 hay premio. Palabra de archivo.`] },
+      ];
+    },
+    'regalo:biper': () => {
+      if (MQ.player.bag.biper || MQ.player.flags.biper) return [
+        { say: ['Chama del Bíper', '¿Te llegó la señal? Ese aparato junta valor con cada paso tuyo: a los 100 pasos, revancha segura.'] },
+      ];
+      return [
+        { say: ['Chama del Bíper', 'Mi papá usaba este BÍPER en los noventa pa\' avisar que llegaba tarde. Ahora avisa otra cosa: que quieres la revancha.'] },
+        { give: { item: 'biper', n: 1 } },
+        { flag: 'biper' },
+        { sfx: 'catch' },
+        { say: ['Chama del Bíper', 'Camina 100 pasos pa\' cargarlo y úsalo desde la MOCHILA en un andén con entrenadores ya vencidos. Bip-bip: pelea otra vez.'] },
+      ];
+    },
+  });
+  MQ.MAPS.bellasartes.npcs.push({ x: 12, y: 8, look: 'vieja', dir: 'down', name: 'el Cronista', script: 'cronista' });
+  MQ.MAPS.chacaito.npcs.push({ x: 14, y: 8, look: 'chama', dir: 'down', name: 'Chama del Bíper', script: 'regalo:biper' });
+
+  say('gh_lasmercedes', 8, 'senora', 'la que Cocina',
+    ['Esta cocina la dejó una familia entera cuando se fue. Yo le mantengo el fuego bajito, por si vuelven.',
+     'El Tren pasa cada noche y deja el olor a hallaca recién hecha. Nadie la ve, pero todos la olemos.']);
+})();

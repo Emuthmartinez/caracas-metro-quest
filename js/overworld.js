@@ -10,7 +10,10 @@
       this.from = fromId;
       this.to = toId;
       this.onArrive = onArrive;
-      const stops = MQ.TRAIN_STOPS;
+      // la línea que comparte origen y destino (la red creció más allá de la 1)
+      const stops = (MQ.LINES
+        ? (Object.values(MQ.LINES).map((l) => l.stops).find((s) => s.includes(fromId) && s.includes(toId)) || MQ.TRAIN_STOPS)
+        : MQ.TRAIN_STOPS);
       const a = stops.indexOf(fromId), b = stops.indexOf(toId);
       // estaciones intermedias que se ven pasar por la ventana
       this.passing = stops.slice(Math.min(a, b) + 1, Math.max(a, b));
@@ -265,6 +268,7 @@
       this.statView = null;
       this.mapView = false;      // mapa del Metro a pantalla completa
       this.mapBehind = false;    // mapa de fondo al elegir destino del tren
+      this.engage = null;        // {npc, phase, t, moving} — el ¡! del entrenador
       this.enterMap(MQ.player.map, true);
     }
 
@@ -275,7 +279,7 @@
       return g[y][x];
     }
     npcAt(x, y) {
-      return (this.map.npcs || []).find((n) => n.x === x && n.y === y && !(n.hideIf && MQ.player.flags[n.hideIf]));
+      return (this.map.npcs || []).find((n) => n.x === x && n.y === y && !(n.hideIf && MQ.player.flags[n.hideIf]) && (!n.showIf || MQ.player.flags[n.showIf]));
     }
     walkable(x, y) {
       return MQ.WALKABLE.has(this.tile(x, y)) && !this.npcAt(x, y);
@@ -284,6 +288,7 @@
     enterMap(id, first) {
       const p = MQ.player;
       p.map = id;
+      this.engage = null;
       const m = this.map;
       if (m.station) p.visited[id] = true;
       this.banner = { text: m.name.toUpperCase(), t: 150 };
@@ -302,16 +307,9 @@
         const [spk, txt] = Array.isArray(op.say) ? op.say : ['', op.say];
         this.tb.open(MQ.ctx, txt, () => this.stepScript(), spk);
       } else if (op.battle) {
-        MQ.pushScene(new MQ.BattleScene(op.battle, (res) => {
-          MQ.popScene();
-          MQ.audio.music(this.map.music || 'town');
-          if (res === 'lose') { this.script = null; MQ.respawn(this); return; }
-          if (op.battle.trainer) MQ.player.flags['t_' + op.battle.trainer.id] = true;
-          if (op.winScript && (res === 'win' || res === 'catch')) {
-            s.list.splice(s.i, 0, ...op.winScript);
-          }
-          this.stepScript();
-        }));
+        // el remolino a negro antes del combate, como manda el original
+        this.wipe = { t: 36, fn: () => this.startBattleOp(op, s) };
+        MQ.audio.sfx('toss');
       } else if (op.flag) { MQ.setFlag(op.flag); this.stepScript(); }
       else if (op.give) { MQ.player.bag[op.give.item] = (MQ.player.bag[op.give.item] || 0) + op.give.n; MQ.audio.sfx('ficha'); this.stepScript(); }
       else if (op.money) { MQ.player.money += op.money; this.stepScript(); }
@@ -330,6 +328,29 @@
       else if (op.warpTo) { const w = op.warpTo; MQ.player.x = w.x; MQ.player.y = w.y; this.enterMap(w.map); this.stepScript(); }
       else if (op.ending) { this.script = null; MQ.startEnding(); }
       else this.stepScript();
+    }
+
+    // el acechador vuelve a su puesto de siempre (posición y mirada de origen)
+    restoreEngaged(n) {
+      if (n && n.home) { n.x = n.home.x; n.y = n.home.y; n.dir = n.home.dir; }
+    }
+
+    startBattleOp(op, s) {
+      MQ.pushScene(new MQ.BattleScene({
+        ambience: { theme: this.map.theme, region: this.map.region },
+        dark: this.map.theme === 'tunel' || this.map.theme === 'ghost',
+        weather: this.map.weather,
+        ...op.battle }, (res) => {
+        MQ.popScene();
+        if (this.engagedNpc) { this.restoreEngaged(this.engagedNpc); this.engagedNpc = null; }
+        MQ.audio.music(this.map.music || 'town');
+        if (res === 'lose') { this.script = null; MQ.respawn(this); return; }
+        if (op.battle.trainer) MQ.player.flags['t_' + op.battle.trainer.id] = true;
+        if (op.winScript && (res === 'win' || res === 'catch')) {
+          s.list.splice(s.i, 0, ...op.winScript);
+        }
+        this.stepScript();
+      }));
     }
 
     checkTrigger() {
@@ -351,7 +372,24 @@
       const tx = p.x + dx, ty = p.y + dy;
       const npc = this.npcAt(tx, ty);
       if (npc) return this.talkTo(npc);
+      // lo enterrado: se saca con A mirando el escondite (o parado encima)
+      const hid = (this.map.hidden || []).find((h) => !p.flags[h.flag] && ((h.x === tx && h.y === ty) || (h.x === p.x && h.y === p.y)));
+      if (hid) {
+        const n = hid.n || 1;
+        p.bag[hid.item] = (p.bag[hid.item] || 0) + n;
+        MQ.setFlag(hid.flag);
+        MQ.audio.sfx('sparkle');
+        this.tb.open(MQ.ctx, `¡Había algo escondido! Sacas ${n > 1 ? n + '× ' : ''}${MQ.ITEMS[hid.item].name}.`);
+        return;
+      }
       const ch = this.tile(tx, ty);
+      // las bancas de andén y de parada menor guardan la partida (world bible §0)
+      if (ch === 'B') {
+        MQ.save();
+        MQ.audio.sfx('save');
+        this.tb.open(MQ.ctx, 'Te sientas un momento en la banca. El andén está tranquilo... Partida guardada.');
+        return;
+      }
       if (ch === 'H') return this.runScript(MQ.SCRIPTS.heal());
       if (ch === 'S') return this.openShop();
       // A en el borde del andén (sobre la franja M o mirando la vía) también aborda
@@ -361,30 +399,76 @@
     }
 
     talkTo(npc) {
+      // los paqueticos del andén: se recogen con A y no reaparecen
+      if (npc.itemBall) {
+        const n = npc.n || 1;
+        MQ.player.bag[npc.itemBall] = (MQ.player.bag[npc.itemBall] || 0) + n;
+        MQ.setFlag(npc.hideIf);
+        MQ.audio.sfx('ficha');
+        this.tb.open(MQ.ctx, `¡Encontraste ${n > 1 ? n + '× ' : ''}${MQ.ITEMS[npc.itemBall].name}!`);
+        return;
+      }
       if (!npc.mon) npc.dir = { up: 'down', down: 'up', left: 'right', right: 'left' }[MQ.player.dir];
       if (npc.script) {
         const s = MQ.SCRIPTS[npc.script] && MQ.SCRIPTS[npc.script]();
         if (s) return this.runScript(s);
       }
-      if (npc.trainer) {
-        const tr = npc.trainer;
-        if (MQ.player.flags['t_' + tr.id]) {
-          this.tb.open(MQ.ctx, tr.after || (tr.boss ? 'Ya tienes mi Ficha Dorada. Hazle honor, chamo.' : '¡Buen combate el de nosotros! Sigue pa\' lante.'), null, npc.name);
-          return;
-        }
-        const script = [
-          { say: [npc.name, tr.intro] },
-          { battle: { trainer: { ...tr, name: npc.name } },
-            winScript: tr.reward ? [
-              { fn: () => { MQ.setFlag(tr.reward); MQ.audio.sfx('catch'); } },
-              { say: ['', `★ ¡Obtienes la ${MQ.FICHAS[tr.reward]}! ★`] },
-              { fn: () => MQ.save(true) },
-            ] : [] },
-        ];
-        return this.runScript(script);
-      }
+      if (npc.trainer) return this.startTrainer(npc);
       const txt = Array.isArray(npc.text) ? MQ.pick(npc.text) : npc.text;
       if (txt) this.tb.open(MQ.ctx, txt, null, npc.name);
+    }
+
+    startTrainer(npc) {
+      const tr = npc.trainer;
+      if (MQ.player.flags['t_' + tr.id]) {
+        this.tb.open(MQ.ctx, tr.after || (tr.boss ? 'Ya tienes mi Ficha Dorada. Hazle honor, chamo.' : '¡Buen combate el de nosotros! Sigue pa\' lante.'), null, npc.name);
+        return;
+      }
+      if (!tr.boss) MQ.audio.music('reto'); // el reto suena desde la primera palabra
+      const script = [
+        { say: [npc.name, tr.intro] },
+        { battle: { trainer: { ...tr, name: npc.name, look: npc.look } },
+          winScript: tr.reward ? [
+            { fn: () => { MQ.setFlag(tr.reward); MQ.audio.sfx('catch'); } },
+            { say: ['', `★ ¡Obtienes la ${MQ.FICHAS[tr.reward]}! ★`] },
+            { fn: () => MQ.save(true) },
+          ] : [] },
+      ];
+      return this.runScript(script);
+    }
+
+    // Línea de vista estilo FireRed: el entrenador que te ve dentro de 4 casillas
+    // por donde mira (sin pared ni gente en medio) suelta el ¡! y va por ti.
+    // Los Jefes no cazan a nadie: esperan en su puesto, como manda el protocolo.
+    trainerSpotting() {
+      const p = MQ.player;
+      for (const n of this.map.npcs || []) {
+        if (!n.trainer || n.trainer.boss || n.boss) continue;
+        if (p.flags['t_' + n.trainer.id]) continue;
+        if (n.hideIf && p.flags[n.hideIf]) continue;
+        if (n.showIf && !p.flags[n.showIf]) continue;
+        const [dx, dy] = DIRS[n.dir || 'down'];
+        for (let i = 1; i <= 4; i++) {
+          const tx = n.x + dx * i, ty = n.y + dy * i;
+          if (tx === p.x && ty === p.y) return n;
+          if (!MQ.WALKABLE.has(this.tile(tx, ty)) || this.npcAt(tx, ty)) break;
+        }
+      }
+      return null;
+    }
+
+    // mirar y encontrar: si alguien te tiene en la mira, arranca el ¡!
+    spotNow() {
+      if (this.engage) return false;
+      const sp = this.trainerSpotting();
+      if (!sp) return false;
+      // su puesto de siempre: al resolverse el pleito vuelve ahí (evita que un
+      // entrenador caminado quede tapando el único paso de un rincón)
+      if (!sp.home) sp.home = { x: sp.x, y: sp.y, dir: sp.dir };
+      this.engage = { npc: sp, phase: 'alert', t: 0, moving: 0 };
+      MQ.audio.sfx('alert');
+      MQ.audio.music('reto'); // el tema de la mirada cruzada, hasta que arranque el combate
+      return true;
     }
 
     openShop() {
@@ -410,18 +494,29 @@
 
     openTrain() {
       const p = MQ.player;
-      // a las estaciones que ya conoces, más la siguiente de la línea:
-      // el tren de la hora fantasma sabe pa' dónde vas aunque tú no
+      // a las estaciones que ya conoces (de todas las líneas que pasan por aquí);
+      // en la Línea 1, la cortesía canon: también la siguiente parada
       const EAST_GATE = { capitolio: 'ficha1' }; // la Doña no se brinca ni en tren
-      const idx = MQ.TRAIN_STOPS.indexOf(p.map);
-      const known = new Set(MQ.TRAIN_STOPS.filter((s) => p.visited[s]));
-      if (idx >= 0) {
-        const next = MQ.TRAIN_STOPS[idx + 1];
-        if (next && (!EAST_GATE[p.map] || p.flags[EAST_GATE[p.map]])) known.add(next);
-        if (idx > 0) known.add(MQ.TRAIN_STOPS[idx - 1]);
+      const lines = MQ.linesAt ? MQ.linesAt(p.map) : [{ stops: MQ.TRAIN_STOPS }];
+      const known = new Set();
+      const stops = [];
+      for (const line of lines) {
+        for (const s of line.stops) if (p.visited[s]) known.add(s);
+        if (!MQ.LINES || line === MQ.LINES.linea1) {
+          const idx = line.stops.indexOf(p.map);
+          const next = line.stops[idx + 1];
+          if (next && (!EAST_GATE[p.map] || p.flags[EAST_GATE[p.map]])) known.add(next);
+          if (idx > 0) known.add(line.stops[idx - 1]);
+        }
       }
       known.delete(p.map);
-      const stops = MQ.TRAIN_STOPS.filter((s) => known.has(s));
+      for (const line of lines)
+        for (const s of line.stops)
+          if (known.has(s) && !stops.includes(s)) stops.push(s);
+      if (!lines.length || (MQ.LINES && !lines.some((l) => l.stops.includes(p.map)))) {
+        this.tb.open(MQ.ctx, 'Las luces prenden, el cartel brilla... pero por esta vía nunca ha pasado un tren. Bello Monte quedó a medio hacer, como tantas promesas.', null, 'Voz del Metro');
+        return;
+      }
       if (!stops.length) {
         this.tb.open(MQ.ctx, 'El tren de la hora fantasma solo para en estaciones que ya conoces. Camina los túneles primero. Cuando vuelvas, párate aquí en la franja del andén y listo.', null, 'Voz del Metro');
         return;
@@ -434,7 +529,8 @@
             this.menu = null; this.mapBehind = false;
             if (!it.value) return;
             MQ.pushScene(new MQ.RideScene(p.map, it.value, () => {
-              MQ.player.x = 13; MQ.player.y = 3; MQ.player.dir = 'down';
+              const ts = MQ.MAPS[it.value].trainSpawn || { x: 13, y: 3 };
+              MQ.player.x = ts.x; MQ.player.y = ts.y; MQ.player.dir = 'down';
               this.enterMap(it.value);
               this.tb.open(MQ.ctx, `«Estación ${MQ.MAPS[it.value].name.replace('Estación ', '')}. Recuerde: deje salir antes de entrar.»`, null, 'Voz del Metro');
             }));
@@ -442,80 +538,125 @@
           onCancel: () => { this.menu = null; this.mapBehind = false; } });
     }
 
-    // ---- el mapa del Metro (como el Town Map de los clásicos) -----------------------
+    // ---- el mapa de la RED (como el Town Map de los clásicos, pero criollo) ---------
     drawMetroMap(ctx) {
       const p = MQ.player;
-      const stops = MQ.TRAIN_STOPS;
-      const SHORT = {
-        propatria: 'Propatria', canoamarillo: 'C. Amarillo', capitolio: 'Capitolio',
-        bellasartes: 'B. Artes', plazavenezuela: 'Pza. Vzla', sabanagrande: 'S. Grande',
-        chacaito: 'Chacaíto', altamira: 'Altamira', petare: 'Petare',
-      };
       MQ.panel(ctx, 8, 8, MQ.W - 16, MQ.H - 16);
       ctx.font = MQ.FONT_B; ctx.textBaseline = 'top';
       ctx.fillStyle = '#f5a623';
-      ctx.fillText('METRO DE CARACAS · LÍNEA 1', 24, 22);
-      ctx.fillStyle = '#3a3242'; ctx.fillRect(24, 33, MQ.W - 48, 2);
+      ctx.fillText('RED DEL METRO · HORA FANTASMA', 24, 20);
+      ctx.fillStyle = '#3a3242'; ctx.fillRect(24, 31, MQ.W - 48, 2);
 
-      const x0 = 34, x1 = MQ.W - 46, ly = 122;
-      const sx = (i) => x0 + ((x1 - x0) * i) / (stops.length - 1);
-      // la línea 1, naranja como la franja de los vagones
-      ctx.fillStyle = '#e85a1a'; ctx.fillRect(x0, ly - 2, x1 - x0, 4);
-      // ramales a pie (lugares arriba/abajo de cada estación)
-      const SPURS = [
-        { at: 0, dy: -22, label: '⌂', maps: ['casa'] },
-        { at: 1, dy: -22, label: 'Calvario', maps: ['calvario'] },
-        { at: 4, dy: 26, label: 'Fuente', maps: ['fuente'] },
-        { at: 8, dy: -22, label: 'Mercado', maps: ['mercado'] },
-      ];
-      ctx.font = MQ.FONT;
-      for (const s of SPURS) {
-        const x = sx(s.at);
-        ctx.strokeStyle = '#5a5a72'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(x, ly); ctx.lineTo(x, ly + s.dy); ctx.stroke();
-        ctx.fillStyle = s.maps.includes(p.map) ? '#f5d76e' : '#8a8aa0';
-        const lw = ctx.measureText(s.label).width;
-        ctx.fillText(s.label, Math.min(x - 4, MQ.W - 28 - lw), ly + s.dy + (s.dy < 0 ? -9 : 3));
-      }
-      // la Línea Fantasma, punteada y verdosa (solo si ya sabes de ella)
-      if (p.flags.fichas4 || p.flags.tren) {
-        const x = sx(4);
-        ctx.strokeStyle = '#7affc9'; ctx.lineWidth = 2;
-        ctx.setLineDash([3, 4]);
-        ctx.beginPath(); ctx.moveTo(x, ly); ctx.lineTo(x, ly + 52); ctx.stroke();
+      // — esquema de la red: cada línea con su color de plano de pared —
+      const L1 = MQ.LINES ? MQ.LINES.linea1.stops : MQ.TRAIN_STOPS;
+      const x0 = 32, x1 = MQ.W - 40, l1y = 66;
+      const sx = (i) => x0 + ((x1 - x0) * i) / (L1.length - 1);
+      const POS = {};
+      L1.forEach((s, i) => { POS[s] = [sx(i), l1y]; });
+      const capX = POS.capitolio[0], pvX = POS.plazavenezuela[0];
+      // L2 baja del Capitolio y corre al oeste
+      const l2y = 150;
+      const L2 = ['st_elsilencio', 'st_capuchinos', 'st_layaguara', 'st_caricuao', 'st_lasadjuntas'];
+      L2.forEach((s, i) => { POS[s] = [capX - 4 - i * 15, l2y]; });
+      POS.st_zoologico = [POS.st_caricuao[0], l2y + 30];
+      // L3 baja de Plaza Venezuela
+      const L3 = ['st_ciudaduniversitaria', 'st_labandera', 'st_elvalle', 'st_larinconada'];
+      L3.forEach((s, i) => { POS[s] = [pvX + 4, l1y + 34 + i * 26]; });
+      // L4 corre al este desde Capuchinos
+      const L4 = ['st_teatros', 'st_nuevocirco', 'st_parquecentral', 'st_zonarental'];
+      L4.forEach((s, i) => { POS[s] = [POS.st_capuchinos[0] + 34 + i * 40, l2y + 46] });
+      // L5 fantasma, en diagonal desde Zona Rental
+      const L5 = ['st_bellomonte', 'gh_lasmercedes', 'gh_tamanaco', 'gh_chuao', 'gh_bellocampo', 'gh_miranda_l5'];
+      L5.forEach((s, i) => { POS[s] = [POS.st_zonarental[0] + 14 + i * 13, l2y + 60 - i * 4]; });
+      // Los Teques se va del valle desde Las Adjuntas
+      const LT = ['st_aliprimera', 'st_guaicaipuro', 'st_independencia', 'st_carrizal', 'st_sanantonio'];
+      LT.forEach((s, i) => { POS[s] = [Math.max(14, POS.st_lasadjuntas[0] - 2 - i * 3), l2y + 22 + i * 11]; });
+
+      const line = (pts, color, dash) => {
+        ctx.strokeStyle = color; ctx.lineWidth = 3;
+        if (dash) ctx.setLineDash(dash);
+        ctx.beginPath();
+        pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+        ctx.stroke();
         ctx.setLineDash([]);
-        ctx.fillStyle = ['zonarental', 'lineafantasma'].includes(p.map) ? '#7affc9' : '#3a8a6a';
-        ctx.fillText('Línea 5', x + 6, ly + 46);
-      }
-      // estaciones
-      const now = performance.now();
-      stops.forEach((s, i) => {
-        const x = sx(i);
+      };
+      // trazos
+      line([[x0, l1y], [x1, l1y]], '#e85a1a');
+      line([[capX, l1y], [capX, l2y], [POS.st_lasadjuntas[0], l2y]], '#5e8b3f');
+      line([[POS.st_caricuao[0], l2y], POS.st_zoologico], '#5e8b3f');
+      line([[pvX, l1y], [pvX + 4, POS.st_larinconada[1]]], '#4a90d9');
+      line([[POS.st_capuchinos[0], l2y], [POS.st_capuchinos[0], l2y + 46], [POS.st_zonarental[0], l2y + 46]], '#9a5ad9');
+      if (p.flags.fichas4 || p.flags.consejo || p.flags.tren)
+        line([POS.st_zonarental, POS.gh_miranda_l5], '#7affc9', [3, 4]);
+      if (p.flags.tren)
+        line([POS.st_lasadjuntas, POS.st_sanantonio], '#8a8aa0', [2, 3]);
+      // el Ávila vigila el norte
+      ctx.strokeStyle = '#3a5a3f'; ctx.lineWidth = 2;
+      const avX = POS.altamira[0];
+      ctx.beginPath();
+      ctx.moveTo(avX - 26, 52); ctx.lineTo(avX - 8, 40); ctx.lineTo(avX + 6, 50);
+      ctx.lineTo(avX + 18, 42); ctx.lineTo(avX + 32, 52);
+      ctx.stroke();
+
+      // — estaciones: cuadrito brillante si la conoces —
+      ctx.font = MQ.FONT;
+      for (const [s, [x, y]] of Object.entries(POS)) {
         const seen = p.visited[s];
-        ctx.fillStyle = '#101020'; ctx.fillRect(x - 5, ly - 5, 10, 10);
+        ctx.fillStyle = '#101020'; ctx.fillRect(x - 4, y - 4, 8, 8);
         ctx.fillStyle = seen ? '#f2ead8' : '#2a2438';
-        ctx.fillRect(x - 3, ly - 3, 6, 6);
-        // nombre en diagonal, como los mapas de pared
+        ctx.fillRect(x - 2, y - 2, 4, 4);
+      }
+      // nombres de la Línea 1 en diagonal, como los planos de pared
+      const SHORT = {
+        propatria: 'Propatria', canoamarillo: 'C.Amarillo', capitolio: 'Capitolio',
+        bellasartes: 'B.Artes', plazavenezuela: 'Pza.Vzla', sabanagrande: 'S.Grande',
+        chacaito: 'Chacaíto', altamira: 'Altamira', petare: 'Petare', st_paloverde: 'P.Verde',
+      };
+      L1.forEach((s, i) => {
+        const [x] = POS[s];
         ctx.save();
-        ctx.translate(x + 2, ly - (i % 2 ? 34 : 14));
+        ctx.translate(x + 2, l1y - (i % 2 ? 26 : 10));
         ctx.rotate(-0.7);
-        ctx.fillStyle = seen ? '#e8dfc8' : '#5a5a72';
-        ctx.fillText(seen ? SHORT[s] : '???', 0, 0);
+        ctx.fillStyle = p.visited[s] ? '#e8dfc8' : '#5a5a72';
+        ctx.fillText(p.visited[s] ? SHORT[s] : '???', 0, 0);
         ctx.restore();
       });
-      // ¿dónde estás? (estación, ramal o túnel intermedio)
-      let here = stops.indexOf(p.map);
-      if (here < 0) {
-        const spur = SPURS.find((s) => s.maps.includes(p.map));
-        if (spur) here = spur.at;
+      // etiquetas de línea
+      ctx.fillStyle = '#5e8b3f'; ctx.fillText('L2', POS.st_lasadjuntas[0] - 6, l2y - 14);
+      ctx.fillText('Zoo', POS.st_zoologico[0] + 6, POS.st_zoologico[1] - 3);
+      ctx.fillStyle = '#4a90d9'; ctx.fillText('L3', pvX + 10, POS.st_larinconada[1] - 6);
+      ctx.fillStyle = '#9a5ad9'; ctx.fillText('L4', POS.st_zonarental[0] - 8, l2y + 50);
+      if (p.flags.fichas4 || p.flags.consejo || p.flags.tren) {
+        ctx.fillStyle = '#7affc9'; ctx.fillText('L5', POS.gh_miranda_l5[0] - 4, POS.gh_miranda_l5[1] + 8);
       }
-      let hx = here >= 0 ? sx(here) : null;
-      const tn = /^tunel(\d+)$/.exec(p.map);
-      if (tn) hx = (sx(tn[1] - 1) + sx(+tn[1])) / 2;
-      if (p.map === 'zonarental' || p.map === 'lineafantasma') hx = sx(4);
+      if (p.flags.tren) {
+        ctx.fillStyle = '#8a8aa0'; ctx.fillText('Los Teques', POS.st_sanantonio[0] + 8, POS.st_sanantonio[1] - 3);
+      }
+
+      // — ¿dónde estás? —
+      let hx = null, hy = null;
+      if (POS[p.map]) { [hx, hy] = POS[p.map]; }
+      else {
+        const tn = /^tunel(\d+)$/.exec(p.map);
+        if (tn) { hx = (POS[L1[tn[1] - 1]][0] + POS[L1[+tn[1]]][0]) / 2; hy = l1y; }
+        else if (p.map === 'casa') { [hx, hy] = POS.propatria; }
+        else if (p.map === 'calvario') { [hx, hy] = POS.canoamarillo; }
+        else if (p.map === 'fuente' || p.map === 'zonarental' || p.map === 'lineafantasma') { [hx, hy] = POS.plazavenezuela; }
+        else if (p.map === 'mercado') { [hx, hy] = POS.petare; }
+        else {
+          // aproxima por la región del mapa generado
+          const m = MQ.MAPS[p.map] || {};
+          const R = { linea2: POS.st_layaguara, linea3: POS.st_labandera, linea4: POS.st_nuevocirco,
+            linea5: POS.gh_chuao, losteques: POS.st_independencia, avila: [avX, 46],
+            metrocable_sanagustin: POS.st_parquecentral, metrocable_mariche: POS.st_paloverde,
+            superficie: POS[p.map === 'sf_bulevar' ? 'sabanagrande' : 'bellasartes'] };
+          if (m.region && R[m.region]) { [hx, hy] = R[m.region]; }
+        }
+      }
+      const now = performance.now();
       if (hx !== null && (now / 400 | 0) % 2) {
         ctx.fillStyle = '#f5d76e'; ctx.font = MQ.FONT_B;
-        ctx.fillText('▼', hx - 4, ly - 14);
+        ctx.fillText('▼', hx - 4, hy - 13);
       }
       // leyenda
       ctx.font = MQ.FONT;
@@ -536,20 +677,43 @@
       const p = MQ.player;
       this.menu = new MQ.Menu([
         { label: 'EQUIPO' }, { label: 'CUADERNO' }, { label: 'MAPA' }, { label: 'MOCHILA' },
-        { label: 'LOCKER' }, { label: 'FICHAS' }, { label: 'GUARDAR' },
-        { label: MQ.audio.muted ? 'SONIDO: NO' : 'SONIDO: SÍ' }, { label: 'CERRAR' },
-      ], { x: MQ.W - 124, y: 8, w: 116, rows: 9, title: p.name + ' · ' + p.money + 'b',
+        { label: 'CARNET' }, { label: 'LOCKER' }, { label: 'FICHAS' }, { label: 'GUARDAR' },
+        { label: 'AJUSTES' }, { label: 'CERRAR' },
+      ], { x: MQ.W - 124, y: 8, w: 116, rows: 10, title: p.name + ' · ' + p.money + 'b',
         onPick: (it) => {
           const l = it.label;
           if (l === 'EQUIPO') this.openParty();
           else if (l === 'CUADERNO') this.openDex();
           else if (l === 'MAPA') { this.mapView = true; this.menu = null; }
+          else if (l === 'CARNET') { this.carnetView = true; this.menu = null; }
           else if (l === 'MOCHILA') this.openBag();
           else if (l === 'LOCKER') this.openLocker();
           else if (l === 'FICHAS') this.showFichas();
           else if (l === 'GUARDAR') { MQ.save(); MQ.audio.sfx('save'); this.menu = null; this.tb.open(MQ.ctx, '¡Partida guardada! Tranquilo, que esto no se lo lleva ni un apagón.'); }
-          else if (l.startsWith('SONIDO')) { MQ.audio.toggleMute(); it.label = MQ.audio.muted ? 'SONIDO: NO' : 'SONIDO: SÍ'; }
+          else if (l === 'AJUSTES') this.openSettings();
           else this.menu = null;
+        },
+        onCancel: () => { this.menu = null; } });
+    }
+
+    // AJUSTES: la pantalla de opciones de toda la vida (texto, estilo de combate, sonido)
+    openSettings() {
+      const p = MQ.player;
+      const labels = () => [
+        `TEXTO: ${{ lento: 'LENTO', medio: 'MEDIO', rapido: 'RÁPIDO' }[p.textSpeed || 'medio']}`,
+        `COMBATE: ${p.battleStyle === 'seguido' ? 'SEGUIDO' : 'CAMBIO'}`,
+        MQ.audio.muted ? 'SONIDO: NO' : 'SONIDO: SÍ',
+        'Listo',
+      ];
+      const refresh = () => labels().forEach((l, i) => { this.menu.items[i].label = l; });
+      this.menu = new MQ.Menu(labels().map((l) => ({ label: l })), {
+        x: MQ.W - 160, y: 8, w: 152, rows: 4, title: 'AJUSTES',
+        onPick: (it, i) => {
+          if (i === 0) p.textSpeed = { medio: 'rapido', rapido: 'lento', lento: 'medio' }[p.textSpeed || 'medio'];
+          else if (i === 1) p.battleStyle = p.battleStyle === 'seguido' ? 'cambio' : 'seguido';
+          else if (i === 2) MQ.audio.toggleMute();
+          else { this.menu = null; return; }
+          refresh();
         },
         onCancel: () => { this.menu = null; } });
     }
@@ -562,12 +726,20 @@
         { x: 8, y: 8, w: 200, rows: 6, rowH: 18, title: 'EQUIPO',
           onPick: (it) => {
             const i = it.value;
-            this.menu = new MQ.Menu([
-              { label: 'Ver ficha' }, { label: 'Poner de primero' }, { label: 'Atrás' },
-            ], { x: 60, y: 70, w: 150, rows: 3,
+            const sub = [{ label: 'Ver ficha' }, { label: 'Poner de primero' }];
+            if (p.party[i].item) sub.push({ label: 'Quitar objeto' });
+            sub.push({ label: 'Atrás' });
+            this.menu = new MQ.Menu(sub, { x: 60, y: 70, w: 150, rows: sub.length,
               onPick: (s) => {
                 if (s.label === 'Ver ficha') { this.statView = p.party[i]; this.menu = null; }
                 else if (s.label === 'Poner de primero') { p.party.unshift(p.party.splice(i, 1)[0]); this.openParty(); }
+                else if (s.label === 'Quitar objeto') {
+                  const m = p.party[i];
+                  p.bag[m.item] = (p.bag[m.item] || 0) + 1;
+                  this.menu = null;
+                  this.tb.open(MQ.ctx, `Le quitas ${MQ.ITEMS[m.item].name} a ${MQ.SPECIES[m.id].name} y lo guardas.`);
+                  m.item = null;
+                }
                 else this.openParty();
               },
               onCancel: () => this.openParty() });
@@ -584,23 +756,124 @@
         { x: 8, y: 8, w: 200, rows: 7, title: 'MOCHILA',
           onPick: (it) => {
             const item = MQ.ITEMS[it.value];
-            if (item.ball) { this.menu = null; this.tb.open(MQ.ctx, item.desc); return; }
+            if (item.ball || item.battleStage || item.cholas) { this.menu = null; this.tb.open(MQ.ctx, item.desc); return; }
+            if (item.patineta) {
+              this.menu = null;
+              if (this.map.station || this.map.theme === 'casa') { this.tb.open(MQ.ctx, 'OPERADOR: ¡Aquí no, chamo! La patineta se rueda en túneles y en la calle.'); return; }
+              p.skating = !p.skating;
+              MQ.audio.sfx('sel');
+              this.tb.open(MQ.ctx, p.skating ? 'Te montas en la patineta. El eco del túnel aplaude.' : 'Te bajas de la patineta y la guardas bajo el brazo.');
+              return;
+            }
+            if (item.biper) {
+              this.menu = null;
+              if ((p.biperCharge || 0) < 100) { this.tb.open(MQ.ctx, `El Bíper parpadea sin señal: le faltan ${100 - (p.biperCharge || 0)} pasos de carga.`); return; }
+              // banderas t_ que otras personas usan como reja de aparición: intocables
+              const gated = new Set();
+              for (const mm of Object.values(MQ.MAPS))
+                for (const nn of mm.npcs || []) if (nn.showIf) gated.add(nn.showIf);
+              const rematch = (this.map.npcs || []).filter((n) =>
+                n.trainer && !n.trainer.boss && !gated.has('t_' + n.trainer.id) && p.flags['t_' + n.trainer.id]);
+              if (!rematch.length) { this.tb.open(MQ.ctx, 'El Bíper suena en el vacío: aquí no hay entrenadores pendientes de revancha.'); return; }
+              for (const n of rematch) delete p.flags['t_' + n.trainer.id];
+              p.biperCharge = 0;
+              MQ.audio.sfx('lowhp');
+              this.tb.open(MQ.ctx, `¡Bip-bip! ${rematch.length} entrenador${rematch.length === 1 ? '' : 'es'} de este andén responde${rematch.length === 1 ? '' : 'n'} al mensaje: quieren la revancha.`);
+              return;
+            }
+            if (item.finder) {
+              this.menu = null;
+              const left = (this.map.hidden || []).filter((h) => !p.flags[h.flag]);
+              if (!left.length) { MQ.audio.sfx('weak'); this.tb.open(MQ.ctx, 'El Rastreador se queda mudo. Aquí no hay nada enterrado... o ya te lo llevaste todo.'); return; }
+              let best = left[0], bd = Infinity;
+              for (const h of left) { const d = Math.abs(h.x - p.x) + Math.abs(h.y - p.y); if (d < bd) { bd = d; best = h; } }
+              MQ.audio.sfx('click');
+              if (bd === 0) { this.tb.open(MQ.ctx, '¡El Rastreador vibra como loco! Está justo bajo tus pies. Dale A.'); return; }
+              const hdx = best.x - p.x, hdy = best.y - p.y;
+              const rumbo = Math.abs(hdx) >= Math.abs(hdy) ? (hdx > 0 ? 'este' : 'oeste') : (hdy > 0 ? 'sur' : 'norte');
+              this.tb.open(MQ.ctx, bd <= 8
+                ? `El Rastreador vibra fuerte hacia el ${rumbo}. Algo espera escondido, cerquita.`
+                : `El Rastreador zumba bajito hacia el ${rumbo}. Hay algo enterrado en este lugar, pero falta caminar.`);
+              return;
+            }
+            if (item.rod) {
+              this.menu = null;
+              const [fdx, fdy] = DIRS[p.dir];
+              const facing = this.tile(p.x + fdx, p.y + fdy);
+              const table = this.map.encRef && MQ.DATA.encounters.tables[this.map.encRef];
+              const pool = table && table.fishing && table.fishing[item.rod];
+              if (facing !== 'W' && facing !== 'f') { this.tb.open(MQ.ctx, 'Aquí no hay dónde lanzar el anzuelo. Busca agua de verdad.'); return; }
+              if (!pool || !pool.length) { this.tb.open(MQ.ctx, 'Lanzas el anzuelo... nada pica. Esta agua guarda silencio.'); return; }
+              let fr = Math.random() * 100;
+              let sl = pool[0];
+              for (const s of pool) { fr -= s.w; if (fr <= 0) { sl = s; break; } }
+              MQ.audio.sfx('toss');
+              this.encFlash = 22;
+              this.pendingEnc = { id: sl.id, lvl: sl.min + MQ.rand(sl.max - sl.min + 1) };
+              MQ.audio.music('battle');
+              return;
+            }
+            if (item.repel) {
+              if (p.repelSteps > 0) { this.menu = null; this.tb.open(MQ.ctx, 'Ya llevas una esencia encima. No abuses de la protección.'); return; }
+              p.bag[it.value]--; p.repelSteps = item.repel;
+              MQ.audio.sfx('heal'); this.menu = null;
+              this.tb.open(MQ.ctx, `Te untas la ${item.name}. Los espantos débiles no se te acercarán por ${item.repel} pasos.`);
+              return;
+            }
             // elegir objetivo
             this.menu = new MQ.Menu(
-              p.party.map((m, i) => ({ label: `${MQ.SPECIES[m.id].name}`, sub: `${m.hp}/${m.maxhp}`, value: i, icon: m.id })),
+              p.party.map((m, i) => ({ label: `${MQ.SPECIES[m.id].name}`, sub: `${m.hp}/${m.maxhp}${m.item ? ' ◆' : ''}`, value: i, icon: m.id })),
               { x: 40, y: 60, w: 180, rows: 6, rowH: 18, title: '¿Para quién?',
                 onPick: (t) => {
                   const m = p.party[t.value];
-                  if (item.heal && m.hp > 0 && m.hp < m.maxhp) {
+                  MQ.migrateMon(m);
+                  if (item.casete) {
+                    const mv = item.casete;
+                    if (m.moves.includes(mv)) { MQ.audio.sfx('bump'); this.menu = null; this.tb.open(MQ.ctx, `${MQ.SPECIES[m.id].name} ya se sabe ${MQ.MOVES[mv].name} de memoria.`); return; }
+                    const teach = () => {
+                      m.pp[mv] = MQ.MOVES[mv].pp; p.bag[it.value]--;
+                      MQ.audio.sfx('lvl'); this.menu = null;
+                      this.tb.open(MQ.ctx, `¡${MQ.SPECIES[m.id].name} aprendió ${MQ.MOVES[mv].name}! La cinta quedó gastada, como manda la piratería.`);
+                    };
+                    if (m.moves.length < 4) { m.moves.push(mv); teach(); return; }
+                    this.menu = new MQ.Menu(
+                      m.moves.map((old, mi) => ({ label: 'Olvidar ' + MQ.MOVES[old].name.slice(0, 14), value: mi }))
+                        .concat([{ label: 'Mejor no', value: -1 }]),
+                      { x: 50, y: 70, w: 170, rows: 5, title: '¿OLVIDAR CUÁL?',
+                        onPick: (s) => {
+                          if (s.value < 0) { this.openBag(); return; }
+                          m.moves[s.value] = mv;
+                          teach();
+                        },
+                        onCancel: () => this.openBag() });
+                    return;
+                  }
+                  if (item.hold) {
+                    // equipar: si ya carga algo, se intercambia a la mochila
+                    p.bag[it.value]--;
+                    if (m.item) p.bag[m.item] = (p.bag[m.item] || 0) + 1;
+                    m.item = it.value;
+                    MQ.audio.sfx('sel'); this.menu = null;
+                    this.tb.open(MQ.ctx, `${MQ.SPECIES[m.id].name} ahora carga ${item.name}.`);
+                  } else if (item.ev && m.hp > 0) {
+                    m.evs = m.evs || MQ.zeroEVs();
+                    const total = Object.values(m.evs).reduce((a, b) => a + b, 0);
+                    if (m.evs[item.ev] >= 100 || total >= 510) { MQ.audio.sfx('bump'); this.menu = null; this.tb.open(MQ.ctx, `${MQ.SPECIES[m.id].name} ya no le saca más a eso. La calle tiene su límite.`); return; }
+                    m.evs[item.ev] = Math.min(100, m.evs[item.ev] + 10); p.bag[it.value]--;
+                    MQ.recalcStats(m);
+                    MQ.audio.sfx('heal'); this.menu = null;
+                    this.tb.open(MQ.ctx, `¡${MQ.SPECIES[m.id].name} agarra calle! Su ${MQ.STAT_NAMES[item.ev]} mejora.`);
+                  } else if (item.heal && m.hp > 0 && m.hp < m.maxhp) {
                     m.hp = Math.min(m.maxhp, m.hp + item.heal); p.bag[it.value]--;
+                    if (item.cure) { m.status = null; m.psn2T = 0; }
                     MQ.audio.sfx('heal'); this.menu = null;
                     this.tb.open(MQ.ctx, `${MQ.SPECIES[m.id].name} se siente como nuevo. ¡Gracias a la maltica de la patria!`);
                   } else if (item.cure && m.status && m.hp > 0) {
-                    m.status = null; p.bag[it.value]--;
+                    m.status = null; m.psn2T = 0; p.bag[it.value]--;
                     MQ.audio.sfx('heal'); this.menu = null;
                     this.tb.open(MQ.ctx, `El agua de coco obra el milagro: ¡${MQ.SPECIES[m.id].name} quedó como nuevo!`);
                   } else if (item.revive && m.hp <= 0) {
-                    m.hp = Math.floor(m.maxhp * item.revive); p.bag[it.value]--;
+                    m.hp = Math.max(1, Math.floor(m.maxhp * item.revive)); p.bag[it.value]--;
                     MQ.audio.sfx('heal'); this.menu = null;
                     this.tb.open(MQ.ctx, `¡${MQ.SPECIES[m.id].name} volvió en sí! La cocada no falla.`);
                   } else MQ.audio.sfx('bump');
@@ -661,12 +934,18 @@
 
     // ---- movimiento y mundo -------------------------------------------------------
     press(k) {
+      if (this.carnetView) { if (k === 'a' || k === 'b') { this.carnetView = false; MQ.audio.sfx('blip'); } return; }
       if (this.mapView) { if (k === 'a' || k === 'b') { this.mapView = false; MQ.audio.sfx('blip'); } return; }
-      if (this.dexView) { if (k === 'a' || k === 'b') { this.dexView = null; MQ.audio.sfx('blip'); } return; }
+      if (this.dexView) {
+        if (k === 'start') { this.dexLang = this.dexLang === 'en' ? 'es' : 'en'; MQ.audio.sfx('sel'); return; }
+        if (k === 'a' || k === 'b') { this.dexView = null; MQ.audio.sfx('blip'); }
+        return;
+      }
       if (this.statView) { if (k === 'a' || k === 'b') { this.statView = null; MQ.audio.sfx('blip'); } return; }
       if (this.tb.active) { if (k === 'a' || k === 'b') this.tb.advance(); return; }
       if (this.menu) { this.menu.press(k); return; }
       if (this.script) return;
+      if (this.engage) return; // durante el ¡! no se habla, no se pausa, no se guarda
       if (k === 'a') this.interact();
       else if (k === 'start') this.openPause();
     }
@@ -692,13 +971,21 @@
         }
         return;
       }
+      // el remolino a negro del combate pactado
+      if (this.wipe) {
+        if (--this.wipe.t <= 0) { const fn = this.wipe.fn; this.wipe = null; fn(); }
+        return;
+      }
       // destello del encuentro salvaje
       if (this.encFlash > 0) {
         this.encFlash--;
         if (this.encFlash === 0) {
           const e = this.pendingEnc;
           this.pendingEnc = null;
-          MQ.pushScene(new MQ.BattleScene({ wild: e }, (res) => {
+          MQ.pushScene(new MQ.BattleScene({ wild: e,
+            dark: this.map.theme === 'tunel' || this.map.theme === 'ghost',
+            ambience: { theme: this.map.theme, region: this.map.region },
+            weather: this.map.weather }, (res) => {
             MQ.popScene();
             MQ.audio.music(this.map.music || 'town');
             if (res === 'lose') MQ.respawn(this);
@@ -706,17 +993,52 @@
         }
         return;
       }
-      if (this.tb.active || this.menu || this.script || this.dexView || this.statView || this.mapView) return;
+      if (this.tb.active || this.menu || this.script || this.dexView || this.statView || this.mapView || this.carnetView) return;
+
+      // el entrenador que te vio: suelta el ¡!, camina hasta ti y te reta
+      if (this.engage) {
+        const e = this.engage, n = e.npc, p = MQ.player;
+        // si por cualquier vía ya quedó vencido, el acecho se disuelve
+        if (p.flags['t_' + n.trainer.id]) { this.engage = null; this.restoreEngaged(n); return; }
+        e.t++;
+        if (e.phase === 'alert') {
+          if (e.t >= 34) { e.phase = 'walk'; e.t = 0; }
+          return;
+        }
+        if (e.moving > 0) { e.moving -= 2; return; }
+        if (Math.abs(p.x - n.x) + Math.abs(p.y - n.y) <= 1) {
+          p.dir = { up: 'down', down: 'up', left: 'right', right: 'left' }[n.dir];
+          this.engage = null;
+          this.engagedNpc = n; // al terminar su combate vuelve a su puesto
+          return this.startTrainer(n);
+        }
+        const [dx, dy] = DIRS[n.dir];
+        n.x += dx; n.y += dy;
+        e.moving = T;
+        return;
+      }
 
       // la gente del andén mira alrededor, como la gente de verdad
+      // (los entrenadores no: su mirada es su línea de vista, y esa se respeta)
       if (this.frame % 70 === 0 && Math.random() < 0.6) {
-        const idlers = (this.map.npcs || []).filter((n) => !n.mon && !(n.hideIf && MQ.player.flags[n.hideIf]));
+        const idlers = (this.map.npcs || []).filter((n) => !n.mon && !n.trainer && !n.itemBall && !(n.hideIf && MQ.player.flags[n.hideIf]) && (!n.showIf || MQ.player.flags[n.showIf]));
         if (idlers.length) MQ.pick(idlers).dir = MQ.pick(['up', 'down', 'left', 'right']);
+      }
+
+      // los que giran barren el túnel con la mirada — y quieto también te encuentran
+      if (this.frame % 50 === 0) {
+        for (const n of this.map.npcs || []) {
+          if (!n.spin || !n.trainer || MQ.player.flags['t_' + n.trainer.id]) continue;
+          if (n.hideIf && MQ.player.flags[n.hideIf]) continue;
+          if (Math.random() < 0.6) n.dir = MQ.pick(['up', 'down', 'left', 'right']);
+        }
+        if (this.moving === 0 && this.spotNow()) return;
       }
 
       const p = MQ.player;
       if (this.moving > 0) {
-        this.moving -= 2;
+        // patineta > trote con las Cholas (B sostenido) > caminar
+        this.moving -= (p.skating && !this.map.station ? 4 : (MQ.input.held.b && p.flags.cholas ? 3 : 2));
         if (this.moving <= 0) { this.moving = 0; this.arrived(); }
         return;
       }
@@ -736,6 +1058,35 @@
     arrived() {
       const p = MQ.player;
       const ch = this.tile(p.x, p.y);
+      // el safari se camina con pasos contados (spec §1.5)
+      if (this.map.id === 'in_safari') {
+        p.safariSteps = (p.safariSteps ?? 0) - 1;
+        if (p.safariSteps <= 0) {
+          p.safariSteps = 0;
+          const back = MQ.MAPS.st_zoologico.warps.find((w) => w.to === 'in_safari');
+          p.x = back ? back.x : 20; p.y = back ? Math.max(1, back.y - 1) : 8;
+          this.enterMap('st_zoologico');
+          this.tb.open(MQ.ctx, 'TAQUILLA: ¡Se acabaron los pasos del safari, mijo! Los animales también descansan. Vuelve cuando quieras.');
+          return;
+        }
+      }
+      // el bíper se carga caminando
+      if ((p.biperCharge || 0) < 100) p.biperCharge = (p.biperCharge || 0) + 1;
+      // la esencia protectora se gasta paso a paso
+      if (p.repelSteps > 0) {
+        p.repelSteps--;
+        if (p.repelSteps === 0) this.banner = { text: 'La esencia se desvaneció...', t: 90 };
+      }
+      // el veneno gotea al caminar (estilo clásico: se detiene en 1 PS)
+      p.steps = (p.steps || 0) + 1;
+      if (p.steps % 4 === 0) {
+        for (const m of p.party) {
+          if ((m.status === 'psn' || m.status === 'psn2') && m.hp > 1) {
+            m.hp = Math.max(1, m.hp - 1);
+            if (m.hp === 1) { m.status = null; m.psn2T = 0; this.banner = { text: `${MQ.SPECIES[m.id].name} resiste el veneno a pura vergüenza...`, t: 90 }; }
+          }
+        }
+      }
       // warp
       const w = (this.map.warps || []).find((w) => w.x === p.x && w.y === p.y);
       if (w) {
@@ -753,19 +1104,46 @@
       }
       if (ch === 'M') { this.openTrain(); return; } // pisar la franja del andén = tomar el tren
       if (this.checkTrigger()) return;
-      // encuentro salvaje: la pantalla parpadea y arranca la música antes del combate
+      // ¡te vieron! — el ¡! del andén (línea de vista estilo FireRed)
+      if (this.spotNow()) return;
+      // encuentro salvaje: la pantalla parpadea y arranca la música antes del combate.
+      // Tablas nuevas (data/encounters vía encRef) o las clásicas del mapa (enc).
+      if (ch !== '~' && ch !== 'g') return;
+      // el Carretón ronda Los Teques en el post-juego: se oye antes de verse
+      if (this.map.region === 'losteques' && p.flags.ending && !p.dexCaught.carreton && Math.random() < 0.05) {
+        MQ.audio.sfx('whistle');
+        this.encFlash = 22;
+        this.pendingEnc = { id: 'carreton', lvl: 65 };
+        MQ.audio.music('boss');
+        return;
+      }
+      const table = this.map.encRef && MQ.DATA && MQ.DATA.encounters.tables[this.map.encRef];
       const enc = this.map.enc;
-      if (enc && (ch === '~' || ch === 'g') && Math.random() < enc.rate) {
+      let picked = null;
+      if (table) {
+        const RATES = { oscura: 1 / 8, matorral: 1 / 10, anden: 1 / 12, sendero: 1 / 10, azotea: 1 / 10, tableau: 1 / 8 };
+        if (Math.random() < (RATES[table.kind] || 1 / 9)) {
+          const pool = table.slots.filter((s) => s.w > 0);
+          let r = Math.random() * 100;
+          let sl = pool[0];
+          for (const s of pool) { r -= s.w; if (r <= 0) { sl = s; break; } }
+          picked = { id: sl.id, lvl: sl.min + MQ.rand(sl.max - sl.min + 1) };
+        }
+      } else if (enc && Math.random() < enc.rate) {
         const pool = enc.mons.filter((m) => !m[4] || p.flags[m[4]]);
         const total = pool.reduce((s, m) => s + m[1], 0);
         let r = Math.random() * total;
         let pickd = pool[0];
         for (const m of pool) { r -= m[1]; if (r <= 0) { pickd = m; break; } }
-        const lvl = pickd[2] + MQ.rand(pickd[3] - pickd[2] + 1);
-        this.encFlash = 22;
-        this.pendingEnc = { id: pickd[0], lvl };
-        MQ.audio.music(pickd[0] === 'trenfantasma' ? 'boss' : 'battle');
+        picked = { id: pickd[0], lvl: pickd[2] + MQ.rand(pickd[3] - pickd[2] + 1) };
       }
+      if (!picked) return;
+      // la esencia de azabache espanta a los débiles
+      const lead = p.party.find((m) => m.hp > 0);
+      if (p.repelSteps > 0 && lead && picked.lvl < lead.lvl) return;
+      this.encFlash = 22;
+      this.pendingEnc = picked;
+      MQ.audio.music(picked.id === 'trenfantasma' ? 'boss' : 'battle');
     }
 
     // ---- dibujo ---------------------------------------------------------------------
@@ -822,13 +1200,36 @@
       // NPCs
       for (const n of m.npcs || []) {
         if (n.hideIf && p.flags[n.hideIf]) continue;
-        const nx = Math.round(n.x * T - camX), ny = Math.round(n.y * T - camY);
+        if (n.showIf && !p.flags[n.showIf]) continue;
+        const eng = this.engage && this.engage.npc === n ? this.engage : null;
+        // el entrenador que camina hacia ti se interpola como el jugador
+        let ex = 0, ey = 0, step = 0;
+        if (eng && eng.moving > 0) {
+          const [edx, edy] = DIRS[n.dir];
+          ex = -edx * eng.moving; ey = -edy * eng.moving;
+          step = ((eng.moving / 8) | 0) % 2;
+        }
+        const nx = Math.round(n.x * T - camX + ex), ny = Math.round(n.y * T - camY + ey);
         if (nx < -T || ny < -T || nx > MQ.W || ny > MQ.H) continue;
+        // paquetico tirado: bultico claro con cinta naranja y su nudo
+        if (n.itemBall) {
+          ctx.fillStyle = '#d8d8e2'; ctx.fillRect(nx + 4, ny + 7, 8, 7);
+          ctx.fillStyle = '#e85a1a'; ctx.fillRect(nx + 4, ny + 10, 8, 2);
+          ctx.fillStyle = '#8a8a96'; ctx.fillRect(nx + 6, ny + 5, 4, 2);
+          continue;
+        }
         if (n.mon) MQ.drawMon(ctx, n.mon, nx, ny, 1);
-        else MQ.drawPerson(ctx, nx, ny, MQ.LOOKS[n.look] || MQ.LOOKS.chamo, n.dir || 'down', 0);
+        else MQ.drawPerson(ctx, nx, ny, MQ.LOOKS[n.look] || MQ.LOOKS.chamo, n.dir || 'down', step, !!(eng && eng.moving > 0));
         if (n.boss && !p.flags['t_' + (n.trainer && n.trainer.id)] && (now / 500 | 0) % 2) {
           ctx.fillStyle = '#f5d76e'; ctx.font = MQ.FONT_B;
           ctx.fillText('★', nx + 5, ny - 9);
+        }
+        // el globo del ¡! — brinca dos píxeles, como en el andén de verdad
+        if (eng && eng.phase === 'alert') {
+          const hop = eng.t < 8 ? -2 : 0;
+          MQ.panel(ctx, nx + 2, ny - 18 + hop, 12, 14);
+          ctx.fillStyle = '#e04b32'; ctx.font = MQ.FONT_B; ctx.textBaseline = 'top';
+          ctx.fillText('!', nx + 6, ny - 15 + hop);
         }
       }
       // jugador
@@ -860,6 +1261,7 @@
       }
 
       if (this.mapView || this.mapBehind) this.drawMetroMap(ctx);
+      if (this.carnetView) this.drawCarnet(ctx);
       if (this.dexView) this.drawDexPage(ctx, this.dexView);
       if (this.statView) this.drawStatPage(ctx, this.statView);
       if (this.menu) this.menu.draw(ctx);
@@ -875,6 +1277,57 @@
         ctx.fillStyle = 'rgba(245,235,210,0.85)';
         ctx.fillRect(0, 0, MQ.W, MQ.H);
       }
+      // iris que se cierra sobre ti: el túnel se traga la luz y arranca el pleito
+      if (this.wipe) {
+        const f = 1 - this.wipe.t / 36;
+        const r = Math.max(MQ.W, MQ.H) * 0.75 * (1 - f) + 6;
+        ctx.save();
+        ctx.fillStyle = '#08060e';
+        ctx.beginPath();
+        ctx.rect(0, 0, MQ.W, MQ.H);
+        ctx.arc(Math.round(ppx - camX) + 8, Math.round(ppy - camY) + 8, r, 0, Math.PI * 2, true);
+        ctx.fill('evenodd');
+        ctx.restore();
+      }
+    }
+
+    // el Carnet del Pasajero: la Trainer Card del Metro
+    drawCarnet(ctx) {
+      const p = MQ.player;
+      MQ.panel(ctx, 8, 8, MQ.W - 16, MQ.H - 16);
+      ctx.font = MQ.FONT_B; ctx.textBaseline = 'top';
+      ctx.fillStyle = '#e85a1a';
+      ctx.fillRect(16, 16, MQ.W - 32, 3);
+      ctx.fillStyle = '#f5a623';
+      ctx.fillText('CARNET DEL PASAJERO · METRO DE CARACAS', 20, 26);
+      // foto tipo carnet: el pasajero sobre fondo de cabina
+      ctx.fillStyle = '#2a2438'; ctx.fillRect(22, 44, 36, 42);
+      ctx.strokeStyle = '#8a8a96'; ctx.lineWidth = 1; ctx.strokeRect(22.5, 44.5, 35, 41);
+      MQ.drawPerson(ctx, 32, 58, MQ.LOOKS[p.look] || MQ.LOOKS.player, 'down', 0);
+      // datos del viajero
+      const f = p.frames || 0;
+      const hh = Math.floor(f / 216000), mm = Math.floor(f / 3600) % 60;
+      const caught = Object.keys(p.dexCaught).length, seen = Object.keys(p.dexSeen).length;
+      ctx.fillStyle = '#e8dfc8'; ctx.font = MQ.FONT;
+      ctx.fillText(`PASAJERO: ${p.name}`, 70, 46);
+      ctx.fillText(`BOLOS: ${p.money}b`, 70, 60);
+      ctx.fillText(`TIEMPO DE VIAJE: ${hh}:${String(mm).padStart(2, '0')}`, 70, 74);
+      ctx.fillText(`CUADERNO: ${caught} fichados · ${seen} vistos`, 70, 88);
+      // las ocho Fichas Doradas: troqueles que se van dorando
+      ctx.fillStyle = '#f5a623'; ctx.font = MQ.FONT_B;
+      ctx.fillText('FICHAS DORADAS', 22, 104);
+      Object.keys(MQ.FICHAS).forEach((fk, i) => {
+        const fx = 24 + i * 26, fy = 118;
+        ctx.fillStyle = p.flags[fk] ? '#f5d76e' : '#2a2438';
+        ctx.beginPath(); ctx.arc(fx + 8, fy + 8, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = p.flags[fk] ? '#b8860b' : '#4a4458'; ctx.stroke();
+        if (p.flags[fk]) { ctx.fillStyle = '#b8860b'; ctx.font = MQ.FONT; ctx.fillText(String(i + 1), fx + 6, fy + 4); }
+      });
+      ctx.fillStyle = '#8a8aa0'; ctx.font = MQ.FONT;
+      ctx.fillText('Válido para una (1) hora fantasma por noche.', 22, 146);
+      ctx.fillText('Intransferible. El Metro no se hace responsable', 22, 158);
+      ctx.fillText('por espantos fichados dentro de sus instalaciones.', 22, 168);
+      ctx.fillText('(A para volver)', 22, MQ.H - 34);
     }
 
     drawDexPage(ctx, id) {
@@ -893,10 +1346,11 @@
       const caught = MQ.player.dexCaught[id];
       ctx.fillText(caught ? 'FICHADO ●' : 'VISTO ○', 110, 70);
       ctx.fillStyle = '#e8dfc8';
-      const lines = MQ.wrap(ctx, caught ? sp.dex : 'Se sabe poco. Fíchalo para que el Cuaderno hable.', MQ.W - 56);
+      const entry = this.dexLang === 'en' ? (sp.dex_en || sp.dex) : sp.dex;
+      const lines = MQ.wrap(ctx, caught ? entry : 'Se sabe poco. Fíchalo para que el Cuaderno hable.', MQ.W - 56);
       lines.forEach((l, i) => ctx.fillText(l, 24, 108 + i * 12));
       ctx.fillStyle = '#8a8aa0';
-      ctx.fillText('(A para volver)', 24, MQ.H - 34);
+      ctx.fillText(`(A para volver · MENÚ: ${this.dexLang === 'en' ? 'ver en español' : 'read in English'})`, 24, MQ.H - 34);
     }
 
     drawStatPage(ctx, m) {
@@ -904,13 +1358,18 @@
       MQ.panel(ctx, 8, 8, MQ.W - 16, MQ.H - 16);
       if (!(m.shiny && MQ.drawSprite(ctx, m.id, 'shiny', 24, 26, 64))) MQ.drawMon(ctx, m.id, 24, 26, 4);
       ctx.font = MQ.FONT_B; ctx.textBaseline = 'top'; ctx.fillStyle = '#f5a623';
-      ctx.fillText(`${m.shiny ? '★' : ''}${sp.name}  N${m.lvl}`, 110, 26);
+      MQ.migrateMon(m);
+      const gen = m.gender === 'm' ? '♂' : m.gender === 'f' ? '♀' : '';
+      ctx.fillText(`${m.shiny ? '★' : ''}${sp.name}${gen}  N${m.lvl}`, 110, 26);
       ctx.font = MQ.FONT; ctx.fillStyle = '#e8dfc8';
       ctx.fillText(`PS  ${m.hp}/${m.maxhp}${m.status ? '  · ' + MQ.STATUS[m.status].name : ''}`, 110, 42);
-      ctx.fillText(`ATQ ${m.atk}  DEF ${m.def}  VEL ${m.spd}`, 110, 54);
-      const nxt = MQ.xpForLevel(m.lvl + 1) - m.xp;
+      ctx.fillText(`ATQ ${m.atk}  DEF ${m.def}  VEL ${m.spe}`, 110, 54);
+      ctx.fillText(`A.E ${m.spa}  D.E ${m.spd}`, 110, 66);
       ctx.fillStyle = '#8a8aa0';
-      ctx.fillText(`Faltan ${Math.max(0, nxt)} EXP para nivel ${m.lvl + 1}`, 110, 66);
+      ctx.fillText(`${MQ.NATURE_NAMES[m.nature] || ''} · ${m.ability ? MQ.ABILITIES[m.ability].name : ''}`, 110, 78);
+      if (m.item) ctx.fillText(`Lleva: ${MQ.ITEMS[m.item].name}`, 110, 88);
+      const nxt = MQ.xpForLevel(m.lvl + 1, MQ.xpGroupOf(m.id)) - m.xp;
+      ctx.fillText(`Faltan ${Math.max(0, nxt)} EXP para nivel ${m.lvl + 1}`, 110, m.item ? 98 : 88);
       ctx.fillStyle = '#f5a623';
       ctx.fillText('MOVIMIENTOS · PP', 24, 108);
       ctx.fillStyle = '#e8dfc8';

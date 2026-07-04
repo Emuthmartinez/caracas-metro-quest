@@ -64,6 +64,7 @@
     click: () => { beep(1200, 0.05, 'square', 0.05); beep(1600, 0.06, 'square', 0.04, 0.05); }, // ¡plin! quedó fija
     sparkle: () => [1318, 1568, 2093].forEach((f, i) => beep(f, 0.08, 'sine', 0.04, i * 0.05)), // estrellitas
     breakout: () => { noise(0.12, 0.07); beep(220, 0.18, 'sawtooth', 0.05, 0, 180); }, // reventó la ficha
+    alert: () => { beep(988, 0.08, 'square', 0.06); beep(988, 0.1, 'square', 0.06, 0.1); }, // ¡te vieron!
   };
 
   // Pistas: [nota|null, duración en pasos] — paso = semicorchea aprox.
@@ -107,6 +108,44 @@
     gaita: { bpm: 132, seq: [ // victoria
       ['C5',2],['C5',1],['B4',1],['A4',2],['G4',2],['F4',2],['G4',2],['A4',2],['F4',2],
       ['G4',2],['G4',1],['A4',1],['B4',2],['C5',2],['D5',2],['B4',2],['C5',4],
+    ] },
+    oeste: { bpm: 104, seq: [ // Línea 2: el oeste obrero, menor pero con calor
+      ['D4',2],['F4',2],['A4',3],[null,1],['G4',2],['F4',2],['E4',3],[null,1],
+      ['D4',2],['F4',2],['A4',2],['C5',2],['As4',2],['A4',2],['G4',3],[null,1],
+      ['F4',2],['E4',2],['D4',3],[null,1],['C4',2],['D4',2],['E4',3],[null,1],
+    ] },
+    sur: { bpm: 140, seq: [ // Línea 3: mercados y caballos, valsecito criollo
+      ['G4',1],['B4',1],['D5',1],['G5',2],['D5',1],['B4',1],['D5',2],
+      ['C5',1],['E5',1],['G5',2],['E5',1],['C5',1],['E5',2],
+      ['A4',1],['C5',1],['E5',2],['C5',1],['A4',1],['B4',1],['C5',1],['D5',2],
+      ['G4',1],['B4',1],['D5',1],['B4',1],['G4',3],
+    ] },
+    teatros: { bpm: 92, seq: [ // Línea 4: terciopelo oscuro, memoria de rumba
+      ['E4',3],['G4',1],['B4',3],[null,1],['A4',2],['G4',2],['Fs4',3],[null,1],
+      ['E4',3],['G4',1],['C5',3],[null,1],['B4',2],['A4',2],['G4',3],[null,1],
+      ['Fs4',2],['A4',2],['Ds4',2],['Fs4',2],['E4',4],[null,2],
+    ] },
+    avila: { bpm: 100, seq: [ // el cerro: quintas abiertas que suben
+      ['C4',2],['G4',2],['C5',3],[null,1],['D5',2],['E5',3],[null,1],
+      ['G4',2],['D5',2],['G5',3],[null,1],['E5',2],['D5',2],['C5',3],[null,1],
+      ['A4',2],['E5',2],['A5',4],['G5',2],['E5',2],['C5',4],
+    ] },
+    cable: { bpm: 138, seq: [ // Metrocable: la cuna de la salsa, montuno arriba
+      ['C4',1],['E4',1],['G4',1],[null,1],['A4',1],['G4',1],['E4',1],[null,1],
+      ['F4',1],['A4',1],['C5',1],[null,1],['D5',1],['C5',1],['A4',1],[null,1],
+      ['G4',1],['B4',1],['D5',1],['F5',1],['E5',1],['C5',1],['G4',1],['E4',1],
+      ['C4',1],['E4',1],['G4',2],['C5',2],[null,2],
+    ] },
+    paramo: { bpm: 72, seq: [ // Los Teques: niebla fría que cuenta niños
+      ['A3',4],['E4',4],['C4',4],[null,2],['B3',3],[null,3],
+      ['A3',4],['G3',4],['A3',6],[null,2],
+      ['C4',4],['E4',4],['D4',4],['B3',4],['A3',6],[null,2],
+    ] },
+    reto: { bpm: 156, seq: [ // ¡te vieron!: la mirada se cruza y no hay reversa
+      ['E4',1],['E4',1],[null,1],['E4',1],['F4',1],['E4',1],['Ds4',1],['E4',1],
+      ['G4',1],['G4',1],[null,1],['G4',1],['A4',1],['G4',1],['Fs4',1],['G4',1],
+      ['B4',1],['B4',1],[null,1],['B4',1],['C5',1],['B4',1],['As4',1],['B4',1],
+      ['E5',2],['B4',2],['G4',2],['E4',2],
     ] },
   };
 

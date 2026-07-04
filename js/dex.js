@@ -1,4 +1,6 @@
-// Metro Quest — el Cuaderno de Espantos: tipos, movimientos y las 25 criaturas.
+// Metro Quest — el Cuaderno de Espantos: los 150 del bestiario, 204 movimientos,
+// 41 habilidades, 25 naturalezas y las matemáticas Gen-3 (systems-spec Fase 1).
+// Los datos viven en js/gamedata.js (compilado de data/*.json); aquí se les da forma.
 (() => {
   const MQ = (globalThis.MQ = globalThis.MQ || {});
 
@@ -28,751 +30,321 @@
   MQ.effect = (atk, defTypes) =>
     defTypes.reduce((m, t) => m * ((MQ.CHART[atk] || {})[t] ?? 1), 1);
 
-  // ---- Movimientos ----------------------------------------------------------
-  // fx: {heal:frac} cura al usuario; {stage:[stat,delta,'self'|'foe']} sube/baja;
-  // {status:'psn'|'par'|'slp', chance:0-1} aflige (chance 1 si es puro estado).
-  // pp: usos por movimiento (se restauran al curar). recoil: fracción del daño.
-  MQ.MOVES = {
-    trancazo:    { name: 'Trancazo',              type: 'Criollo',   pow: 40,  acc: 100, pp: 35 },
-    cachetada:   { name: 'Cachetada Criolla',     type: 'Criollo',   pow: 55,  acc: 95,  pp: 25 },
-    horapico:    { name: 'Empujón de Hora Pico',  type: 'Criollo',   pow: 75,  acc: 95,  pp: 15 },
-    abrazotia:   { name: 'Abrazo de Tía',         type: 'Criollo',   pow: 0,   acc: 100, pp: 10, fx: { heal: 0.5 } },
-    gritomama:   { name: 'Regaño de Mamá',        type: 'Criollo',   pow: 0,   acc: 100, pp: 20, fx: { stage: ['atk', -1, 'foe'] } },
-    forcejeo:    { name: 'Forcejeo',              type: 'Criollo',   pow: 50,  acc: 100, pp: 99, recoil: 0.25 },
-    arepazo:     { name: 'Arepazo',               type: 'Sabroso',   pow: 45,  acc: 100, pp: 30 },
-    empanada:    { name: 'Empanada de Cazón',     type: 'Sabroso',   pow: 60,  acc: 100, pp: 20 },
-    asadonegro:  { name: 'Asado Negro',           type: 'Sabroso',   pow: 80,  acc: 95,  pp: 12 },
-    hallacazo:   { name: 'Hallacazo Decembrino',  type: 'Sabroso',   pow: 95,  acc: 85,  pp: 8 },
-    abuela:      { name: 'Comida de Abuela',      type: 'Sabroso',   pow: 0,   acc: 100, pp: 10, fx: { heal: 0.5 } },
-    cornetazo:   { name: 'Cornetazo',             type: 'Rumba',     pow: 40,  acc: 100, pp: 35 },
-    tambor:      { name: 'Tambor de San Juan',    type: 'Rumba',     pow: 55,  acc: 100, pp: 25 },
-    gaita:       { name: 'Gaita Furruquera',      type: 'Rumba',     pow: 70,  acc: 95,  pp: 15 },
-    joropo:      { name: 'Joropo Recio',          type: 'Rumba',     pow: 85,  acc: 90,  pp: 10 },
-    almallanera: { name: 'Alma Llanera',          type: 'Rumba',     pow: 105, acc: 80,  pp: 5 },
-    serenata:    { name: 'Serenata Caraqueña',    type: 'Rumba',     pow: 0,   acc: 100, pp: 20, fx: { stage: ['atk', -1, 'foe'] } },
-    arrullo:     { name: 'Arrullo Llanero',       type: 'Rumba',     pow: 0,   acc: 75,  pp: 10, fx: { status: 'slp' } },
-    susto:       { name: 'Susto',                 type: 'Espanto',   pow: 40,  acc: 100, pp: 35 },
-    maldeojo:    { name: 'Mal de Ojo',            type: 'Espanto',   pow: 0,   acc: 100, pp: 20, fx: { stage: ['atk', -1, 'foe'] } },
-    pava:        { name: 'Pavita Negra',          type: 'Espanto',   pow: 0,   acc: 100, pp: 20, fx: { stage: ['def', -1, 'foe'] } },
-    llanto:      { name: 'Llanto Eterno',         type: 'Espanto',   pow: 60,  acc: 100, pp: 20 },
-    nocturno:    { name: 'Espanto Nocturno',      type: 'Espanto',   pow: 80,  acc: 95,  pp: 12 },
-    silbido:     { name: 'Silbido Lejano',        type: 'Espanto',   pow: 85,  acc: 1000, pp: 8 },
-    ultimoviaje: { name: 'Último Viaje',          type: 'Espanto',   pow: 100, acc: 80,  pp: 5 },
-    chispazo:    { name: 'Chispazo',              type: 'Catatumbo', pow: 40,  acc: 100, pp: 35 },
-    corrientazo: { name: 'Corrientazo',           type: 'Catatumbo', pow: 65,  acc: 100, pp: 20, fx: { status: 'par', chance: 0.2 } },
-    bajon:       { name: 'Bajón de Luz',          type: 'Catatumbo', pow: 0,   acc: 100, pp: 20, fx: { stage: ['spd', -1, 'foe'] } },
-    tercerriel:  { name: 'Tercer Riel',           type: 'Catatumbo', pow: 80,  acc: 95,  pp: 12, fx: { status: 'par', chance: 0.3 } },
-    catatumbazo: { name: 'Relámpago Catatumbo',   type: 'Catatumbo', pow: 105, acc: 80,  pp: 5,  fx: { status: 'par', chance: 0.2 } },
-    aguacerito:  { name: 'Aguacerito',            type: 'Caribe',    pow: 40,  acc: 100, pp: 35 },
-    mordida:     { name: 'Mordida de Caribe',     type: 'Caribe',    pow: 55,  acc: 100, pp: 25 },
-    paloagua:    { name: 'Palo de Agua',          type: 'Caribe',    pow: 70,  acc: 95,  pp: 15 },
-    crecida:     { name: 'Crecida del Guaire',    type: 'Caribe',    pow: 90,  acc: 85,  pp: 8,  fx: { status: 'psn', chance: 0.2 } },
-    bejucazo:    { name: 'Bejucazo',              type: 'Monte',     pow: 45,  acc: 100, pp: 30 },
-    hoja:        { name: 'Hoja Afilada',          type: 'Monte',     pow: 60,  acc: 100, pp: 20 },
-    colmillo:    { name: 'Colmillo Mapanare',     type: 'Monte',     pow: 70,  acc: 95,  pp: 15, fx: { status: 'psn', chance: 0.3 } },
-    monteadentro:{ name: 'Monte Adentro',         type: 'Monte',     pow: 85,  acc: 90,  pp: 10 },
-    araguaney:   { name: 'Flor de Araguaney',     type: 'Monte',     pow: 0,   acc: 100, pp: 15, fx: { stage: ['atk', 1, 'self'] } },
-    pedrada:     { name: 'Pedrada',               type: 'Tepuy',     pow: 45,  acc: 100, pp: 30 },
-    conchazo:    { name: 'Conchazo',              type: 'Tepuy',     pow: 60,  acc: 100, pp: 20 },
-    kueka:       { name: 'Piedra Kueka',          type: 'Tepuy',     pow: 0,   acc: 100, pp: 15, fx: { stage: ['def', 1, 'self'] } },
-    temblor:     { name: 'Temblorcito',           type: 'Tepuy',     pow: 70,  acc: 95,  pp: 15 },
-    avalancha:   { name: 'Derrumbe del Ávila',    type: 'Tepuy',     pow: 85,  acc: 90,  pp: 10 },
-    tepuyazo:    { name: 'Peso del Tepuy',        type: 'Tepuy',     pow: 95,  acc: 85,  pp: 8 },
+  // División físico/especial por tipo (Gen 3, GATE 0/Q3B)
+  MQ.CATEGORY = {
+    Criollo: 'physical', Sabroso: 'physical', Monte: 'physical', Tepuy: 'physical',
+    Rumba: 'special', Espanto: 'special', Catatumbo: 'special', Caribe: 'special',
   };
 
-  // ---- Estados ---------------------------------------------------------------
-  MQ.STATUS = {
-    psn: { name: 'ENV', color: '#9a4ad9', verb: 'quedó envenenado' },
-    par: { name: 'PAR', color: '#f5d76e', verb: 'quedó paralizado' },
-    slp: { name: 'DRM', color: '#8a8aa0', verb: 'se quedó dormido' },
-  };
-
-  // ---- Especies --------------------------------------------------------------
-  // base: hp/atk/def/spd · catch: 0-255 (mayor = más fácil) · learn: [nivel, mov]
-  MQ.SPECIES = {
-    frontinito: {
-      name: 'Frontinito', types: ['Tepuy'],
-      base: { hp: 54, atk: 60, def: 58, spd: 50 }, catch: 60,
-      learn: [[1, 'pedrada'], [1, 'trancazo'], [7, 'abrazotia'], [12, 'conchazo'], [19, 'temblor'], [27, 'avalancha'], [34, 'tepuyazo']],
-      evolve: { lvl: 16, to: 'ucumari' },
-      dex: 'Osezno frontino que bajó del Ávila una noche de neblina y se quedó. Nació con los anteojos puestos: hay cosas que conviene ver claritas desde el principio.',
-      pal: { k: '#1e1410', f: '#3a2a1e', w: '#e8dfc8', e: '#1a1a1a' },
-      art: [
-        '...kk......kk...',
-        '..kffk....kffk..',
-        '..kfffkkkkfffk..',
-        '.kffffffffffffk.',
-        '.kfwwfffffwwffk.',
-        '.kfwewffffwewfk.',
-        '.kfwwfffffwwffk.',
-        '.kffffwwwwffffk.',
-        '..kfffwkkwfffk..',
-        '..kffffffffffk..',
-        '.kffkffffffkffk.',
-        '..kk..kkkk..kk..',
-      ],
-    },
-    ucumari: {
-      name: 'Ucumarí', types: ['Tepuy', 'Monte'],
-      base: { hp: 78, atk: 84, def: 82, spd: 58 }, catch: 40,
-      learn: [[1, 'pedrada'], [1, 'trancazo'], [7, 'abrazotia'], [12, 'conchazo'], [19, 'temblor'], [24, 'monteadentro'], [27, 'avalancha'], [34, 'tepuyazo']],
-      dex: 'Oso frontino adulto, el único oso de Suramérica y el portero secreto del Ávila. Cuando abraza, perdona; cuando empuja, amanece un derrumbe en la Cota Mil.',
-      pal: { k: '#1e1410', f: '#3a2a1e', w: '#e8dfc8', e: '#1a1a1a' },
-      art: [
-        '...kk......kk...',
-        '..kffk....kffk..',
-        '.kffffkkkkffffk.',
-        '.kfwwffffffwwfk.',
-        '.kfwewffffwewfk.',
-        '.kfwwffffffwwfk.',
-        '..kfffwwwwfffk..',
-        '..kffffwwffffk..',
-        '.kffffffffffffk.',
-        'kffkffffffffkffk',
-        'kffkffffffffkffk',
-        '.kffffffffffffk.',
-        '..kffkkkkkkffk..',
-        '..kkk......kkk..',
-      ],
-    },
-    turpialin: {
-      name: 'Turpialín', types: ['Rumba', 'Monte'],
-      base: { hp: 50, atk: 58, def: 50, spd: 68 }, catch: 60,
-      learn: [[1, 'cornetazo'], [1, 'trancazo'], [7, 'serenata'], [12, 'tambor'], [14, 'arrullo'], [19, 'gaita'], [26, 'joropo'], [36, 'almallanera']],
-      evolve: { lvl: 16, to: 'cantaclaro' },
-      dex: 'El pájaro nacional, pero chiquito y arrecho. Canta a las 5 a.m. sin pedir permiso, como las licuadoras de toda Venezuela.',
-      pal: { k: '#1c1c1c', o: '#f5a623', w: '#ffffff', b: '#d98a2b', e: '#f2ead8' },
-      art: [
-        '......kkkk......',
-        '.....kkkkkk.....',
-        '....kkekkkkk....',
-        '....kkkkkkkbb...',
-        '...kkkkkkkk.....',
-        '..kooookkk......',
-        '.koooooookw.....',
-        '.kooooooookww...',
-        '.koooooooook....',
-        '..koooooook.....',
-        '...koookok......',
-        '....kk..kk......',
-      ],
-    },
-    cantaclaro: {
-      name: 'Cantaclaro', types: ['Rumba', 'Monte'],
-      base: { hp: 70, atk: 82, def: 64, spd: 90 }, catch: 40,
-      learn: [[1, 'cornetazo'], [1, 'trancazo'], [7, 'serenata'], [12, 'tambor'], [14, 'arrullo'], [19, 'gaita'], [26, 'joropo'], [30, 'monteadentro'], [36, 'almallanera']],
-      dex: 'Turpial coplero con sombrero pelo e\' guama. Ganó un contrapunteo contra el mismísimo Diablo y desde entonces no hay quien lo calle.',
-      pal: { k: '#1c1c1c', o: '#f5a623', w: '#ffffff', h: '#c9a36a', b: '#d98a2b', e: '#f2ead8', n: '#ffffff' },
-      art: [
-        '....hhhhhhhh....',
-        '..hhhhhhhhhhhh..',
-        '....kkkkkkk.....',
-        '...kkekkkkkbb..n',
-        '...kkkkkkkb..n..',
-        '..koooookk......',
-        '.kooooooook..n..',
-        '.koowwwooook....',
-        '.kooooooooook...',
-        '..kooooooook....',
-        '...kooooko......',
-        '....kk..kk......',
-      ],
-    },
-    cocuyin: {
-      name: 'Cocuyín', types: ['Catatumbo'],
-      base: { hp: 48, atk: 60, def: 48, spd: 72 }, catch: 60,
-      learn: [[1, 'chispazo'], [1, 'trancazo'], [7, 'bajon'], [13, 'corrientazo'], [20, 'tercerriel'], [34, 'catatumbazo']],
-      evolve: { lvl: 16, to: 'centella' },
-      dex: 'Cocuyo de monte que se tragó un cable de alta tensión. Cuando se va la luz, todo el barrio lo busca. Él cobra en seriedad y cariño.',
-      pal: { k: '#202830', c: '#3a4a55', y: '#ffe66e', e: '#ffffff' },
-      art: [
-        '....kkkkkkk.....',
-        '...kcecccecck...',
-        '..kccccccccck...',
-        '.kccccccccccck..',
-        '.kccccccccccck..',
-        '..kccccccccck...',
-        '...kkcccccck....',
-        '....kyyyyyk.....',
-        '...kyyyyyyyk....',
-        '....yyyyyyy.....',
-        '.....yyyyy......',
-        '......yyy.......',
-      ],
-    },
-    centella: {
-      name: 'La Centella', types: ['Catatumbo', 'Espanto'],
-      base: { hp: 66, atk: 88, def: 60, spd: 96 }, catch: 40,
-      learn: [[1, 'chispazo'], [1, 'susto'], [7, 'bajon'], [13, 'corrientazo'], [20, 'tercerriel'], [24, 'nocturno'], [34, 'catatumbazo']],
-      dex: 'La bola de fuego que persigue caminantes en la sabana. Dicen que si le rezas al revés se aleja. Nadie se acuerda del rezo al derecho.',
-      pal: { k: '#1a1a2e', y: '#ffe66e', o: '#f5a623', w: '#ffffff', e: '#1a1a2e' },
-      art: [
-        '......yy...w....',
-        '.w...yyyy.......',
-        '....yyyyyy...y..',
-        '.y..yyooyyy.....',
-        '..yyoooooyyy....',
-        '.yyoeoooeooyy...',
-        '..yyoooooyy..w..',
-        '.w.yyokkooyyy...',
-        '...yyoooooy.....',
-        '..y.yyyyyy..y...',
-        '......yyy.......',
-        '.....y..y.......',
-      ],
-    },
-    chigui: {
-      name: 'Chigüi', types: ['Caribe'],
-      base: { hp: 56, atk: 46, def: 52, spd: 40 }, catch: 200,
-      learn: [[1, 'trancazo'], [1, 'aguacerito'], [8, 'mordida'], [14, 'paloagua'], [22, 'crecida'], [28, 'horapico']],
-      evolve: { lvl: 18, to: 'chiguiron' },
-      dex: 'El Vaticano dictaminó que en Semana Santa cuenta como pescado. Él no fue consultado y prefiere no opinar del tema.',
-      pal: { k: '#3a2a1a', b: '#a8784a', e: '#222222', n: '#d9a36a' },
-      art: [
-        '....kkkkkkkk....',
-        '...kbbbbbbbbk...',
-        '..kbbbbbbbbbbk..',
-        '.kbebbbbbbbbbkk.',
-        '.kbbbbbbbbbbbbnk',
-        '.kbbbbbbbbbbbnnk',
-        '.kbbbbbbbbbbbbk.',
-        '.kbbbbbbbbbbbk..',
-        '..kbbkbbkbbbk...',
-        '..kbk.kbk.kbk...',
-      ],
-    },
-    chiguiron: {
-      name: 'Chigüirón', types: ['Caribe', 'Tepuy'],
-      base: { hp: 82, atk: 70, def: 72, spd: 44 }, catch: 90,
-      learn: [[1, 'trancazo'], [1, 'aguacerito'], [8, 'mordida'], [14, 'paloagua'], [20, 'conchazo'], [22, 'crecida'], [26, 'avalancha']],
-      dex: 'Chigüire ancestral con lomo de piedra de tepuy. Se sienta donde le da la gana, incluyendo el tercer riel. El tercer riel se aguanta.',
-      pal: { k: '#3a2a1a', b: '#a8784a', s: '#8a8a96', e: '#222222', n: '#d9a36a' },
-      art: [
-        '....sssssss.....',
-        '..ssksssskss....',
-        '..ksssssssssk...',
-        '.kbssssssssssk..',
-        '.kbebbbbbbbbbkk.',
-        'kbbbbbbbbbbbbbnk',
-        'kbbbbbbbbbbbbnnk',
-        '.kbbbbbbbbbbbbk.',
-        '.kbbbbbbbbbbbk..',
-        '..kbbkbbkbbbk...',
-        '..kbk..kbk.kbk..',
-      ],
-    },
-    cunaguaro: {
-      name: 'Cunaguaro', types: ['Monte'],
-      base: { hp: 55, atk: 78, def: 48, spd: 85 }, catch: 70,
-      learn: [[1, 'trancazo'], [1, 'bejucazo'], [9, 'colmillo'], [15, 'hoja'], [22, 'nocturno'], [28, 'monteadentro']],
-      dex: 'Gato de monte con esmoquin de manchas. Caza de noche en los túneles y duerme de día en los ductos del aire acondicionado, donde sueña que la ciudad todavía es selva. A veces la selva le cree.',
-      pal: { k: '#241a0e', o: '#d9a04a', s: '#3a2a1a', w: '#f2ead8', e: '#d9d92b' },
-      art: [
-        '..kk.......kk...',
-        '.kook.....kok...',
-        '.koookkkkkook...',
-        '.koeooooooeok...',
-        '.kooowwwwooook..',
-        '..koowkkwook....',
-        '..koooooooookk..',
-        '.koosooswoosokk.',
-        '.kowoosowoooosk.',
-        '.kosoowoosook.k.',
-        '..koook.koook...',
-        '..kok.k.kok.k...',
-      ],
-    },
-    pereza: {
-      name: 'Pereza', types: ['Monte', 'Criollo'],
-      base: { hp: 85, atk: 55, def: 70, spd: 22 }, catch: 160,
-      learn: [[1, 'bejucazo'], [1, 'abrazotia'], [10, 'hoja'], [14, 'araguaney'], [18, 'arrullo'], [26, 'monteadentro']],
-      dex: 'Llegó al Calvario en 1987 cruzando un solo cable de luz. Sigue en el mismo árbol. No es flojera: es que vio la ciudad apurarse cuarenta años y decidió esperarla aquí.',
-      pal: { k: '#2a241a', g: '#8a8468', f: '#c9bda0', m: '#3a2d1e', e: '#222222' },
-      art: [
-        '....kkkkkkk.....',
-        '...kgggggggk....',
-        '..kgfffffffgk...',
-        '..kgfmefemfgk...',
-        '..kgfffffffgk...',
-        '..kgffkkkffgk...',
-        '...kggggggggk...',
-        '..kgggggggggk...',
-        '.kggkgggggkggk..',
-        '.kggkgggggkggk..',
-        '..kgggggggggk...',
-        '...kgg...ggk....',
-      ],
-    },
-    rabipelado: {
-      name: 'Rabipelado', types: ['Criollo', 'Espanto'],
-      base: { hp: 55, atk: 62, def: 45, spd: 65 }, catch: 220,
-      learn: [[1, 'trancazo'], [1, 'susto'], [8, 'pava'], [13, 'cachetada'], [19, 'llanto'], [27, 'nocturno']],
-      dex: 'Se hace el muerto tan bien que una vez la familia lo veló con café y todo. Al tercer día volvió por las teticas de mango. Desde entonces es mitad animal, mitad aparecido, y no le incomoda.',
-      pal: { k: '#1e1a16', g: '#9a9a96', w: '#e8e0d4', p: '#d9a0a0', e: '#1a1a1a' },
-      art: [
-        '..kk............',
-        '.kwwk....kk.....',
-        '.kwwwkkkkggk....',
-        '.kwewwgggggggk..',
-        '..kwwwggggggggk.',
-        '..kpkwggggggggk.',
-        '...k.kggggggkpp.',
-        '....kggggggkp...',
-        '....kgkggkggk.p.',
-        '....kk.kk.kk.pp.',
-      ],
-    },
-    tonina: {
-      name: 'Tonina', types: ['Caribe', 'Espanto'],
-      base: { hp: 72, atk: 70, def: 58, spd: 72 }, catch: 50,
-      learn: [[1, 'aguacerito'], [1, 'susto'], [10, 'paloagua'], [16, 'llanto'], [24, 'crecida'], [30, 'nocturno']],
-      dex: 'Delfín rosado del Orinoco. Un reventón la trajo al túnel 4 y nada en el aire como si el río nunca se hubiera acabado. En las fiestas de la hora fantasma se viste de gente. No le mires los pies.',
-      pal: { k: '#3a1e28', p: '#d98aa0', w: '#f2c9d4', e: '#222222' },
-      art: [
-        '......kkkk......',
-        '....kkppppkk....',
-        '..kkppppppppk...',
-        '.kpppeppppppkk..',
-        'kkppppppppppppk.',
-        'kpwwwwpppppppppk',
-        '.kpwwwwppppkppk.',
-        '..kppppppppkpkk.',
-        '...kkppppkkppk..',
-        '.....kkkk..kk...',
-      ],
-    },
-    guacamayo: {
-      name: 'Guacamayo', types: ['Rumba', 'Monte'],
-      base: { hp: 60, atk: 66, def: 50, spd: 76 }, catch: 70,
-      learn: [[1, 'cornetazo'], [1, 'bejucazo'], [10, 'serenata'], [16, 'hoja'], [22, 'gaita'], [30, 'monteadentro']],
-      dex: 'A las 4 en punto aterriza en tu balcón a cobrar su semilla, como todos los días desde que tu vecino le dio una vez en 2009. No le debas.',
-      pal: { k: '#1c1c1c', r: '#d9342b', b: '#2b6bd9', y: '#f5d76e', w: '#ffffff', e: '#222222' },
-      art: [
-        '.....kkkk.......',
-        '....krrrrkk.....',
-        '...krrrrrkww....',
-        '...krrrrekww....',
-        '...krrrrrkkk....',
-        '..krrrrrkk......',
-        '.kryyrrrrk......',
-        '.kryyrrrrbk.....',
-        '.krrrrrrbbk.....',
-        '..krrrrbbbk.....',
-        '...krrrbbk......',
-        '....krrbk.......',
-        '.....kbbk.......',
-        '....kk..kk......',
-      ],
-    },
-    caribito: {
-      name: 'Caribito', types: ['Caribe'],
-      base: { hp: 38, atk: 52, def: 38, spd: 62 }, catch: 190,
-      learn: [[1, 'mordida'], [6, 'aguacerito'], [14, 'paloagua'], [24, 'crecida']],
-      evolve: { lvl: 20, to: 'caribazo' },
-      dex: 'Pirañita del río. Cayó al Guaire por accidente y salió más fuerte, más rápida y con menos paciencia.',
-      pal: { k: '#1c2a33', s: '#6b8fa8', r: '#d9544a', w: '#ffffff', e: '#ffe66e' },
-      art: [
-        '....kkkkkk......',
-        '..kkssssssk.k...',
-        '.kssssssssskkk..',
-        'ksseksssssssskk.',
-        'kssssssssssssk..',
-        'kswswswsssskkk..',
-        '.krrrrrrssk.kk..',
-        '..kkrrrssk...k..',
-        '....kkkkk.......',
-      ],
-    },
-    caribazo: {
-      name: 'Caribazo', types: ['Caribe'],
-      base: { hp: 62, atk: 92, def: 56, spd: 86 }, catch: 60,
-      learn: [[1, 'mordida'], [6, 'aguacerito'], [14, 'paloagua'], [24, 'crecida'], [28, 'horapico']],
-      dex: 'Lo único que sobrevivió al Guaire, y no solo sobrevivió: puso condiciones. Cuando dicen que van a sanear el río, se ríe con todos los dientes.',
-      pal: { k: '#1c2a33', s: '#6b8fa8', r: '#d9544a', w: '#ffffff', e: '#ffe66e' },
-      art: [
-        '.....kkkkkkk....',
-        '...kkssssssssk..',
-        '..kssssssssssskk',
-        '.ksseksssssssssk',
-        '.kssssssssssssskk',
-        'kswkwkwkwsssssk.',
-        'kskwkwkwkssssskk',
-        '.krrrrrrrrssk...',
-        '..kkrrrrrrsk.k..',
-        '....kkkkkkk.kk..',
-      ],
-    },
-    araguako: {
-      name: 'Araguako', types: ['Monte', 'Rumba'],
-      base: { hp: 70, atk: 72, def: 56, spd: 50 }, catch: 110,
-      learn: [[1, 'trancazo'], [1, 'cornetazo'], [9, 'tambor'], [15, 'bejucazo'], [21, 'gaita'], [29, 'monteadentro'], [33, 'joropo']],
-      dex: 'Mono araguato. Su rugido se oye a cinco kilómetros. Tu tía igualito, pero sin megáfono. Comparten repertorio.',
-      pal: { k: '#3a1a0a', r: '#b54a2a', t: '#d9824a', m: '#3a1a0a', e: '#222222' },
-      art: [
-        '....kkkkkkk.....',
-        '...krrrrrrrk....',
-        '..krtttttttrk...',
-        '..krtetttetrk...',
-        '..krtttmtttrk...',
-        '..krttmmmttrk...',
-        '...krrtmtrrk....',
-        '..krrrrrrrrkk...',
-        '.krrkrrrrkrrk.r.',
-        '.krk.rrrr.krk.r.',
-        '..k.krrrrk..krr.',
-        '....krr.rk......',
-        '....kk..kk......',
-      ],
-    },
-    bachaquito: {
-      name: 'Bachaquito', types: ['Monte'],
-      base: { hp: 40, atk: 56, def: 46, spd: 56 }, catch: 200,
-      learn: [[1, 'bejucazo'], [5, 'trancazo'], [10, 'hoja'], [16, 'pedrada'], [24, 'monteadentro']],
-      evolve: { lvl: 18, to: 'bachacon' },
-      dex: 'Carga cincuenta veces su peso: una hoja, media bolsa de mercado o el orgullo de toda su colonia. Nunca se queja.',
-      pal: { k: '#2a1208', r: '#c9502b', g: '#5e8b3f', e: '#ffe66e' },
-      art: [
-        '..gg............',
-        '.gggg...........',
-        '..gg.k...k......',
-        '...kk.k.k.......',
-        '..kerk.krrk.....',
-        '..krrkkrrrk.....',
-        '...krrrrrrk.....',
-        '..krrkrrrrk.....',
-        '.k.krrrrk.k.....',
-        '..k.kkkk.k......',
-      ],
-    },
-    bachacon: {
-      name: 'Bachacón', types: ['Monte', 'Tepuy'],
-      base: { hp: 66, atk: 82, def: 72, spd: 58 }, catch: 90,
-      learn: [[1, 'bejucazo'], [5, 'trancazo'], [10, 'hoja'], [16, 'pedrada'], [20, 'kueka'], [24, 'monteadentro'], [30, 'tepuyazo']],
-      dex: 'Bachaco culón legendario. Construyó su colonia dentro de una pared del Metro y nadie se atreve a cobrarle el condominio.',
-      pal: { k: '#2a1208', r: '#c9502b', g: '#5e8b3f', e: '#ffe66e' },
-      art: [
-        '.gggggg.........',
-        'gggggggg........',
-        '.gggggg.........',
-        '..ggg.kk...kk...',
-        '...kkk.k.k.k....',
-        '..kerrk.krrrk...',
-        '.krrrrkkrrrrrk..',
-        '.krrrrrrrrrrrk..',
-        '..krrrkrrrrrk...',
-        '.k.krrrrrrk.k...',
-        '..k.kkkkkk.k....',
-      ],
-    },
-    cachicamo: {
-      name: 'Cachicamo', types: ['Tepuy'],
-      base: { hp: 56, atk: 60, def: 82, spd: 34 }, catch: 160,
-      learn: [[1, 'trancazo'], [1, 'pedrada'], [8, 'kueka'], [14, 'conchazo'], [20, 'temblor'], [30, 'avalancha']],
-      dex: 'Cachicamo trabaja pa\' lapa, dice el refrán. Este se cansó: ahora trabaja pa\' él y cotiza su seguro social en piedritas.',
-      pal: { k: '#3a2d1e', a: '#b09a6a', d: '#8a754a', p: '#d9b38c', e: '#222222' },
-      art: [
-        '.....kkkkkkk....',
-        '....kaaaaaaak...',
-        '...kaadaadaaak..',
-        '..kaaadaadaaaak.',
-        '..kaaadaadaaaak.',
-        '.kaaaadaadaaaak.',
-        'kpaaaaaaaaaaaak.',
-        'kpekaaaaaaaakk..',
-        'kppk.kaaaaak....',
-        '.kk..kk..kk.....',
-      ],
-    },
-    morrocoy: {
-      name: 'Morrocoy', types: ['Tepuy', 'Sabroso'],
-      base: { hp: 86, atk: 56, def: 96, spd: 20 }, catch: 120,
-      learn: [[1, 'conchazo'], [1, 'arepazo'], [9, 'kueka'], [16, 'temblor'], [24, 'asadonegro'], [32, 'tepuyazo']],
-      dex: 'Le dijo conchudo al cachicamo. El descaro. Vive en el patio de una abuela desde 1974 y conoce todos los secretos de la familia.',
-      pal: { k: '#2d2416', g: '#5e6b35', y: '#f5d76e', p: '#c9a36a', e: '#222222' },
-      art: [
-        '.....kkkkkkk....',
-        '....kgyggygk....',
-        '..kkgyggyggykk..',
-        '.kygygyggygygk..',
-        '.kgyggyggyggyk..',
-        '.kkkkkkkkkkkkk..',
-        'kpek.kppk.kppk..',
-        'kppk..kk...kk...',
-        '.kk.............',
-      ],
-    },
-    mapanare: {
-      name: 'Mapanare', types: ['Monte', 'Espanto'],
-      base: { hp: 50, atk: 86, def: 46, spd: 76 }, catch: 110,
-      learn: [[1, 'bejucazo'], [1, 'susto'], [9, 'colmillo'], [15, 'maldeojo'], [21, 'monteadentro'], [28, 'nocturno']],
-      dex: 'Más peligrosa que mapanare en bolsillo de liqui-liqui. Esta aprendió a viajar en el hueco de los asientos del vagón.',
-      pal: { k: '#241a0e', n: '#8a6a3a', d: '#5a4226', e: '#d9d92b', t: '#d9342b' },
-      art: [
-        '......kkkkk.....',
-        '.....knnnnnk....',
-        '....knnednnnk...',
-        '....knnnnnnkt...',
-        '.....knnnnk.t...',
-        '..kkkknnnnk.....',
-        '.knnnnnnnnk.....',
-        'knndnnnndnnk....',
-        'knnnnnnnnnnk....',
-        '.knndnnnndnk....',
-        '..kknnnnnnk.....',
-        '....kkkkkk......',
-      ],
-    },
-    duendecito: {
-      name: 'Duendecito', types: ['Espanto', 'Monte'],
-      base: { hp: 48, atk: 56, def: 56, spd: 50 }, catch: 150,
-      learn: [[1, 'susto'], [1, 'bejucazo'], [8, 'pava'], [13, 'llanto'], [19, 'hoja'], [26, 'nocturno']],
-      dex: 'Esconde las chancletas izquierdas. Solo las izquierdas. Los científicos no se explican. Las abuelas sí: es él.',
-      pal: { k: '#1e1810', h: '#b5300a', f: '#d9a36a', c: '#4a6741', w: '#f2ead8', e: '#222222' },
-      art: [
-        '.......kk.......',
-        '......khhk......',
-        '.....khhhhk.....',
-        '....khhhhhhk....',
-        '...khhhhhhhhk...',
-        '...kffeffefk....',
-        '....kffffk......',
-        '...kcccccck.....',
-        '..kcckccckck....',
-        '...kccccck......',
-        '...kck..kck.....',
-        '..kwwk...k......',
-      ],
-    },
-    pavoso: {
-      name: 'Pavoso', types: ['Espanto'],
-      base: { hp: 66, atk: 42, def: 62, spd: 44 }, catch: 170,
-      learn: [[1, 'susto'], [1, 'pava'], [7, 'maldeojo'], [12, 'llanto'], [18, 'nocturno'], [26, 'ultimoviaje']],
-      dex: 'Trae la pava. No lo toques, no lo mires, no lo nombres. ¿Ya lo nombraste? Lo siento mucho por tu equipo de béisbol.',
-      pal: { k: '#241a33', p: '#6a4a8a', d: '#4a3266', e: '#d9d92b' },
-      art: [
-        '....kkkkkkk.....',
-        '..kkpppppppkk...',
-        '.kpppppppppppk..',
-        '.kpeppppppepppk.',
-        '.kppppkkpppppk..',
-        '.kpppppppppppk..',
-        '..kpdpdpdpdpk...',
-        '..kppdpdpdppk...',
-        '...kpppppppk....',
-        '..k.kpppppk.k...',
-        '.....kkkkk......',
-      ],
-    },
-    vagonima: {
-      name: 'Vagónima', types: ['Espanto', 'Catatumbo'],
-      base: { hp: 66, atk: 78, def: 66, spd: 78 }, catch: 90,
-      learn: [[1, 'susto'], [1, 'chispazo'], [12, 'llanto'], [18, 'corrientazo'], [24, 'nocturno'], [30, 'tercerriel'], [36, 'ultimoviaje']],
-      dex: 'El vagón que salió de Propatria en 1987 y nunca llegó a Palo Verde. Sigue en ruta. A veces abre las puertas. No te montes.',
-      pal: { k: '#2a2a3a', s: '#c9c9d4', o: '#e85a1a', w: '#aaeeff', e: '#222222' },
-      art: [
-        '..kkkkkkkkkkkk..',
-        '.kssssssssssssk.',
-        '.kswwkswwkswwsk.',
-        '.kswwkswwkswwsk.',
-        '.kssssssssssssk.',
-        '.kooooooooooook.',
-        '.kssssssssssssk.',
-        '..kssssssssssk..',
-        '...ss.ssss.ss...',
-        '....s..ss..s....',
-        '.....s....s.....',
-      ],
-    },
-    llorona: {
-      name: 'La Llorona', types: ['Espanto', 'Caribe'],
-      base: { hp: 76, atk: 80, def: 60, spd: 64 }, catch: 40,
-      learn: [[1, 'llanto'], [1, 'aguacerito'], [10, 'arrullo'], [14, 'maldeojo'], [20, 'paloagua'], [26, 'nocturno'], [33, 'crecida']],
-      dex: 'Llora por las quebradas del Ávila desde hace siglos. En el túnel su llanto se confunde con los frenos del tren. No es el tren.',
-      pal: { k: '#1e1e2e', w: '#e8e8f0', f: '#cfcfe0', b: '#8888c9', e: '#222222' },
-      art: [
-        '.....kkkkkk.....',
-        '....kwwwwwwk....',
-        '...kwwwwwwwwk...',
-        '...kwffffffwk...',
-        '...kwfefeffwk...',
-        '...kwffffffwk...',
-        '...kwffkkffwk...',
-        '..kwwffffffwwk..',
-        '..kwwwwwwwwwwk..',
-        '.b.kwwwwwwwwk.b.',
-        '.b.kwwwwwwwwk.b.',
-        '..b.kwwwwwwk.b..',
-        '....kwwwwwwk....',
-        '.....kkkkkk.....',
-      ],
-    },
-    sayona: {
-      name: 'La Sayona', types: ['Espanto'],
-      base: { hp: 70, atk: 96, def: 60, spd: 82 }, catch: 40,
-      learn: [[1, 'susto'], [1, 'maldeojo'], [14, 'llanto'], [20, 'cachetada'], [26, 'nocturno'], [34, 'ultimoviaje']],
-      dex: 'Aparece bella en el andén y pregunta por tu situación sentimental. Responde con sinceridad. Es tu única oportunidad.',
-      pal: { k: '#111118', h: '#1c1c28', f: '#e0d4c9', e: '#d9342b', d: '#2a2a3a' },
-      art: [
-        '....kkkkkkkk....',
-        '...khhhhhhhhk...',
-        '..khhffffffhhk..',
-        '..khhfefeffhhk..',
-        '..khhffffffhhk..',
-        '..khhhfkkfhhhk..',
-        '..khhdddddhhhk..',
-        '..khdddddddhk...',
-        '..khdddddddhk...',
-        '...kdddddddk....',
-        '...kdddddddk....',
-        '..kdddddddddk...',
-        '..kdddddddddk...',
-        '...kkkkkkkkk....',
-      ],
-    },
-    silbon: {
-      name: 'El Silbón', types: ['Espanto', 'Rumba'],
-      base: { hp: 80, atk: 105, def: 70, spd: 95 }, catch: 15,
-      learn: [[1, 'silbido'], [1, 'pava'], [22, 'nocturno'], [30, 'joropo'], [38, 'ultimoviaje']],
-      dex: 'Carga un saco de huesos y silba toditas las noches. Si lo oyes lejos, está cerca. Si lo oyes cerca... saluda con respeto.',
-      pal: { k: '#15151c', h: '#3a3226', f: '#cfc0a8', d: '#26262e', s: '#8a754a', e: '#ffffff' },
-      art: [
-        '.....hhhhhh.....',
-        '...hhhhhhhhhh...',
-        '.....kffffk.....',
-        '.....kfefek.....',
-        '.....kffffk.....',
-        '......kffk......',
-        '....kkddddkk....',
-        '...kd.kddk.dk...',
-        '...k..kddk..k...',
-        '..ss..kddk......',
-        '.ssss.kddk......',
-        '.ssss.kdkdk.....',
-        '..ss..kk.kk.....',
-        '......k...k.....',
-      ],
-    },
-    catatumbo: {
-      name: 'Catatumbo', types: ['Catatumbo', 'Caribe'],
-      base: { hp: 86, atk: 110, def: 76, spd: 100 }, catch: 15,
-      learn: [[1, 'chispazo'], [1, 'paloagua'], [20, 'corrientazo'], [28, 'crecida'], [35, 'catatumbazo']],
-      dex: 'El relámpago eterno del Lago de Maracaibo, faro natural del Caribe. Un día bajó a Caracas en tren a ver qué era el corre-corre.',
-      pal: { k: '#2a2a3a', c: '#5a6a7a', w: '#3b6b8c', y: '#ffe66e', e: '#ffffff' },
-      art: [
-        '...kkkkkkkkkk...',
-        '..kcccccccccck..',
-        '.kcccccccccccck.',
-        '.kccecccccecck..',
-        '..kcccccccccck..',
-        '...kkkkkkkkkk...',
-        '....y...y..y....',
-        '...yy..yy..y....',
-        '...y...y..yy....',
-        '..yy..yy..y.....',
-        '..wwwwwwwwwww...',
-        '.wwwwwwwwwwwww..',
-      ],
-    },
-    trenfantasma: {
-      name: 'Tren Fantasma', types: ['Espanto', 'Catatumbo'],
-      base: { hp: 100, atk: 88, def: 82, spd: 78 }, catch: 5,
-      learn: [[1, 'nocturno'], [1, 'tercerriel'], [30, 'ultimoviaje'], [40, 'catatumbazo']],
-      dex: 'El primer tren del 83 nunca fue desincorporado: fue olvidado. Y lo olvidado, en Caracas, no muere — hace estación propia.',
-      pal: { k: '#0e0e16', s: '#3a3a4a', o: '#e85a1a', w: '#ffe66e', g: '#7affc9', e: '#222222' },
-      art: [
-        '...kkkkkkkkkk...',
-        '..kssssssssssk..',
-        '.kskwwkssskwwsk.',
-        '.kskwwkssskwwsk.',
-        '.kssssssssssssk.',
-        '.ksoooooooooosk.',
-        '.kssssksksssssk.',
-        '.kssssssssssssk.',
-        '.kskgks..kgkssk.',
-        '..kwk......kwk..',
-        '.gg.g.gggg.g.gg.',
-        '..g..gg..gg..g..',
-      ],
-    },
-  };
-
-  MQ.DEX_ORDER = [
-    'frontinito', 'ucumari', 'turpialin', 'cantaclaro', 'cocuyin', 'centella',
-    'chigui', 'chiguiron', 'cunaguaro', 'pereza', 'rabipelado', 'guacamayo',
-    'caribito', 'caribazo', 'araguako', 'tonina', 'bachaquito', 'bachacon',
-    'cachicamo', 'morrocoy', 'mapanare', 'duendecito', 'pavoso', 'vagonima',
-    'llorona', 'sayona', 'silbon', 'catatumbo', 'trenfantasma',
-  ];
-
-  // ---- Gritos -----------------------------------------------------------------
-  // Cada criatura suena como lo que es. Pasos: ['b', frec, dur, onda, vol, cuándo, slide]
-  // (beep) o ['n', dur, vol, cuándo] (ruido). MQ.audio.cry(id) los toca.
-  MQ.CRIES = {
-    frontinito:  [['b', 180, 0.12, 'sawtooth', 0.06, 0, -40], ['b', 140, 0.2, 'triangle', 0.05, 0.1, -30]],
-    ucumari:     [['n', 0.15, 0.04, 0], ['b', 95, 0.35, 'sawtooth', 0.07, 0, -25], ['b', 70, 0.3, 'triangle', 0.05, 0.25, -15]],
-    turpialin:   [['b', 1568, 0.08, 'square', 0.045, 0, 0], ['b', 1864, 0.08, 'square', 0.045, 0.09, 0], ['b', 1318, 0.1, 'square', 0.045, 0.18, 0], ['b', 2093, 0.12, 'square', 0.04, 0.3, -200]],
-    cantaclaro:  [['b', 1318, 0.08, 'square', 0.05, 0, 0], ['b', 1568, 0.08, 'square', 0.05, 0.09, 0], ['b', 1046, 0.08, 'square', 0.05, 0.18, 0], ['b', 1568, 0.1, 'square', 0.05, 0.27, 0], ['b', 2093, 0.14, 'square', 0.045, 0.38, -300]],
-    cocuyin:     [['b', 1200, 0.06, 'square', 0.05, 0, 300], ['b', 1500, 0.08, 'square', 0.04, 0.08, 400]],
-    centella:    [['n', 0.12, 0.06, 0], ['b', 880, 0.18, 'sawtooth', 0.05, 0, -500], ['b', 1760, 0.1, 'square', 0.03, 0.12, -800]],
-    chigui:      [['b', 950, 0.07, 'sine', 0.06, 0, 150], ['b', 1100, 0.07, 'sine', 0.06, 0.09, 150], ['b', 900, 0.1, 'sine', 0.05, 0.18, -100]],
-    chiguiron:   [['b', 600, 0.1, 'sine', 0.06, 0, 100], ['b', 500, 0.12, 'sine', 0.06, 0.12, -80], ['b', 90, 0.25, 'triangle', 0.05, 0.2, -20]],
-    cunaguaro:   [['n', 0.1, 0.05, 0], ['b', 520, 0.18, 'sawtooth', 0.055, 0, -260]],
-    pereza:      [['b', 420, 0.35, 'sine', 0.05, 0, -160], ['b', 250, 0.25, 'sine', 0.04, 0.3, -60]],
-    rabipelado:  [['n', 0.22, 0.06, 0], ['b', 320, 0.2, 'sawtooth', 0.04, 0, -90]],
-    guacamayo:   [['n', 0.08, 0.05, 0], ['b', 900, 0.12, 'sawtooth', 0.06, 0, -350], ['n', 0.08, 0.05, 0.14], ['b', 850, 0.12, 'sawtooth', 0.06, 0.14, -300]],
-    caribito:    [['b', 700, 0.06, 'square', 0.05, 0, -200], ['n', 0.05, 0.05, 0.05]],
-    caribazo:    [['b', 500, 0.08, 'square', 0.06, 0, -250], ['n', 0.07, 0.06, 0.07], ['b', 400, 0.08, 'square', 0.06, 0.14, -200], ['n', 0.07, 0.06, 0.2]],
-    araguako:    [['b', 110, 0.5, 'sawtooth', 0.06, 0, 30], ['b', 165, 0.4, 'sawtooth', 0.04, 0.1, 20], ['n', 0.3, 0.02, 0.15]],
-    tonina:      [['b', 1800, 0.12, 'sine', 0.05, 0, 700], ['n', 0.03, 0.04, 0.15], ['n', 0.03, 0.04, 0.2], ['b', 2400, 0.15, 'sine', 0.045, 0.26, -500]],
-    bachaquito:  [['b', 2000, 0.03, 'square', 0.04, 0, 0], ['b', 2200, 0.03, 'square', 0.04, 0.05, 0], ['b', 1900, 0.03, 'square', 0.04, 0.1, 0]],
-    bachacon:    [['b', 1200, 0.04, 'square', 0.05, 0, 0], ['b', 1400, 0.04, 'square', 0.05, 0.06, 0], ['b', 1100, 0.04, 'square', 0.05, 0.12, 0], ['b', 400, 0.1, 'triangle', 0.05, 0.18, -50]],
-    cachicamo:   [['n', 0.08, 0.04, 0], ['b', 260, 0.1, 'triangle', 0.05, 0.04, -60], ['n', 0.08, 0.04, 0.16]],
-    morrocoy:    [['b', 150, 0.3, 'triangle', 0.055, 0, -50]],
-    mapanare:    [['n', 0.3, 0.05, 0], ['n', 0.2, 0.04, 0.32]],
-    duendecito:  [['b', 784, 0.06, 'triangle', 0.05, 0, 0], ['b', 988, 0.06, 'triangle', 0.05, 0.07, 0], ['b', 1318, 0.09, 'triangle', 0.05, 0.14, 100]],
-    pavoso:      [['b', 233, 0.4, 'sine', 0.05, 0, -60]],
-    vagonima:    [['b', 1400, 0.35, 'sawtooth', 0.035, 0, -700], ['b', 660, 0.12, 'square', 0.04, 0.4, 0], ['b', 523, 0.12, 'square', 0.04, 0.52, 0]],
-    llorona:     [['b', 660, 0.3, 'sine', 0.055, 0, 220], ['b', 880, 0.4, 'sine', 0.05, 0.3, -330]],
-    sayona:      [['b', 700, 0.15, 'sawtooth', 0.05, 0, 500], ['b', 1200, 0.3, 'sawtooth', 0.045, 0.15, -600]],
-    silbon:      [['b', 900, 0.35, 'sine', 0.05, 0, 450], ['b', 1350, 0.4, 'sine', 0.045, 0.4, -550]],
-    catatumbo:   [['n', 0.4, 0.07, 0], ['b', 75, 0.5, 'sawtooth', 0.06, 0, -25], ['b', 1800, 0.08, 'square', 0.03, 0.02, -900]],
-    trenfantasma:[['b', 220, 0.7, 'sawtooth', 0.04, 0, 0], ['b', 262, 0.7, 'sawtooth', 0.04, 0, 0], ['n', 0.5, 0.03, 0.1]],
-  };
-
-  // ---- Cálculos -------------------------------------------------------------
-  MQ.xpForLevel = (l) => l * l * l;
-
-  MQ.calcStats = (id, lvl) => {
-    const b = MQ.SPECIES[id].base;
-    return {
-      hp:  Math.floor((b.hp * 2 * lvl) / 100) + lvl + 10,
-      atk: Math.floor((b.atk * 2 * lvl) / 100) + 5,
-      def: Math.floor((b.def * 2 * lvl) / 100) + 5,
-      spd: Math.floor((b.spd * 2 * lvl) / 100) + 5,
+  // ---- Movimientos (204, data/moves/moves.json) ------------------------------
+  // Campos: name/name_en, type, category, pow, acc (null = no falla), pp,
+  // priority, contact, effects[] (taxonomía spec §2.7), oficio, desc.
+  MQ.MOVES = {};
+  for (const mv of MQ.DATA.moves) {
+    MQ.MOVES[mv.id] = {
+      id: mv.id, name: mv.name_es, name_en: mv.name_en,
+      type: mv.type, category: mv.category,
+      pow: mv.power, acc: mv.accuracy, pp: mv.pp,
+      priority: mv.priority || 0, contact: !!mv.contact,
+      effects: mv.effects || [], oficio: !!mv.oficio,
+      desc: mv.desc_es, desc_en: mv.desc_en,
     };
+  }
+
+  // ---- Estados (mayores + volátil) -------------------------------------------
+  MQ.STATUS = {
+    psn:  { name: 'ENV', color: '#9a4ad9', verb: 'quedó envenenado' },
+    psn2: { name: 'ENV', color: '#7a2ab0', verb: 'quedó grave de veneno de mapanare' },
+    par:  { name: 'PAR', color: '#f5d76e', verb: 'quedó paralizado' },
+    slp:  { name: 'DRM', color: '#8a8aa0', verb: 'se quedó dormido' },
+    que:  { name: 'QUE', color: '#e85a1a', verb: 'quedó quemado' },
+    pav:  { name: 'PAV', color: '#8a8adf', verb: 'quedó empavado' },
+  };
+  // mareo es volátil: vive en los volátiles del combate (pvol/evol), no en el mon
+  MQ.VOLATILE = { mareo: { name: 'MAREO', color: '#d98aa0', verb: 'quedó mareado por el gentío' } };
+
+  // ---- Clima de combate (5 condiciones criollas, spec §2.4) -------------------
+  MQ.WEATHER = {
+    lluvia:  { name: 'Palo de agua',      desc: 'Llueve a cántaros sobre el andén.' },
+    sol:     { name: 'Sol de esquina',    desc: 'Un sol de esquina raja las piedras.' },
+    neblina: { name: 'Neblina del Ávila', desc: 'La neblina del Ávila lo cubre todo.' },
+    apagon:  { name: 'Apagón',            desc: 'Se fue la luz. Otra vez.' },
+    horapico:{ name: 'Hora pico',         desc: 'El gentío de la hora pico aprieta.' },
+  };
+
+  // ---- Habilidades (41, data/abilities/abilities.json) ------------------------
+  MQ.ABILITIES = {};
+  for (const ab of MQ.DATA.abilities)
+    MQ.ABILITIES[ab.id] = { id: ab.id, name: ab.name_es, desc: ab.effect_es };
+
+  // ---- Naturalezas (25, spec §2.5): ±10% -------------------------------------
+  MQ.NATURES = {
+    chevere: {}, pana: {}, vale: {}, chamo: {}, burda: {},
+    guapo:      { plus: 'atk', minus: 'def' },
+    arrecho:    { plus: 'atk', minus: 'spa' },
+    peleon:     { plus: 'atk', minus: 'spd' },
+    cabezon:    { plus: 'atk', minus: 'spe' },
+    conchudo:   { plus: 'def', minus: 'atk' },
+    aguantador: { plus: 'def', minus: 'spa' },
+    terco:      { plus: 'def', minus: 'spd' },
+    pachorrudo: { plus: 'def', minus: 'spe' },
+    cuentero:   { plus: 'spa', minus: 'atk' },
+    sonador:    { plus: 'spa', minus: 'def' },
+    brujito:    { plus: 'spa', minus: 'spd' },
+    poeta:      { plus: 'spa', minus: 'spe' },
+    sereno:     { plus: 'spd', minus: 'atk' },
+    confiao:    { plus: 'spd', minus: 'def' },
+    calladito:  { plus: 'spd', minus: 'spa' },
+    flojo:      { plus: 'spd', minus: 'spe' },
+    ligero:     { plus: 'spe', minus: 'atk' },
+    resbalao:   { plus: 'spe', minus: 'def' },
+    callejero:  { plus: 'spe', minus: 'spa' },
+    acelerao:   { plus: 'spe', minus: 'spd' },
+  };
+  MQ.NATURE_NAMES = {
+    chevere: 'Chévere', pana: 'Pana', vale: 'Vale', chamo: 'Chamo', burda: 'Burda',
+    guapo: 'Guapo', arrecho: 'Arrecho', peleon: 'Peleón', cabezon: 'Cabezón',
+    conchudo: 'Conchudo', aguantador: 'Aguantador', terco: 'Terco', pachorrudo: 'Pachorrudo',
+    cuentero: 'Cuentero', sonador: 'Soñador', brujito: 'Brujito', poeta: 'Poeta',
+    sereno: 'Sereno', confiao: 'Confiao', calladito: 'Calladito', flojo: 'Flojo',
+    ligero: 'Ligero', resbalao: 'Resbalao', callejero: 'Callejero', acelerao: 'Acelerao',
+  };
+  const NATURE_KEYS = Object.keys(MQ.NATURES);
+  MQ.natureMul = (nat, stat) => {
+    const n = MQ.NATURES[nat] || {};
+    return n.plus === stat ? 1.1 : n.minus === stat ? 0.9 : 1;
+  };
+
+  // ---- Especies (150, data/creatures/creatures.json) --------------------------
+  MQ.SPECIES = {};
+  MQ.DEX_ORDER = [];
+  for (const c of MQ.DATA.creatures) {
+    const evolve = c.evolves_to
+      ? { to: c.evolves_to.to, method: c.evolves_to.method,
+          lvl: c.evolves_to.level, confianza: c.evolves_to.confianza }
+      : undefined;
+    const fb = (MQ.FALLBACK_ART || {})[c.id];
+    MQ.SPECIES[c.id] = {
+      num: c.num, name: c.name_es, name_en: c.name_en,
+      types: c.types, category: c.category, region: c.region, habitats: c.habitats,
+      budget: c.budget, base: c.base, catch: c.catch, exp_group: c.exp_group,
+      gender: c.gender, abilities: c.abilities, ev_yield: c.ev_yield,
+      learn: c.learnset, evolve,
+      dex: c.dex_es, dex_en: c.dex_en,
+      pal: fb && fb.pal, art: fb && fb.art,
+    };
+    MQ.DEX_ORDER.push(c.id);
+  }
+
+  // PRNG determinista para arte/gritos generados (mismo resultado en cada carga)
+  const seeded = (seed) => {
+    let s = seed >>> 0 || 1;
+    return () => {
+      s = (s * 1664525 + 1013904223) >>> 0;
+      return s / 4294967296;
+    };
+  };
+
+  // Silueta pixel de respaldo para especies sin arte pintado (hasta que llegue
+  // su PNG): un cuerpo simétrico determinista con los colores de sus tipos.
+  const genArt = (id) => {
+    const sp = MQ.SPECIES[id];
+    const rng = seeded(sp.num * 7919 + 31);
+    const c1 = MQ.TYPES[sp.types[0]].color;
+    const c2 = sp.types[1] ? MQ.TYPES[sp.types[1]].color : '#2a2438';
+    sp.pal = { k: '#1a1a1a', b: c1, d: c2, e: '#f2ead8' };
+    const H = 12, W = 16, half = W / 2;
+    const rows = [];
+    // perfil de anchura: cabeza redonda, cuerpo, base
+    for (let y = 0; y < H; y++) {
+      const t = y / (H - 1);
+      const bulge = Math.sin(Math.PI * (0.15 + 0.85 * t));
+      const w = Math.max(2, Math.round((2 + bulge * 5) + rng() * 1.5));
+      let row = '';
+      for (let x = 0; x < half; x++) {
+        const dist = half - 1 - x;
+        if (dist < w - 1) row += (y > 2 && y % 3 === 0 && dist < 2) ? 'd' : 'b';
+        else if (dist === w - 1) row += 'k';
+        else row += '.';
+      }
+      rows.push(row + row.split('').reverse().join(''));
+    }
+    // ojos en la fila 3
+    const eye = rows[3].split('');
+    if (eye[5] !== '.') eye[5] = 'e';
+    if (eye[10] !== '.') eye[10] = 'e';
+    rows[3] = eye.join('');
+    sp.art = rows;
+  };
+  for (const id of MQ.DEX_ORDER) if (!MQ.SPECIES[id].art) genArt(id);
+
+  // ---- Gritos ------------------------------------------------------------------
+  // Los 29 canon vienen afinados a mano (js/art.js); el resto se genera con un
+  // motivo por categoría/tipo/porte, determinista por número de dex.
+  MQ.CRIES = Object.assign({}, MQ.CRIES_CANON || {});
+  const genCry = (id) => {
+    const sp = MQ.SPECIES[id];
+    const rng = seeded(sp.num * 2654435761 + 97);
+    const big = sp.budget === 's3' || sp.budget === 'leg';
+    const segs = [];
+    if (sp.category === 'folklore') {
+      // lamento: senos que suben y bajan, con un soplo de ruido
+      const f = 380 + Math.round(rng() * 420);
+      segs.push(['b', f, 0.22 + rng() * 0.15, 'sine', 0.05, 0, Math.round(200 + rng() * 300)]);
+      segs.push(['b', Math.round(f * 1.4), 0.3, 'sine', 0.045, 0.24, -Math.round(300 + rng() * 300)]);
+      if (rng() < 0.6) segs.push(['n', 0.18, 0.03, 0.1]);
+    } else if (sp.category === 'urban-magical') {
+      // electrónico: blips cuadrados con algún chispazo
+      const f = 700 + Math.round(rng() * 900);
+      segs.push(['b', f, 0.06, 'square', 0.05, 0, 0]);
+      segs.push(['b', Math.round(f * (1.1 + rng() * 0.4)), 0.07, 'square', 0.05, 0.08, 0]);
+      if (rng() < 0.5) segs.push(['b', Math.round(f * 0.8), 0.1, 'square', 0.045, 0.17, -Math.round(rng() * 400)]);
+      else segs.push(['n', 0.06, 0.04, 0.16]);
+    } else if (big) {
+      // fauna grande: gruñido de sierra con peso
+      const f = 120 + Math.round(rng() * 220);
+      segs.push(['n', 0.12, 0.04, 0]);
+      segs.push(['b', f, 0.3 + rng() * 0.15, 'sawtooth', 0.06, 0.02, -Math.round(20 + rng() * 60)]);
+      segs.push(['b', Math.round(f * 0.7), 0.25, 'triangle', 0.05, 0.3, -20]);
+    } else {
+      // fauna chica: chirridos vivos
+      const f = 800 + Math.round(rng() * 900);
+      segs.push(['b', f, 0.07, rng() < 0.5 ? 'square' : 'triangle', 0.05, 0, Math.round(rng() * 200)]);
+      segs.push(['b', Math.round(f * (0.8 + rng() * 0.5)), 0.08, 'square', 0.05, 0.09, 0]);
+      if (rng() < 0.5) segs.push(['b', Math.round(f * 1.2), 0.1, 'square', 0.045, 0.18, -150]);
+    }
+    MQ.CRIES[id] = segs;
+  };
+  for (const id of MQ.DEX_ORDER) if (!MQ.CRIES[id]) genCry(id);
+
+  // ---- Cálculos Gen 3 -----------------------------------------------------------
+  // Grupos de experiencia (spec §1.3): 4 curvas cúbicas
+  MQ.XP_GROUPS = { rapido: 0.8, parejo: 1, pausado: 1.15, lento: 1.3 };
+  MQ.xpForLevel = (l, group) =>
+    Math.floor(l * l * l * (MQ.XP_GROUPS[group || 'parejo'] || 1));
+  MQ.xpGroupOf = (id) => (MQ.SPECIES[id] && MQ.SPECIES[id].exp_group) || 'parejo';
+
+  const STATS6 = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+  MQ.STATS6 = STATS6;
+  MQ.STAT_NAMES = { hp: 'PS', atk: 'Ataque', def: 'Defensa', spa: 'At. Esp', spd: 'Def. Esp', spe: 'Velocidad', acc: 'puntería', eva: 'evasión' };
+
+  // Fórmula Gen 3 textual (spec §1.3). ivs/evs/nature opcionales (0/0/neutra).
+  MQ.calcStats = (id, lvl, ivs, evs, nature) => {
+    const b = MQ.SPECIES[id].base;
+    const iv = ivs || {}, ev = evs || {};
+    const st = {};
+    for (const s of STATS6) {
+      const core = Math.floor((2 * b[s] + (iv[s] || 0) + Math.floor((ev[s] || 0) / 4)) * lvl / 100);
+      st[s] = s === 'hp'
+        ? core + lvl + 10
+        : Math.floor((core + 5) * MQ.natureMul(nature, s));
+    }
+    return st;
   };
 
   MQ.movesAtLevel = (id, lvl) =>
     MQ.SPECIES[id].learn.filter(([l]) => l <= lvl).map(([, m]) => m).slice(-4);
 
-  // 1 de cada SHINY_ODDS sale "tornasol" (iridiscente): la variante rara
-  MQ.SHINY_ODDS = 96;
-  MQ.makeMon = (id, lvl, shiny) => {
-    const st = MQ.calcStats(id, lvl);
-    const m = { id, lvl, xp: MQ.xpForLevel(lvl), hp: st.hp, maxhp: st.hp, atk: st.atk, def: st.def, spd: st.spd, moves: MQ.movesAtLevel(id, lvl), status: null, pp: {}, shiny: !!shiny };
+  // 1 de cada SHINY_ODDS sale "tornasol" (spec §1.4: probabilidad moderna);
+  // el Tornasol Bendito (100 fichados) mejora la suerte a 1/1365
+  MQ.SHINY_ODDS = 4096;
+  MQ.shinyOdds = () =>
+    (MQ.player && MQ.player.flags && MQ.player.flags.tornasolbendito) ? 1365 : MQ.SHINY_ODDS;
+
+  // objeto equipado de los salvajes (spec §1.4): 5% fruta del estado, 1% potenciador
+  const TYPE_BOOST = { Criollo: 'franelabarrio', Sabroso: 'ajidulce', Rumba: 'cuatroafinado',
+    Espanto: 'cintamorada', Catatumbo: 'bombilloahorrador', Caribe: 'aguaanauco',
+    Monte: 'macheteviejo', Tepuy: 'piedraabuelo' };
+  MQ.wildHold = (id) => {
+    const r = Math.random();
+    if (r < 0.01) return TYPE_BOOST[MQ.SPECIES[id].types[0]] || null;
+    if (r < 0.05) return MQ.pick(['mamon', 'semeruco', 'guanabana', 'tamarindo', 'parchita', 'lechosapicada', 'merey']);
+    return null;
+  };
+
+  MQ.rollIVs = () => {
+    const iv = {};
+    for (const s of STATS6) iv[s] = MQ.rand(32);
+    return iv;
+  };
+  MQ.zeroEVs = () => ({ hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 });
+
+  const rollGender = (sp) => {
+    if (sp.gender === 'genderless' || !sp.gender) return null;
+    return Math.random() * 100 < sp.gender.m ? 'm' : 'f';
+  };
+  const rollAbility = (sp, hidden) => {
+    const ab = sp.abilities || {};
+    if (hidden && ab.hidden) return ab.hidden;
+    if (ab.secondary && Math.random() < 0.5) return ab.secondary;
+    return ab.primary || null;
+  };
+
+  // opts: {shiny, ability, ivs, nature, hidden} — o un booleano (compat: shiny)
+  MQ.makeMon = (id, lvl, opts) => {
+    if (typeof opts === 'boolean') opts = { shiny: opts };
+    opts = opts || {};
+    const sp = MQ.SPECIES[id];
+    const ivs = opts.ivs || MQ.rollIVs();
+    const evs = MQ.zeroEVs();
+    const nature = opts.nature || NATURE_KEYS[MQ.rand(NATURE_KEYS.length)];
+    const st = MQ.calcStats(id, lvl, ivs, evs, nature);
+    const m = {
+      id, lvl, xp: MQ.xpForLevel(lvl, sp.exp_group),
+      hp: st.hp, maxhp: st.hp,
+      atk: st.atk, def: st.def, spa: st.spa, spd: st.spd, spe: st.spe,
+      ivs, evs, nature,
+      gender: rollGender(sp),
+      ability: opts.ability || rollAbility(sp, opts.hidden),
+      item: opts.item || null,
+      confianza: 70,
+      moves: MQ.movesAtLevel(id, lvl),
+      status: null, pp: {},
+      shiny: opts.shiny ?? (MQ.rand(MQ.shinyOdds()) === 0),
+    };
     MQ.ensurePP(m);
     return m;
   };
 
-  // rellena PP faltantes (también migra partidas guardadas antes de que existieran)
-  MQ.ensurePP = (m) => {
-    m.pp = m.pp || {};
-    for (const mv of m.moves) if (m.pp[mv] === undefined) m.pp[mv] = MQ.MOVES[mv].pp;
+  // Recalcula las 6 estadísticas al nivel actual conservando la fracción de PS.
+  MQ.recalcStats = (m) => {
+    const frac = m.maxhp > 0 ? m.hp / m.maxhp : 1;
+    const st = MQ.calcStats(m.id, m.lvl, m.ivs, m.evs, m.nature);
+    m.maxhp = st.hp;
+    m.hp = m.hp <= 0 ? 0 : Math.max(1, Math.round(st.hp * frac));
+    m.atk = st.atk; m.def = st.def; m.spa = st.spa; m.spd = st.spd; m.spe = st.spe;
     return m;
   };
 
-  // curación completa: PS, estado y PP (módulo, abuela, respawn)
+  // Migración de partidas v1 (4 stats, sin IVs): se les da chispa, calle y
+  // naturaleza, y el viejo `spd` (velocidad) pasa a ser `spe`.
+  MQ.migrateMon = (m) => {
+    if (!m || m.ivs) return m;
+    const sp = MQ.SPECIES[m.id];
+    if (!sp) return m;
+    m.ivs = MQ.rollIVs();
+    m.evs = MQ.zeroEVs();
+    m.nature = NATURE_KEYS[MQ.rand(NATURE_KEYS.length)];
+    m.gender = m.gender ?? rollGender(sp);
+    m.ability = m.ability || rollAbility(sp);
+    m.item = m.item || null;
+    m.confianza = m.confianza ?? 70;
+    m.xp = Math.max(m.xp || 0, MQ.xpForLevel(m.lvl, sp.exp_group)); // no se pierde lo caminado
+    MQ.recalcStats(m);
+    return m;
+  };
+
+  // rellena PP faltantes (también migra partidas guardadas viejas)
+  MQ.ensurePP = (m) => {
+    MQ.migrateMon(m);
+    m.pp = m.pp || {};
+    for (const mv of m.moves) if (m.pp[mv] === undefined && MQ.MOVES[mv]) m.pp[mv] = MQ.MOVES[mv].pp;
+    return m;
+  };
+
+  // curación completa: PS, estado, mareo y PP (módulo, abuela, respawn)
   MQ.fullHeal = (m) => {
+    MQ.migrateMon(m);
     m.hp = m.maxhp;
     m.status = null;
     m.pp = {};
@@ -781,18 +353,92 @@
 
   MQ.expYield = (id) => {
     const b = MQ.SPECIES[id].base;
-    return Math.round((b.hp + b.atk + b.def + b.spd) * 0.45);
+    const bst = b.hp + b.atk + b.def + b.spa + b.spd + b.spe;
+    return Math.round(bst * 0.3);
   };
 
   // ---- Ítems ----------------------------------------------------------------
+  // ball: multiplicador de captura (Gen 3). ballIf: condición ('status'|'dark').
+  // heal/cure/revive: uso de campo/combate. ev: vitamina +10 calle.
+  // battleStage: X-item (+1 etapa en combate). hold: efecto como objeto equipado.
+  // repel: pasos de esencia. cures: fruta equipada que se auto-cura ese estado.
   MQ.ITEMS = {
-    ficha:    { name: 'Ficha del Metro',  price: 30,  desc: 'Ficha amarilla del 83. Lánzala para fichar un espanto salvaje.', ball: 1 },
-    fichaplus:{ name: 'Ficha Dorada',     price: 150, desc: 'Ficha conmemorativa pulida con Brasso. Los espantos la respetan.', ball: 1.8 },
-    fichaoro: { name: 'Ficha de Oro',     price: 0,   desc: 'Bendecida en la montaña de Sorte. No falla jamás.', ball: 255 },
-    malta:    { name: 'Maltín frío',      price: 20,  desc: 'Restaura 30 PS. La merienda de los campeones.', heal: 30 },
-    cafe:     { name: 'Marroncito',       price: 45,  desc: 'Restaura 70 PS. Oscuro, dulce y de máquina de estación.', heal: 70 },
-    golfeado: { name: 'Golfeado',         price: 90,  desc: 'Restaura todos los PS. Con queso de mano encima, obvio.', heal: 9999 },
-    cocada:   { name: 'Cocada',           price: 120, desc: 'Revive a un espanto debilitado con la mitad de sus PS.', revive: 0.5 },
-    aguacoco: { name: 'Agua de Coco',     price: 60,  desc: 'Cura veneno, parálisis o sueño. Fresquita, recién bajada de La Guaira.', cure: true },
+    // — fichas (capture, spec §1.5) —
+    ficha:     { name: 'Ficha del Metro',   price: 30,  desc: 'Ficha amarilla del 83. Lánzala para fichar un espanto salvaje.', ball: 1 },
+    fichaferia:{ name: 'Ficha de Feria',    price: 90,  desc: 'Del tobo de fichas del buhonero. Rinde más de lo que parece.', ball: 1.5 },
+    fichaplus: { name: 'Ficha Dorada',      price: 150, desc: 'Ficha conmemorativa pulida con Brasso. Los espantos la respetan.', ball: 2 },
+    ficharayada: { name: 'Ficha Rayada',    price: 130, desc: 'Rayada en el torniquete. Muerde el triple si el espanto está afligido.', ball: 1, ballIf: { status: 3 } },
+    fichamadrugadora: { name: 'Ficha Madrugadora', price: 130, desc: 'De la primera cola de la mañana. En túnel y zona oscura vale por cuatro.', ball: 1, ballIf: { dark: 4 } },
+    fichaoro:  { name: 'Ficha de Oro',      price: 0,   desc: 'Bendecida en la montaña de Sorte. No falla jamás.', ball: 255 },
+    // — curación —
+    malta:     { name: 'Maltín frío',       price: 20,  desc: 'Restaura 30 PS. La merienda de los campeones.', heal: 30 },
+    cafe:      { name: 'Marroncito',        price: 45,  desc: 'Restaura 70 PS. Oscuro, dulce y de máquina de estación.', heal: 70 },
+    golfeado:  { name: 'Golfeado',          price: 90,  desc: 'Restaura todos los PS. Con queso de mano encima, obvio.', heal: 9999 },
+    cocada:    { name: 'Cocada',            price: 120, desc: 'Revive a un espanto debilitado con la mitad de sus PS.', revive: 0.5 },
+    aguacoco:  { name: 'Agua de Coco',      price: 60,  desc: 'Cura cualquier mal: veneno, parálisis, sueño, quemadura o pava.', cure: true },
+    sancocho:  { name: 'Sancocho Completo', price: 200, desc: 'Restaura todos los PS y cura cualquier mal. Cocinado a fuego lento.', heal: 9999, cure: true },
+    cariaquitodoble: { name: 'Cariaquito Doble', price: 320, desc: 'Revive a un espanto debilitado con todos sus PS. Morado, del bueno.', revive: 1 },
+    // — vitaminas (+10 de calle, spec §1.9) —
+    carnemechada: { name: 'Carne Mechada',  price: 950, desc: '+10 de calle en Ataque. La fibra del pabellón.', ev: 'atk' },
+    tajada:    { name: 'Tajada',            price: 950, desc: '+10 de calle en Defensa. Dulce escudo de plátano.', ev: 'def' },
+    papelon:   { name: 'Papelón con Limón', price: 950, desc: '+10 de calle en At. Esp. Energía de la buena.', ev: 'spa' },
+    quesorallado: { name: 'Queso Rallado',  price: 950, desc: '+10 de calle en Def. Esp. Llanero curado.', ev: 'spd' },
+    cafecerrero: { name: 'Café Cerrero',    price: 950, desc: '+10 de calle en Velocidad. Sin azúcar y sin perdón.', ev: 'spe' },
+    hervido:   { name: 'Hervido de Gallina', price: 950, desc: '+10 de calle en PS. Levanta muertos, dicen.', ev: 'hp' },
+    // — X-items (combate) —
+    xarrechera:{ name: 'X Arrechera',       price: 90, desc: 'Sube el Ataque en combate. Úsala con respeto.', battleStage: 'atk' },
+    xconcha:   { name: 'X Concha',          price: 90, desc: 'Sube la Defensa en combate. Dura como concha e coco.', battleStage: 'def' },
+    xlabia:    { name: 'X Labia',           price: 90, desc: 'Sube el At. Esp en combate. Pura elocuencia.', battleStage: 'spa' },
+    xaguante:  { name: 'X Aguante',         price: 90, desc: 'Sube la Def. Esp en combate. Aguanta callao.', battleStage: 'spd' },
+    xpilas:    { name: 'X Pilas',           price: 90, desc: 'Sube la Velocidad en combate. ¡Ponte las pilas!', battleStage: 'spe' },
+    estampa:   { name: 'Estampa de Ajedrez', price: 90, desc: 'Afina la puntería crítica en combate, como jugada del bulevar.', battleStage: 'crit' },
+    // — esencias (repelente, spec §1.8) —
+    azabache:  { name: 'Esencia de Azabache', price: 80,  desc: 'Protección de azabache: 100 pasos sin espantos salvajes débiles.', repel: 100 },
+    azabachedoble: { name: 'Azabache Doble', price: 140, desc: 'Doble protección: 200 pasos sin espantos salvajes débiles.', repel: 200 },
+    contrafirmada: { name: 'Contra Firmada', price: 190, desc: 'Contra firmada por quien sabe: 300 pasos de tranquilidad.', repel: 300 },
+    // — objetos equipables (spec §2.9) —
+    tajadaplatano: { name: 'Tajada de Plátano', price: 400, desc: 'Equipado: recupera 1/16 de PS cada ronda. Siempre cae bien.', hold: 'leftovers' },
+    garracunaguaro: { name: 'Garra de Cunaguaro', price: 400, desc: 'Equipado: 20% de moverse primero. Reflejos de monte.', hold: 'quickclaw' },
+    monedalocha: { name: 'Moneda de Locha', price: 400, desc: 'Equipado: 10% de amedrentar al golpear. Una locha con historia.', hold: 'kingsrock' },
+    huevoguacharaca: { name: 'Huevo de Guacharaca', price: 500, desc: 'Equipado: gana 1.5x de experiencia. Madruga como su madre.', hold: 'luckyegg' },
+    morocota:  { name: 'Morocota',          price: 500, desc: 'Equipado: dobla los bolos ganados en duelos. Oro del de antes.', hold: 'amuletcoin' },
+    mediaarepa: { name: 'Media Arepa',      price: 500, desc: 'Equipado: al que la carga le llega la mitad de la experiencia sin pelear. Compartir es de panas.', hold: 'expshare' },
+    campanavagon: { name: 'Campana del Vagón', price: 450, desc: 'Equipado: recupera 1/8 del daño que causa. Din, don.', hold: 'shellbell' },
+    azabachepulsera: { name: 'Azabache de Pulsera', price: 450, desc: 'Equipado: 10% de aguantar a 1 PS un golpe fatal.', hold: 'focusband' },
+    polvomariposa: { name: 'Polvo de Mariposa', price: 450, desc: 'Equipado: evasión x1.1. De las mariposas amarillas del andén.', hold: 'brightpowder' },
+    franelabarrio: { name: 'Franela del Barrio', price: 350, desc: 'Equipado: movimientos Criollo x1.1. Sudada con orgullo.', hold: 'boost', boostType: 'Criollo' },
+    ajidulce:  { name: 'Ají Dulce',         price: 350, desc: 'Equipado: movimientos Sabroso x1.1. El secreto de toda cocina.', hold: 'boost', boostType: 'Sabroso' },
+    cuatroafinado: { name: 'Cuatro Afinado', price: 350, desc: 'Equipado: movimientos Rumba x1.1. Afinado por la Coplera.', hold: 'boost', boostType: 'Rumba' },
+    cintamorada: { name: 'Cinta Morada',    price: 350, desc: 'Equipado: movimientos Espanto x1.1. De un velorio con buena fiesta.', hold: 'boost', boostType: 'Espanto' },
+    bombilloahorrador: { name: 'Bombillo Ahorrador', price: 350, desc: 'Equipado: movimientos Catatumbo x1.1. Alumbra bajito pero seguro.', hold: 'boost', boostType: 'Catatumbo' },
+    aguaanauco: { name: 'Agua del Anauco',  price: 350, desc: 'Equipado: movimientos Caribe x1.1. Del río que la ciudad enterró.', hold: 'boost', boostType: 'Caribe' },
+    macheteviejo: { name: 'Machete Viejo',  price: 350, desc: 'Equipado: movimientos Monte x1.1. Heredado y bien amolado.', hold: 'boost', boostType: 'Monte' },
+    piedraabuelo: { name: 'Piedra del Abuelo', price: 350, desc: 'Equipado: movimientos Tepuy x1.1. Traída de la Gran Sabana.', hold: 'boost', boostType: 'Tepuy' },
+    // — frutas (equipadas: auto-cura, spec §2.9) —
+    mamon:     { name: 'Mamón',             price: 60, desc: 'Equipada: se la come para curarse la parálisis.', hold: 'fruta', cures: 'par' },
+    semeruco:  { name: 'Semeruco',          price: 60, desc: 'Equipada: se la come para curarse la quemadura.', hold: 'fruta', cures: 'que' },
+    guanabana: { name: 'Guanábana',         price: 60, desc: 'Equipada: se la come para despertarse del sueño.', hold: 'fruta', cures: 'slp' },
+    tamarindo: { name: 'Tamarindo',         price: 60, desc: 'Equipada: se la come para curarse el veneno.', hold: 'fruta', cures: 'psn' },
+    parchita:  { name: 'Parchita',          price: 60, desc: 'Equipada: se la come para quitarse la pava de encima.', hold: 'fruta', cures: 'pav' },
+    lechosapicada: { name: 'Lechosa Picada', price: 60, desc: 'Equipada: se la come para que se le pase el mareo.', hold: 'fruta', cures: 'mareo' },
+    merey:     { name: 'Merey',             price: 60, desc: 'Equipada: se lo come al estar grave y recupera 10 PS.', hold: 'fruta', heals: 10 },
+    // — casetes (TMs de un solo uso, spec §1.6: "casetes quemados del bulevar") —
+    casete01:  { name: 'Casete 01 · Trancón', price: 400, desc: 'Enseña TRANCÓN (Criollo, atrapa al rival). Un solo uso, como todo casete pirata.', casete: 'trancon' },
+    casete02:  { name: 'Casete 02 · Sablazo', price: 450, desc: 'Enseña SABLAZO (Criollo, drena la mitad del daño). Grabado en vivo.', casete: 'sablazo' },
+    casete03:  { name: 'Casete 03 · Aguante', price: 500, desc: 'Enseña AGUANTE (se restea y bloquea el golpe). Lado B rayado.', casete: 'aguante' },
+    casete04:  { name: 'Casete 04 · La Vaca', price: 600, desc: 'Enseña LA VACA (dobla los bolos del duelo). El favorito del buhonero.', casete: 'lavaca' },
+    casete05:  { name: 'Casete 05 · Salto Ángel', price: 900, desc: 'Enseña SALTO ÁNGEL (Tepuy, se eleva y cae al turno siguiente). Épico.', casete: 'saltoangel' },
+    casete06:  { name: 'Casete 06 · Cardonal', price: 550, desc: 'Enseña CARDONAL (siembra púas en el andén rival). Con espinas y todo.', casete: 'cardonal' },
+    casete07:  { name: 'Casete 07 · Velorio', price: 700, desc: 'Enseña VELORIO (Espanto: paga vida y señala al rival). No apto pa\' pavosos.', casete: 'velorio' },
+    casete08:  { name: 'Casete 08 · Madrugón', price: 400, desc: 'Enseña MADRUGÓN (Criollo, pega primero al amanecer del turno).', casete: 'madrugon' },
+    // — anzuelos (spec §1.8: fuentes, pozos y el Guaire) —
+    anzueloviejo: { name: 'Anzuelo Viejo',  price: 150, desc: 'Pesca en fuentes y pozos. Oxidado pero digno: pica lo común.', rod: 'viejo' },
+    anzuelobueno: { name: 'Anzuelo Bueno',  price: 400, desc: 'Pesca mejor: lo raro del agua se asoma.', rod: 'bueno' },
+    anzuelosuper: { name: 'Anzuelo Súper',  price: 900, desc: 'El anzuelo de los cuentos. Lo que pique, respétalo.', rod: 'super' },
+    // — la patineta (la "bici" criolla, regalo de Sabana Grande) —
+    patineta:  { name: 'La Patineta',       price: 0, desc: 'Rueda al doble de velocidad. En los andenes de estación el operador la mira feo.', patineta: true },
+    biper:     { name: 'El Bíper',          price: 0, desc: 'Pager noventero: al cargarse con 100 pasos, avisa a los entrenadores del mapa que quieres la revancha.', biper: true },
+    rastreador: { name: 'El Rastreador',    price: 0, desc: 'Antena de zahorí urbano: vibra hacia lo que la gente enterró pa\' olvidarlo. Se usa desde la mochila.', finder: true },
+    cholas:    { name: 'Las Cholas',        price: 0, desc: 'Deportivas del Maratón del Metro del 83. Sostén B mientras caminas y trota: el andén es pista.', cholas: true },
   };
 })();

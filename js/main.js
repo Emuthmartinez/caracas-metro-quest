@@ -8,6 +8,10 @@
     ficha2: 'FICHA DE LA FUENTE',
     ficha3: 'FICHA DEL ESTE',
     ficha4: 'FICHA DEL PUEBLO',
+    ficha5: 'FICHA DEL MONTE',
+    ficha6: 'FICHA DEL RÍO',
+    ficha7: 'FICHA DEL SUR',
+    ficha8: 'FICHA DE LA TORRE',
   };
 
   // ---- estado del jugador ------------------------------------------------------
@@ -23,20 +27,35 @@
 
   MQ.setFlag = (f) => {
     MQ.player.flags[f] = true;
-    if (['ficha1', 'ficha2', 'ficha3', 'ficha4'].every((k) => MQ.player.flags[k]))
-      MQ.player.flags.fichas4 = true;
+    // banderas derivadas: cuántas Fichas Doradas llevas (rejas de la red)
+    const owned = Object.keys(MQ.FICHAS).filter((k) => MQ.player.flags[k]).length;
+    for (const n of [4, 5, 7, 8]) if (owned >= n) MQ.player.flags['fichas' + n] = true;
   };
 
   MQ.save = (silent) => {
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(MQ.player)); } catch (e) {}
   };
   MQ.loadSave = () => {
-    try { const s = localStorage.getItem(SAVE_KEY); return s ? JSON.parse(s) : null; } catch (e) { return null; }
+    try {
+      const s = localStorage.getItem(SAVE_KEY);
+      return s ? MQ.migrateSave(JSON.parse(s)) : null;
+    } catch (e) { return null; }
+  };
+
+  // Migración de partidas v1 al motor Gen-3: a cada espanto guardado se le da
+  // chispa (IVs), calle (EVs) y naturaleza, y el jugador estrena campos nuevos.
+  MQ.migrateSave = (p) => {
+    if (!p) return p;
+    for (const m of [...(p.party || []), ...(p.locker || [])]) MQ.migrateMon(m);
+    p.repelSteps = p.repelSteps || 0;
+    p.steps = p.steps || 0;
+    p.frames = p.frames || 0;
+    return p;
   };
 
   MQ.respawn = (world) => {
     const p = MQ.player;
-    p.money = Math.floor(p.money / 2);
+    p.money = Math.floor(p.money / 2); // a la FireRed: el susto cuesta la mitad
     p.party.forEach(MQ.fullHeal);
     p.x = p.respawn.x; p.y = p.respawn.y;
     world.enterMap(p.respawn.map);
@@ -191,31 +210,52 @@
       ];
     },
 
+    // El final de verdad, en el andén de Miranda de la Línea Fantasma (world bible §5):
+    // primero se le ayuda — no se ficha (canon: el final no tiene villano); en la
+    // segunda vuelta, ya en el post-juego, él decide viajar contigo.
     trenfantasma: () => {
-      if (MQ.player.flags.tren) return [
-        { say: ['', 'El túnel respira tranquilo. A lo lejos se oye al Tren, repartiendo recuerdos estación por estación, como un cartero viejo.'] },
-      ];
-      return [
+      if (!MQ.player.flags.tren) return [
         { sfx: 'whistle' },
-        { say: ['', 'Un silbido de tren llena la Línea Fantasma... Las luces de emergencia parpadean dos veces. El aire huele a 1983.'] },
+        { say: ['', 'Un silbido de tren llena el andén de Miranda... Las luces de emergencia parpadean dos veces. El aire huele a 1983.'] },
         { say: ['', 'Del fondo del túnel emergen dos faros amarillos. Es ÉL: el primer tren, el que nunca llegó a Palo Verde, el que la ciudad olvidó sin querer.'] },
         { say: ['', 'Sus vagones van llenos hasta el techo: cumpleaños con bala fría, despedidas en Maiquetía, tardes de Ávila, goles gritados en cocinas ajenas.'] },
-        { battle: { wild: { id: 'trenfantasma', lvl: 38 }, noFlee: true },
+        { say: ['', 'No viene a pelear. Viene a que alguien lo ayude a entregar todo esto, de ida y de vuelta. Pero primero tiene que saber si aguantas el viaje.'] },
+        { battle: { wild: { id: 'trenfantasma', lvl: 60 }, noFlee: true, noCatch: true },
           winScript: [
             { flag: 'tren' },
             { fn: () => MQ.save(true) },
             { ending: true },
           ] },
       ];
+      if (MQ.player.flags.static_trenfantasma) return [
+        { say: ['', 'El andén de Miranda respira tranquilo. El Tren anda repartiendo recuerdos por la red... y ahora, a veces, viaja contigo.'] },
+      ];
+      return [
+        { sfx: 'whistle' },
+        { say: ['', 'El Tren Fantasma vuelve a entrar al andén, despacio. Esta vez abre las puertas frente a ti y espera. Es su manera de preguntar si quieres que viajen juntos.'] },
+        { battle: { wild: { id: 'trenfantasma', lvl: 60 }, noFlee: true },
+          winScript: [
+            { flag: 'static_trenfantasma' },
+            { fn: () => MQ.save(true) },
+          ] },
+      ];
     },
+
+    // La vieja entrada de Plaza Venezuela: el Tren ya no se detiene aquí (Q6A).
+    trenpasa: () => [
+      { sfx: 'whistle' },
+      { say: ['', 'Las luces parpadean dos veces... y el Tren Fantasma PASA de largo, ventana tras ventana llena de recuerdos, sin frenar siquiera.'] },
+      { say: ['', 'En el vidrio empañado del último vagón alguien escribió: "BELLO MONTE". Este ya no es su andén final.'] },
+    ],
   };
 
   const firstStarter = () => {
-    for (const id of ['frontinito', 'ucumari']) if (hasLine(id)) return 'frontinito';
-    for (const id of ['turpialin', 'cantaclaro']) if (hasLine(id)) return 'turpialin';
+    for (const id of ['frontinito', 'ucumari', 'waraira']) if (hasLine(id)) return 'frontinito';
+    for (const id of ['turpialin', 'cantaclaro', 'florentin']) if (hasLine(id)) return 'turpialin';
     return 'cocuyin';
   };
   const hasLine = (id) => MQ.player.party.concat(MQ.player.locker).some((m) => m.id === id) || MQ.player.dexCaught[id];
+  MQ.firstStarter = firstStarter; // el contra-pick de Cheo vive en world3 también
 
   // ---- escenas: pila --------------------------------------------------------------
   MQ.scenes = [];
@@ -373,7 +413,7 @@
   class EndScene {
     constructor() {
       this.i = 0; this.t = 0;
-      MQ.setFlag('ending'); // libera al Catatumbo en la Línea Fantasma
+      MQ.setFlag('ending'); // abre el post-juego: el Catatumbo en la cumbre, el Carretón en Los Teques
       MQ.audio.music('gaita');
       this.pages = [
         'El Tren Fantasma se detiene por primera vez en cuarenta años.\n\nLas puertas se abren con un suspiro de 1983.',
@@ -390,7 +430,7 @@
           MQ.popScene();
           MQ.save(true);
           const w = top();
-          if (w && w.tb) w.tb.open(MQ.ctx, 'POSDATA: dicen que con el alboroto, el mismísimo CATATUMBO bajó a curiosear por la Línea Fantasma. Brilla entre las sombras... por si te atreves.');
+          if (w && w.tb) w.tb.open(MQ.ctx, 'POSDATA: dicen que con el alboroto, el mismísimo CATATUMBO bajó a posarse en la cumbre del Ávila. Sube por el Teleférico y la Puerta del Ávila... por si te atreves.');
         }
       }
     }
@@ -458,6 +498,8 @@
         s.update && s.update();
         s.draw(MQ.ctx);
       }
+      // el tiempo de viaje corre siempre (para el Carnet del Pasajero)
+      if (MQ.player) MQ.player.frames = (MQ.player.frames || 0) + 1;
       requestAnimationFrame(loop);
     };
     loop();
